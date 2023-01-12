@@ -5,7 +5,7 @@ use actix::{
 use actix_web_actors::ws::{self, ProtocolError};
 use serde_json::Value;
 
-use crate::engine;
+use crate::engine::engine;
 
 #[derive(Message)]
 #[rtype(result = "()")]

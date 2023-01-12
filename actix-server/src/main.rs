@@ -1,11 +1,9 @@
 use actix::{Actor, Addr};
 use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws;
-use engine::Engine;
-use websocket::WebSocketSession;
+use engine::{engine::Engine, websocket::WebSocketSession};
 
 mod engine;
-mod websocket;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

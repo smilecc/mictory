@@ -2,15 +2,8 @@ use std::{collections::HashMap, sync::Arc};
 
 use actix::prelude::*;
 use nanoid::nanoid;
-use webrtc::{
-    api::{media_engine::MediaEngine, APIBuilder},
-    ice_transport::ice_server::RTCIceServer,
-    interceptor::registry::Registry,
-    peer_connection::configuration::RTCConfiguration,
-    rtp_transceiver::rtp_codec::RTPCodecType,
-};
 
-use crate::websocket;
+use super::websocket;
 
 #[derive(Debug)]
 pub struct Engine {
@@ -50,30 +43,6 @@ impl Handler<WebSocketConnectMessage> for Engine {
 
         let fut = Box::pin(async {
             log::info!("创建PeerConnection");
-            let mut me = MediaEngine::default();
-            me.register_default_codecs().unwrap();
-
-            let registry = Registry::new();
-
-            let api = APIBuilder::new()
-                .with_media_engine(me)
-                .with_interceptor_registry(registry)
-                .build();
-
-            let config = RTCConfiguration {
-                ice_servers: vec![RTCIceServer {
-                    urls: vec!["stun:stun.l.google.com:19302".to_owned()],
-                    ..Default::default()
-                }],
-                ..Default::default()
-            };
-
-            let peer_connection = Arc::new(api.new_peer_connection(config).await.unwrap());
-
-            peer_connection
-                .add_transceiver_from_kind(RTPCodecType::Audio, &[])
-                .await
-                .unwrap();
         });
 
         ctx.wait(fut.into_actor(self));
