@@ -3,6 +3,8 @@ use std::{collections::HashMap, sync::Arc};
 use actix::prelude::*;
 use nanoid::nanoid;
 
+use crate::engine::rtc;
+
 use super::websocket;
 
 #[derive(Debug)]
@@ -34,7 +36,7 @@ impl Handler<WebSocketConnectMessage> for Engine {
 
     fn handle(&mut self, msg: WebSocketConnectMessage, ctx: &mut Self::Context) -> Self::Result {
         let session_id = nanoid!();
-        let session_id_clone = session_id.clone();
+        let session_id_return = session_id.clone();
 
         log::info!("WebSocket会话连接，会话ID: {}", &session_id);
 
@@ -45,9 +47,20 @@ impl Handler<WebSocketConnectMessage> for Engine {
             log::info!("创建PeerConnection");
         });
 
-        ctx.wait(fut.into_actor(self));
+        let session_id_rtc = session_id_return.clone();
 
-        return session_id_clone;
+        async move {
+            log::info!("创建PeerConnection");
+            let rtc_session = rtc::RTCSession::new(session_id_rtc, "1".to_owned()).await.start();
+            rtc_session
+        }
+        .into_actor(self)
+        .map(|res, act, _ctx| {
+            // res.
+        })
+        .wait(ctx);
+
+        return session_id_return;
     }
 }
 
