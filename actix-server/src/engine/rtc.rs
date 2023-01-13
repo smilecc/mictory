@@ -1,9 +1,9 @@
-use std::{
-    cell::RefCell,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
 
-use tokio::sync::mpsc::{self, Receiver, Sender};
+use tokio::sync::{
+    mpsc::{self, Receiver, Sender},
+    Mutex,
+};
 use webrtc::{
     api::{media_engine::MediaEngine, APIBuilder},
     ice_transport::ice_server::RTCIceServer,
@@ -83,7 +83,7 @@ impl RTCSession {
 impl Actor for RTCSession {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
+    fn started(&mut self, _ctx: &mut Self::Context) {
         let peer_connection = self.peer_connection.clone();
         // 创建通道，用于传递local_track
         // let (tx, mut rx) = mpsc::channel(10);
@@ -93,10 +93,14 @@ impl Actor for RTCSession {
         // 监听连接有新Track加入
         peer_connection.on_track(Box::new(move |remote_track, _receiver| {
             // remote_track.
-            tx.lock()
-                .unwrap()
-                .blocking_send(remote_track.unwrap())
-                .unwrap();
+
+            let tx2 = tx.clone();
+            tokio::spawn(Box::pin(async move {
+                tx2.lock()
+                    .await
+                    .blocking_send(remote_track.unwrap())
+                    .unwrap();
+            }));
 
             Box::pin(async {})
         }));
@@ -104,41 +108,42 @@ impl Actor for RTCSession {
         let session_id = self.session_id.clone();
         let user_id = "test".to_owned();
 
-        async move {
-            log::info!("开始等待Track");
-            let remote_track = rx.lock().unwrap().recv().await.unwrap();
-            // 初始化本地Track
-            (
-                Arc::new(TrackLocalStaticRTP::new(
-                    remote_track.codec().await.capability,
-                    session_id,
-                    user_id,
-                )),
-                remote_track,
-            )
-        }
-        .into_actor(self)
-        .map(|res, act, ctx| {
-            log::info!("成功转换track");
-            act.local_track = Some(res.0);
-            let local_track_clone = act.local_track.clone().unwrap();
+        tokio::spawn(Box::pin(async move {
+            log::info!("开始等待Track，session_id: {}", &session_id);
 
-            async move {
+            while let Some(remote_track) = rx.lock().await.recv().await {
+                let local_track = Arc::new(TrackLocalStaticRTP::new(
+                    remote_track.codec().await.capability,
+                    session_id.clone(),
+                    user_id.clone(),
+                ));
+
                 // 把远端Track的数据写入本地Track
-                while let Ok((rtp, _)) = res.1.read_rtp().await {
-                    if let Err(err) = local_track_clone.write_rtp(&rtp).await {
+                while let Ok((rtp, _)) = remote_track.read_rtp().await {
+                    if let Err(err) = local_track.write_rtp(&rtp).await {
                         println!("output track write_rtp got error: {}", err);
                         break;
                     }
                 }
             }
-            .into_actor(act)
-            .wait(ctx);
-        })
-        .wait(ctx);
+
+            log::info!("结束等待Track，session_id: {}", &session_id);
+        }));
     }
 
-    fn stopped(&mut self, ctx: &mut Self::Context) {
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
         log::info!("RTC会话终止，会话ID: {}", self.session_id);
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RTCStopMessage {}
+
+impl Handler<RTCStopMessage> for RTCSession {
+    type Result = ();
+
+    fn handle(&mut self, _msg: RTCStopMessage, ctx: &mut Self::Context) -> Self::Result {
+        ctx.stop();
     }
 }

@@ -40,6 +40,10 @@ impl Actor for WebSocketSession {
             })
             .wait(ctx);
     }
+
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
+        log::info!("WebSocketSession终止，{}", self.session_id)
+    }
 }
 
 // 实现Websocket的消息处理
@@ -75,7 +79,7 @@ impl StreamHandler<Result<actix_web_actors::ws::Message, ProtocolError>> for Web
 impl Handler<WebSocketMessage> for WebSocketSession {
     type Result = ();
 
-    fn handle(&mut self, msg: WebSocketMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, _msg: WebSocketMessage, _ctx: &mut Self::Context) -> Self::Result {
         todo!()
     }
 }

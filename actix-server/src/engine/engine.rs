@@ -1,21 +1,23 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap};
 
 use actix::prelude::*;
 use nanoid::nanoid;
 
-use crate::engine::rtc;
+use crate::engine::rtc::{self, RTCStopMessage};
 
-use super::websocket;
+use super::{rtc::RTCSession, websocket};
 
 #[derive(Debug)]
 pub struct Engine {
     pub ws_message_subscribers: HashMap<String, Recipient<websocket::WebSocketMessage>>,
+    pub rtc_session_addrs: HashMap<String, Addr<RTCSession>>,
 }
 
 impl Engine {
     pub fn new() -> Self {
         Engine {
             ws_message_subscribers: HashMap::new(),
+            rtc_session_addrs: HashMap::new(),
         }
     }
 }
@@ -43,20 +45,19 @@ impl Handler<WebSocketConnectMessage> for Engine {
         self.ws_message_subscribers
             .insert(session_id, msg.ws_message_subscriber);
 
-        let fut = Box::pin(async {
-            log::info!("创建PeerConnection");
-        });
-
+        // 开始创建RTC连接
         let session_id_rtc = session_id_return.clone();
 
         async move {
-            log::info!("创建PeerConnection");
-            let rtc_session = rtc::RTCSession::new(session_id_rtc, "1".to_owned()).await.start();
-            rtc_session
+            let rtc_session = rtc::RTCSession::new(session_id_rtc.clone(), "1".to_owned())
+                .await
+                .start();
+            (session_id_rtc, rtc_session)
         }
         .into_actor(self)
         .map(|res, act, _ctx| {
-            // res.
+            // res.do_send(RTCStopMessage {});
+            act.rtc_session_addrs.insert(res.0, res.1);
         })
         .wait(ctx);
 
@@ -77,5 +78,11 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
     fn handle(&mut self, msg: WebSocketDisconnectMessage, _: &mut Self::Context) -> Self::Result {
         log::info!("WebSocket会话断开，会话ID：{}", &msg.session_id);
         self.ws_message_subscribers.remove(&msg.session_id);
+
+        // 关闭RTC会话
+        if let Some(rtc_addr) = self.rtc_session_addrs.get(&msg.session_id) {
+            rtc_addr.do_send(RTCStopMessage {});
+        }
+        self.rtc_session_addrs.remove(&msg.session_id);
     }
 }
