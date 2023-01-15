@@ -1,13 +1,14 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use actix::prelude::*;
 use nanoid::nanoid;
+use webrtc::track::track_local::track_local_static_rtp::TrackLocalStaticRTP;
 
 use crate::engine::rtc::{self, RTCStopMessage};
 
 use super::{
-    rtc::RTCSession,
-    websocket::{self, WebSocketSession},
+    rtc::{RTCAddTrackMessage, RTCSession},
+    websocket::WebSocketSession,
 };
 
 #[derive(Debug)]
@@ -27,6 +28,10 @@ impl Engine {
 
 impl Actor for Engine {
     type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        ctx.set_mailbox_capacity(1024);
+    }
 }
 
 #[derive(Debug)]
@@ -45,8 +50,10 @@ pub struct WebSocketConnectMessage {
 impl Handler<WebSocketConnectMessage> for Engine {
     type Result = ResponseActFuture<Self, WebSocketConnectMessageResult>;
 
-    fn handle(&mut self, msg: WebSocketConnectMessage, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: WebSocketConnectMessage, ctx: &mut Self::Context) -> Self::Result {
         let ws_addr = msg.ws_addr.clone();
+        let engine_addr = ctx.address();
+
         Box::pin(
             async {
                 let session_id = nanoid!();
@@ -54,7 +61,7 @@ impl Handler<WebSocketConnectMessage> for Engine {
 
                 // 创建RTC会话和连接
                 let rtc_session_addr =
-                    rtc::RTCSession::new(ws_addr, session_id.clone(), "1".to_owned())
+                    rtc::RTCSession::new(engine_addr, ws_addr, session_id.clone(), "1".to_owned())
                         .await
                         .unwrap()
                         .start();
@@ -96,5 +103,35 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
             rtc_addr.do_send(RTCStopMessage {});
         }
         self.rtc_session_addrs.remove(&msg.session_id);
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct EngineNewTrackMessage {
+    pub session_id: String,
+    pub local_track: Arc<TrackLocalStaticRTP>,
+}
+
+// 当有新轨道时，筛选需要加入的会话，通知加入会话
+impl Handler<EngineNewTrackMessage> for Engine {
+    type Result = ResponseFuture<()>;
+
+    fn handle(&mut self, msg: EngineNewTrackMessage, _: &mut Self::Context) -> Self::Result {
+        let rtc_session_addrs = self.rtc_session_addrs.clone();
+
+        Box::pin(async move {
+            for (current_session_id, rtc_session_addr) in rtc_session_addrs {
+                // 如果来源会话和循环当前会话为同一会话，则忽略
+                if msg.session_id == current_session_id {
+                    continue;
+                }
+
+                rtc_session_addr.do_send(RTCAddTrackMessage {
+                    source_session_id: msg.session_id.clone(),
+                    local_track: msg.local_track.clone(),
+                })
+            }
+        })
     }
 }

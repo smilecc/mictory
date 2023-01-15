@@ -3,8 +3,10 @@ package engine
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/pion/interceptor"
+	"github.com/pion/rtcp"
 	"github.com/pion/sdp/v3"
 	"github.com/pion/webrtc/v3"
 	"github.com/sirupsen/logrus"
@@ -61,6 +63,7 @@ func createPeerConnection() (*webrtc.PeerConnection, error) {
 	//}
 	_ = mediaEngine.RegisterCodec(opusChrome, webrtc.RTPCodecTypeAudio)
 	//_ = mediaEngine.RegisterCodec(opusFirefox, webrtc.RTPCodecTypeAudio)
+	//mediaEngine.RegisterDefaultCodecs()
 
 	// 创建拦截器注册表
 	registry := &interceptor.Registry{}
@@ -162,15 +165,45 @@ func (s *RTCSession) StartHandleRTCEvent() {
 			return
 		}
 
+		go func() {
+			ticker := time.NewTicker(time.Second * 3)
+			for range ticker.C {
+				errSend := s.PeerConnection.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: uint32(remote.SSRC())}})
+				if errSend != nil {
+					fmt.Println(errSend)
+				}
+			}
+		}()
+
 		s.LocalTrack = localTrack
 		//go func() {
 		//	t := time.NewTimer(10 * time.Second)
 		//	defer t.Stop()
 		//	<-t.C
 		//
-		//	_, err := s.PeerConnection.AddTrack(localTrack)
-		//	if err != nil {
-		//		logrus.Warn(err)
+		//	stats := s.PeerConnection.GetStats()
+		//	for _, s := range stats {
+		//		logrus.Infof("report: %+v", s)
+		//	}
+		//}()
+		//
+		//s.PeerConnection.AddTrack(localTrack)
+
+		//go func() {
+		//	for {
+		//		// Read the RTCP packets as they become available for our new remote track
+		//		rtcpPackets, _, rtcpErr := receiver.ReadRTCP()
+		//		if rtcpErr != nil {
+		//			logrus.Error("rtcpErr", rtcpErr)
+		//			return
+		//		}
+		//
+		//		for _, r := range rtcpPackets {
+		//			// Print a string description of the packets
+		//			if stringer, canString := r.(fmt.Stringer); canString {
+		//				fmt.Printf("Received RTCP Packet: %v", stringer.String())
+		//			}
+		//		}
 		//	}
 		//}()
 
@@ -186,6 +219,7 @@ func (s *RTCSession) StartHandleRTCEvent() {
 				GlobalActorSystem.Root.Send(s.PID, RTCTrackCopyMessage{Packet: packet})
 			}
 		}()
+
 	})
 
 	s.PeerConnection.OnICECandidate(func(candidate *webrtc.ICECandidate) {

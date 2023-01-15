@@ -23,7 +23,7 @@ async fn main() -> std::io::Result<()> {
                     .wrap(middleware::Logger::default()),
             )
     })
-    .bind(("127.0.0.1", 3000))?
+    .bind(("0.0.0.0", 3000))?
     .run()
     .await
 }

@@ -62,6 +62,7 @@ func NewEngine() *Engine {
 	EnginePID = GlobalActorSystem.Root.Spawn(engineProps)
 
 	go func() {
+		temp := make(map[string]string)
 		for {
 			time.Sleep(3 * time.Second)
 			for _, session := range GlobalEngine.UserSessions {
@@ -77,7 +78,10 @@ func NewEngine() *Engine {
 						continue
 					}
 
-					session.RTCSession.PeerConnection.AddTrack(session2.RTCSession.LocalTrack)
+					if _, ok := temp[session2.RTCSession.SessionId]; !ok {
+						temp[session2.RTCSession.SessionId] = session.SessionId
+						session.RTCSession.PeerConnection.AddTrack(session2.RTCSession.LocalTrack)
+					}
 				}
 			}
 		}

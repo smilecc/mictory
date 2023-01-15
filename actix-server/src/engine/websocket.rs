@@ -4,7 +4,7 @@ use actix::{
 };
 use actix_web_actors::ws::{self, ProtocolError};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 use webrtc::{
     ice_transport::ice_candidate::RTCIceCandidateInit,
     peer_connection::sdp::session_description::RTCSessionDescription,
@@ -12,10 +12,10 @@ use webrtc::{
 
 use crate::engine::{
     engine,
-    rtc::{RTCCandidateMessage, RTCOfferMessage},
+    rtc::{RTCCandidateMessage, RTCReceiveOfferMessage},
 };
 
-use super::rtc::{RTCAnswerMessage, RTCSession};
+use super::rtc::{RTCReceiveAnswerMessage, RTCSession};
 
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Option<()>")]
@@ -103,7 +103,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
 
                         if let Some(sdp) = data_json.get("sdp") {
                             rtc_session_addr
-                                .send(RTCOfferMessage {
+                                .send(RTCReceiveOfferMessage {
                                     sdp: sdp.as_str().unwrap().to_owned(),
                                 })
                                 .await
@@ -166,7 +166,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                     }
                 };
 
-                rtc_addr.do_send(RTCAnswerMessage { sdp: answer });
+                rtc_addr.do_send(RTCReceiveAnswerMessage { sdp: answer });
             }
             _ => return None,
         }

@@ -8,10 +8,7 @@ use webrtc::{
         APIBuilder,
     },
     ice::network_type::NetworkType,
-    ice_transport::{
-        ice_candidate::RTCIceCandidateInit, ice_candidate_type::RTCIceCandidateType,
-        ice_server::RTCIceServer,
-    },
+    ice_transport::ice_candidate::RTCIceCandidateInit,
     interceptor::registry::Registry,
     peer_connection::{
         configuration::RTCConfiguration,
@@ -19,29 +16,32 @@ use webrtc::{
         RTCPeerConnection,
     },
     rtp_transceiver::rtp_codec::{RTCRtpCodecCapability, RTCRtpCodecParameters, RTPCodecType},
-    track::{
-        track_local::{track_local_static_rtp::TrackLocalStaticRTP, TrackLocalWriter},
-        track_remote::TrackRemote,
-    },
+    track::track_local::{track_local_static_rtp::TrackLocalStaticRTP, TrackLocalWriter},
 };
 
 use actix::prelude::*;
 
 use crate::engine::websocket::WebSocketSendMessage;
 
-use super::websocket::{WebSocketMessage, WebSocketSession};
+use super::{
+    engine::{Engine, EngineNewTrackMessage},
+    websocket::WebSocketSession,
+};
+
+pub type ArcLocalTrack = Arc<Mutex<RefCell<ValueWrapper<Option<Arc<TrackLocalStaticRTP>>>>>>;
 
 #[derive(Debug)]
 pub struct RTCSession {
     session_id: String,
     room_id: String,
     peer_connection: Arc<RTCPeerConnection>,
-    local_track: Arc<Mutex<RefCell<ValueWrapper<Option<Arc<TrackLocalStaticRTP>>>>>>,
+    local_track: ArcLocalTrack,
     ws_addr: Addr<WebSocketSession>,
+    engine_addr: Addr<Engine>,
 }
 
 #[derive(Debug)]
-pub struct ValueWrapper<T>(T);
+pub struct ValueWrapper<T>(pub T);
 
 impl<T> ValueWrapper<T> {
     pub fn set(&mut self, t: T) {
@@ -51,6 +51,7 @@ impl<T> ValueWrapper<T> {
 
 impl RTCSession {
     pub async fn new(
+        engine_addr: Addr<Engine>,
         ws_addr: Addr<WebSocketSession>,
         session_id: String,
         room_id: String,
@@ -65,6 +66,7 @@ impl RTCSession {
                     peer_connection,
                     local_track: Arc::new(Mutex::new(RefCell::new(ValueWrapper { 0: None }))),
                     ws_addr,
+                    engine_addr,
                 };
 
                 session.start_handle_rtc_event();
@@ -84,10 +86,8 @@ impl RTCSession {
             Some(Duration::from_secs(30)),
             Some(Duration::from_secs(2)),
         );
-        setting_engine.set_interface_filter(Box::new(|x| {
-            log::info!("interface {}", x);
-            x == "以太网"
-        }));
+        // 指定网卡设备
+        setting_engine.set_interface_filter(Box::new(|x| x == "以太网"));
         setting_engine.set_network_types(vec![NetworkType::Udp4, NetworkType::Tcp4]);
         // setting_engine
         //     .set_nat_1to1_ips(vec!["192.168.123.2".to_owned()], RTCIceCandidateType::Host);
@@ -133,21 +133,20 @@ impl RTCSession {
 
         let peer_connection = Arc::new(api.new_peer_connection(config).await?);
 
-        // peer_connection
-        //     .add_transceiver_from_kind(RTPCodecType::Audio, &[])
-        //     .await?;
-
         Ok(peer_connection)
     }
 
     pub fn start_handle_rtc_event(&self) {
         let peer_connection = self.peer_connection.clone();
+
         let session_id = self.session_id.clone();
         let local_track = self.local_track.clone();
+        let engine_addr = self.engine_addr.clone();
 
         peer_connection.on_track(Box::new(move |track, _| {
             let session_id_ontrack = session_id.clone();
             let local_track_ontrack = local_track.clone();
+            let engine_addr_ontrack = engine_addr.clone();
 
             Box::pin(async move {
                 if let Some(remote_track) = track {
@@ -157,9 +156,16 @@ impl RTCSession {
                         session_id_ontrack.clone(),
                     );
 
-                    // 写入当前结构体
                     let local_track_arc = Arc::new(local_track);
                     let local_track_arc_read = local_track_arc.clone();
+
+                    // 通知engine有新track
+                    engine_addr_ontrack.do_send(EngineNewTrackMessage {
+                        session_id: session_id_ontrack.clone(),
+                        local_track: local_track_arc.clone(),
+                    });
+
+                    // 写入当前结构体
                     local_track_ontrack
                         .lock()
                         .await
@@ -177,7 +183,21 @@ impl RTCSession {
                     return;
                 }
             })
-        }))
+        }));
+
+        let ws_addr = self.ws_addr.clone();
+        let peer_connection_onnegotiation_needed_clone = peer_connection.clone();
+        peer_connection.on_negotiation_needed(Box::new(move || {
+            let peer_connection_clone = peer_connection_onnegotiation_needed_clone.clone();
+            let ws_addr_clone = ws_addr.clone();
+            Box::pin(async move {
+                log::info!("on_negotiation_needed");
+                // 发送Offer
+                create_sdp_and_send(peer_connection_clone, RTCSdpType::Offer, ws_addr_clone)
+                    .await
+                    .unwrap_or_default();
+            })
+        }));
     }
 }
 
@@ -223,18 +243,18 @@ impl Handler<RTCCandidateMessage> for RTCSession {
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct RTCOfferMessage {
+pub struct RTCReceiveOfferMessage {
     pub sdp: String,
 }
 
-impl Handler<RTCOfferMessage> for RTCSession {
+impl Handler<RTCReceiveOfferMessage> for RTCSession {
     type Result = ResponseFuture<()>;
 
-    fn handle(&mut self, msg: RTCOfferMessage, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: RTCReceiveOfferMessage, _ctx: &mut Self::Context) -> Self::Result {
         let peer_connection = self.peer_connection.clone();
         let ws_addr = self.ws_addr.clone();
         Box::pin(async move {
-            // 转换SDP，并设置成
+            // 转换SDP，并设置为remote_description
             let offer = serde_json::from_str::<RTCSessionDescription>(&msg.sdp).unwrap();
             if let Some(err) = peer_connection.set_remote_description(offer).await.err() {
                 log::error!("{}", err);
@@ -250,14 +270,14 @@ impl Handler<RTCOfferMessage> for RTCSession {
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct RTCAnswerMessage {
+pub struct RTCReceiveAnswerMessage {
     pub sdp: RTCSessionDescription,
 }
 
-impl Handler<RTCAnswerMessage> for RTCSession {
+impl Handler<RTCReceiveAnswerMessage> for RTCSession {
     type Result = ResponseFuture<()>;
 
-    fn handle(&mut self, msg: RTCAnswerMessage, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: RTCReceiveAnswerMessage, _ctx: &mut Self::Context) -> Self::Result {
         let peer_connection = self.peer_connection.clone();
         Box::pin(async move {
             if let Some(err) = peer_connection.set_remote_description(msg.sdp).await.err() {
@@ -284,7 +304,7 @@ async fn create_sdp_and_send(
         }
         _ => {
             return Err(webrtc::Error::new(
-                "CreateSDPAndSend失败，未知SDP类型".to_owned(),
+                "create_sdp_and_send失败，未知SDP类型".to_owned(),
             ))
         }
     };
@@ -307,4 +327,28 @@ async fn create_sdp_and_send(
     }
 
     Ok(())
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RTCAddTrackMessage {
+    pub source_session_id: String,
+    pub local_track: Arc<TrackLocalStaticRTP>,
+}
+
+impl Handler<RTCAddTrackMessage> for RTCSession {
+    type Result = ResponseFuture<()>;
+
+    fn handle(&mut self, msg: RTCAddTrackMessage, _ctx: &mut Self::Context) -> Self::Result {
+        let peer_connection = self.peer_connection.clone();
+        let session_id = self.session_id.clone();
+        Box::pin(async move {
+            log::info!(
+                "RTC会话{}增加来自于{}的轨道",
+                session_id,
+                msg.source_session_id
+            );
+            peer_connection.add_track(msg.local_track).await.unwrap();
+        })
+    }
 }

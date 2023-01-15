@@ -1,15 +1,67 @@
 <html>
   <body>
     <div id="peers"></div>
-    <button id="renegotiate">重新协商</button>
+    <button id="checkTURNServer">checkTURNServer</button>
     <script>
+      function checkTURNServer(turnConfig, timeout) {
+        return new Promise(function (resolve, reject) {
+          setTimeout(function () {
+            if (promiseResolved) return;
+            resolve(false);
+            promiseResolved = true;
+          }, timeout || 5000);
+
+          var promiseResolved = false,
+            myPeerConnection =
+              window.RTCPeerConnection ||
+              window.mozRTCPeerConnection ||
+              window.webkitRTCPeerConnection, //compatibility for firefox and chrome
+            pc = new myPeerConnection({ iceServers: [turnConfig] }),
+            noop = function () {};
+          pc.createDataChannel(""); //create a bogus data channel
+          pc.createOffer(function (sdp) {
+            if (sdp.sdp.indexOf("typ relay") > -1) {
+              // sometimes sdp contains the ice candidates...
+              promiseResolved = true;
+              resolve(true);
+            }
+            pc.setLocalDescription(sdp, noop, noop);
+          }, noop); // create offer and set local description
+          pc.onicecandidate = function (ice) {
+            //listen for candidate events
+            if (
+              promiseResolved ||
+              !ice ||
+              !ice.candidate ||
+              !ice.candidate.candidate ||
+              !(ice.candidate.candidate.indexOf("typ relay") > -1)
+            )
+              return;
+            promiseResolved = true;
+            resolve(true);
+          };
+        });
+      }
+
+      document.getElementById("checkTURNServer").onclick = () => {
+        checkTURNServer({
+          urls: "turn:106.54.172.71",
+          username: "test",
+          credential: "test",
+        })
+          .then(function (bool) {
+            console.log("is TURN server active? ", bool ? "yes" : "no");
+          })
+          .catch(console.error.bind(console));
+      };
+
       window.onload = async () => {
         let media = await navigator.mediaDevices.getUserMedia({
           video: false,
           audio: true,
         });
 
-        let ws = new WebSocket("ws://localhost:3000/ws");
+        let ws = new WebSocket("ws://192.168.50.88:3000/ws");
         ws.onopen = async (e) => {
           media.getTracks().forEach((t) => pc.addTrack(t, media));
           let offer = await pc.createOffer();
@@ -53,14 +105,14 @@
 
         let pc = new RTCPeerConnection({
           iceServers: [
-            // {
-            //   urls: "stun:stun.gmx.net:3478",
-            // },
             {
-              urls: "turn:106.54.172.71",
-              username: "test",
-              credential: "test",
+              urls: "stun:stun.gmx.net:3478",
             },
+            // {
+            //   urls: "turn:106.54.172.71",
+            //   username: "test",
+            //   credential: "test",
+            // },
           ],
         });
         console.log(pc);
