@@ -1,5 +1,7 @@
 use std::{cell::RefCell, sync::Arc, time::Duration};
 
+use by_address::ByAddress;
+use nanoid::nanoid;
 use serde_json::json;
 use tokio::sync::Mutex;
 use webrtc::{
@@ -8,12 +10,9 @@ use webrtc::{
         APIBuilder,
     },
     ice::network_type::NetworkType,
-    ice_transport::ice_candidate::RTCIceCandidateInit,
     interceptor::registry::Registry,
     peer_connection::{
-        configuration::RTCConfiguration,
-        sdp::{sdp_type::RTCSdpType, session_description::RTCSessionDescription},
-        RTCPeerConnection,
+        configuration::RTCConfiguration, sdp::sdp_type::RTCSdpType, RTCPeerConnection,
     },
     rtp_transceiver::rtp_codec::{RTCRtpCodecCapability, RTCRtpCodecParameters, RTPCodecType},
     track::track_local::{track_local_static_rtp::TrackLocalStaticRTP, TrackLocalWriter},
@@ -21,23 +20,31 @@ use webrtc::{
 
 use actix::prelude::*;
 
-use crate::engine::websocket::WebSocketSendMessage;
-
-use super::{
-    engine::{Engine, EngineNewTrackMessage},
-    websocket::WebSocketSession,
+use crate::engine::{
+    engine::Engine,
+    room::{Room, RoomNewTrackMessage},
+    websocket::{WebSocketSendMessage, WebSocketSession},
 };
 
-pub type ArcLocalTrack = Arc<Mutex<RefCell<ValueWrapper<Option<Arc<TrackLocalStaticRTP>>>>>>;
+pub type LocalTrack = ByAddress<Arc<RTCLocalTrack>>;
+pub type ArcLocalTrack = Arc<Mutex<RefCell<ValueWrapper<Option<LocalTrack>>>>>;
+
+#[derive(Debug)]
+pub struct RTCLocalTrack {
+    pub track_id: String,
+    pub session_id: String,
+    pub track: Arc<TrackLocalStaticRTP>,
+}
 
 #[derive(Debug)]
 pub struct RTCSession {
-    session_id: String,
-    room_id: String,
-    peer_connection: Arc<RTCPeerConnection>,
-    local_track: ArcLocalTrack,
-    ws_addr: Addr<WebSocketSession>,
-    engine_addr: Addr<Engine>,
+    pub session_id: String,
+    pub room_id: String,
+    pub peer_connection: Arc<RTCPeerConnection>,
+    pub local_track: ArcLocalTrack,
+    pub ws_addr: Addr<WebSocketSession>,
+    pub engine_addr: Addr<Engine>,
+    pub room_addr: Addr<Room>,
 }
 
 #[derive(Debug)]
@@ -55,6 +62,7 @@ impl RTCSession {
         ws_addr: Addr<WebSocketSession>,
         session_id: String,
         room_id: String,
+        room_addr: Addr<Room>,
     ) -> Option<Self> {
         match Self::create_peer_connection().await {
             Ok(peer_connection) => {
@@ -67,6 +75,7 @@ impl RTCSession {
                     local_track: Arc::new(Mutex::new(RefCell::new(ValueWrapper { 0: None }))),
                     ws_addr,
                     engine_addr,
+                    room_addr,
                 };
 
                 session.start_handle_rtc_event();
@@ -141,28 +150,36 @@ impl RTCSession {
 
         let session_id = self.session_id.clone();
         let local_track = self.local_track.clone();
-        let engine_addr = self.engine_addr.clone();
+        let room_addr = self.room_addr.clone();
 
         peer_connection.on_track(Box::new(move |track, _| {
             let session_id_ontrack = session_id.clone();
             let local_track_ontrack = local_track.clone();
-            let engine_addr_ontrack = engine_addr.clone();
+            let room_addr_ontrack = room_addr.clone();
 
             Box::pin(async move {
                 if let Some(remote_track) = track {
+                    // 创建本地track
+                    let track_id = nanoid!();
                     let local_track = TrackLocalStaticRTP::new(
                         remote_track.codec().await.capability,
-                        session_id_ontrack.clone(),
-                        session_id_ontrack.clone(),
+                        track_id.clone(),
+                        nanoid!(),
                     );
 
                     let local_track_arc = Arc::new(local_track);
                     let local_track_arc_read = local_track_arc.clone();
 
-                    // 通知engine有新track
-                    engine_addr_ontrack.do_send(EngineNewTrackMessage {
+                    let local_track_byaddr = ByAddress(Arc::new(RTCLocalTrack {
+                        track_id,
                         session_id: session_id_ontrack.clone(),
-                        local_track: local_track_arc.clone(),
+                        track: local_track_arc.clone(),
+                    }));
+
+                    // 通知房间有新track
+                    room_addr_ontrack.do_send(RoomNewTrackMessage {
+                        session_id: session_id_ontrack.clone(),
+                        local_track: local_track_byaddr.clone(),
                     });
 
                     // 写入当前结构体
@@ -170,7 +187,7 @@ impl RTCSession {
                         .lock()
                         .await
                         .borrow_mut()
-                        .set(Some(local_track_arc));
+                        .set(Some(local_track_byaddr.clone()));
 
                     // 把远端的Track数据包写入本地Track
                     while let Ok((packet, _)) = remote_track.read_rtp().await {
@@ -193,162 +210,69 @@ impl RTCSession {
             Box::pin(async move {
                 log::info!("on_negotiation_needed");
                 // 发送Offer
-                create_sdp_and_send(peer_connection_clone, RTCSdpType::Offer, ws_addr_clone)
-                    .await
-                    .unwrap_or_default();
+                RTCSession::create_sdp_and_send(
+                    peer_connection_clone,
+                    RTCSdpType::Offer,
+                    ws_addr_clone,
+                )
+                .await
+                .unwrap_or_default();
             })
         }));
+    }
+
+    pub async fn create_sdp_and_send(
+        peer_connection: Arc<RTCPeerConnection>,
+        sdp_type: RTCSdpType,
+        ws_addr: Addr<WebSocketSession>,
+    ) -> Result<(), webrtc::Error> {
+        log::info!("create_sdp_and_send");
+        let sdp = match sdp_type {
+            RTCSdpType::Offer => {
+                let offer = peer_connection.create_offer(None).await?;
+                (offer, "rtc_offer")
+            }
+            RTCSdpType::Answer => {
+                let answer = peer_connection.create_answer(None).await?;
+                (answer, "rtc_answer")
+            }
+            _ => {
+                return Err(webrtc::Error::new(
+                    "create_sdp_and_send失败，未知SDP类型".to_owned(),
+                ))
+            }
+        };
+
+        peer_connection.set_local_description(sdp.0).await?;
+
+        let mut gather_complete = peer_connection.gathering_complete_promise().await;
+        gather_complete.recv().await;
+        log::info!("gather_complete");
+
+        // 将SDP发送给客户端
+        if let Some(local_description) = peer_connection.local_description().await {
+            if let Ok(sdp_json) = serde_json::to_string(&local_description) {
+                let data_json = serde_json::to_string(&json!({ "sdp": sdp_json })).unwrap();
+                ws_addr.do_send(WebSocketSendMessage {
+                    event: sdp.1.to_owned(),
+                    data: data_json,
+                })
+            }
+        }
+
+        Ok(())
     }
 }
 
 impl Actor for RTCSession {
     type Context = Context<Self>;
 
+    fn started(&mut self, ctx: &mut Self::Context) {
+        // 设置actor邮箱大小
+        ctx.set_mailbox_capacity(64);
+    }
+
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         log::info!("RTC会话终止，会话ID: {}", self.session_id);
-    }
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct RTCStopMessage {}
-
-impl Handler<RTCStopMessage> for RTCSession {
-    type Result = ();
-
-    fn handle(&mut self, _msg: RTCStopMessage, ctx: &mut Self::Context) -> Self::Result {
-        ctx.stop();
-    }
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct RTCCandidateMessage {
-    pub candidate: RTCIceCandidateInit,
-}
-
-impl Handler<RTCCandidateMessage> for RTCSession {
-    type Result = ResponseFuture<()>;
-
-    fn handle(&mut self, msg: RTCCandidateMessage, _ctx: &mut Self::Context) -> Self::Result {
-        let peer_connection = self.peer_connection.clone();
-        Box::pin(async move {
-            peer_connection
-                .add_ice_candidate(msg.candidate)
-                .await
-                .unwrap_or_default();
-        })
-    }
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct RTCReceiveOfferMessage {
-    pub sdp: String,
-}
-
-impl Handler<RTCReceiveOfferMessage> for RTCSession {
-    type Result = ResponseFuture<()>;
-
-    fn handle(&mut self, msg: RTCReceiveOfferMessage, _ctx: &mut Self::Context) -> Self::Result {
-        let peer_connection = self.peer_connection.clone();
-        let ws_addr = self.ws_addr.clone();
-        Box::pin(async move {
-            // 转换SDP，并设置为remote_description
-            let offer = serde_json::from_str::<RTCSessionDescription>(&msg.sdp).unwrap();
-            if let Some(err) = peer_connection.set_remote_description(offer).await.err() {
-                log::error!("{}", err);
-                return;
-            }
-
-            create_sdp_and_send(peer_connection, RTCSdpType::Answer, ws_addr)
-                .await
-                .unwrap_or_default();
-        })
-    }
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct RTCReceiveAnswerMessage {
-    pub sdp: RTCSessionDescription,
-}
-
-impl Handler<RTCReceiveAnswerMessage> for RTCSession {
-    type Result = ResponseFuture<()>;
-
-    fn handle(&mut self, msg: RTCReceiveAnswerMessage, _ctx: &mut Self::Context) -> Self::Result {
-        let peer_connection = self.peer_connection.clone();
-        Box::pin(async move {
-            if let Some(err) = peer_connection.set_remote_description(msg.sdp).await.err() {
-                log::error!("{}", err);
-            }
-        })
-    }
-}
-
-async fn create_sdp_and_send(
-    peer_connection: Arc<RTCPeerConnection>,
-    sdp_type: RTCSdpType,
-    ws_addr: Addr<WebSocketSession>,
-) -> Result<(), webrtc::Error> {
-    log::info!("create_sdp_and_send");
-    let sdp = match sdp_type {
-        RTCSdpType::Offer => {
-            let offer = peer_connection.create_offer(None).await?;
-            (offer, "rtc_offer")
-        }
-        RTCSdpType::Answer => {
-            let answer = peer_connection.create_answer(None).await?;
-            (answer, "rtc_answer")
-        }
-        _ => {
-            return Err(webrtc::Error::new(
-                "create_sdp_and_send失败，未知SDP类型".to_owned(),
-            ))
-        }
-    };
-
-    peer_connection.set_local_description(sdp.0).await?;
-
-    let mut gather_complete = peer_connection.gathering_complete_promise().await;
-    gather_complete.recv().await;
-    log::info!("gather_complete");
-
-    // 将SDP发送给客户端
-    if let Some(local_description) = peer_connection.local_description().await {
-        if let Ok(sdp_json) = serde_json::to_string(&local_description) {
-            let data_json = serde_json::to_string(&json!({ "sdp": sdp_json })).unwrap();
-            ws_addr.do_send(WebSocketSendMessage {
-                event: sdp.1.to_owned(),
-                data: data_json,
-            })
-        }
-    }
-
-    Ok(())
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct RTCAddTrackMessage {
-    pub source_session_id: String,
-    pub local_track: Arc<TrackLocalStaticRTP>,
-}
-
-impl Handler<RTCAddTrackMessage> for RTCSession {
-    type Result = ResponseFuture<()>;
-
-    fn handle(&mut self, msg: RTCAddTrackMessage, _ctx: &mut Self::Context) -> Self::Result {
-        let peer_connection = self.peer_connection.clone();
-        let session_id = self.session_id.clone();
-        Box::pin(async move {
-            log::info!(
-                "RTC会话{}增加来自于{}的轨道",
-                session_id,
-                msg.source_session_id
-            );
-            peer_connection.add_track(msg.local_track).await.unwrap();
-        })
     }
 }

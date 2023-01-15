@@ -62,22 +62,7 @@
         });
 
         let ws = new WebSocket("ws://192.168.50.88:3000/ws");
-        ws.onopen = async (e) => {
-          media.getTracks().forEach((t) => pc.addTrack(t, media));
-          let offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          let sessionDesc = JSON.stringify(pc.localDescription);
-          window.sessionDesc = sessionDesc;
-          console.log(sessionDesc);
-          ws.send(
-            JSON.stringify({
-              event: "rtc_join_room",
-              data: JSON.stringify({
-                sdp: sessionDesc,
-              }),
-            })
-          );
-        };
+
         ws.onclose = (e) => {
           console.log("close", e);
         };
@@ -86,6 +71,29 @@
           let msg = JSON.parse(e.data);
           let data = JSON.parse(msg.data);
           console.log("msg data", data);
+
+          if (msg.event == "new_session") {
+            media.getTracks().forEach((t) => pc.addTrack(t, media));
+            let offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            let sessionDesc = JSON.stringify(pc.localDescription);
+            window.sessionDesc = sessionDesc;
+            console.log(sessionDesc);
+            window._sessionId = data.sessionId;
+            console.log(window._sessionId);
+
+            ws.send(
+              JSON.stringify({
+                event: "rtc_join_room",
+                data: JSON.stringify({
+                  sessionId: window._sessionId,
+                  roomId: "233",
+                  sdp: sessionDesc,
+                }),
+              })
+            );
+          }
+
           if (msg.event == "rtc_offer") {
             pc.setRemoteDescription(JSON.parse(data.sdp));
             let sdp = await pc.createAnswer();

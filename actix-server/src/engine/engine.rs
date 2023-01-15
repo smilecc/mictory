@@ -1,20 +1,20 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use actix::prelude::*;
-use nanoid::nanoid;
-use webrtc::track::track_local::track_local_static_rtp::TrackLocalStaticRTP;
 
-use crate::engine::rtc::{self, RTCStopMessage};
-
-use super::{
-    rtc::{RTCAddTrackMessage, RTCSession},
-    websocket::WebSocketSession,
+use crate::engine::{
+    room::{RoomExitMessage, RoomJoinMessage},
+    rtc::message::RTCStopMessage,
 };
+
+use super::{room::Room, rtc::session::RTCSession, websocket::WebSocketSession};
 
 #[derive(Debug)]
 pub struct Engine {
     pub ws_message_addrs: HashMap<String, Addr<WebSocketSession>>,
     pub rtc_session_addrs: HashMap<String, Addr<RTCSession>>,
+    room_addrs: HashMap<String, Addr<Room>>,
+    session_room_map: HashMap<String, String>,
 }
 
 impl Engine {
@@ -22,6 +22,8 @@ impl Engine {
         Engine {
             ws_message_addrs: HashMap::new(),
             rtc_session_addrs: HashMap::new(),
+            room_addrs: HashMap::new(),
+            session_room_map: HashMap::new(),
         }
     }
 }
@@ -35,39 +37,77 @@ impl Actor for Engine {
 }
 
 #[derive(Debug)]
-pub struct WebSocketConnectMessageResult {
+pub struct EngineJoinRoomMessageResult {
+    pub room_id: String,
     pub session_id: String,
     pub rtc_session_addr: Addr<RTCSession>,
 }
 
-#[derive(Message)]
-#[rtype(WebSocketConnectMessageResult)]
-pub struct WebSocketConnectMessage {
+#[derive(Message, Debug)]
+#[rtype(EngineJoinRoomMessageResult)]
+pub struct EngineJoinRoomMessage {
+    pub room_id: String,
+    pub session_id: String,
     pub ws_addr: Addr<WebSocketSession>,
 }
 
-// 处理新Websocket连接
-impl Handler<WebSocketConnectMessage> for Engine {
-    type Result = ResponseActFuture<Self, WebSocketConnectMessageResult>;
+// 处理会话加入房间
+impl Handler<EngineJoinRoomMessage> for Engine {
+    type Result = ResponseActFuture<Self, EngineJoinRoomMessageResult>;
 
-    fn handle(&mut self, msg: WebSocketConnectMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: EngineJoinRoomMessage, ctx: &mut Self::Context) -> Self::Result {
+        let room_id = msg.room_id.clone();
+        let session_id = msg.session_id.clone();
         let ws_addr = msg.ws_addr.clone();
         let engine_addr = ctx.address();
 
+        // 如果会话已经在另外一个房间，则从房间退出
+        if let Some(room_id) = self.session_room_map.get(&session_id) {
+            if let Some(room_addr) = self.room_addrs.get(room_id) {
+                room_addr.do_send(RoomExitMessage {
+                    session_id: session_id.clone(),
+                });
+            }
+            self.session_room_map.remove(&session_id);
+        }
+
+        // 获取房间实体，如果房间不存在，则创建一个房间
+        self.session_room_map
+            .insert(session_id.clone(), room_id.clone());
+        let room_addr = if let Some(room_addr) = self.room_addrs.get(&room_id) {
+            room_addr.clone()
+        } else {
+            let room_addr = Room::new(room_id.clone(), ctx.address()).start();
+            self.room_addrs.insert(room_id.clone(), room_addr.clone());
+            room_addr
+        };
+
+        log::info!("Engine处理会话加入房间: {msg:?}");
+
         Box::pin(
-            async {
-                let session_id = nanoid!();
-                log::info!("WebSocket会话连接，会话ID: {}", &session_id);
-
+            async move {
                 // 创建RTC会话和连接
-                let rtc_session_addr =
-                    rtc::RTCSession::new(engine_addr, ws_addr, session_id.clone(), "1".to_owned())
-                        .await
-                        .unwrap()
-                        .start();
+                let rtc_session_addr = RTCSession::new(
+                    engine_addr.clone(),
+                    ws_addr.clone(),
+                    session_id.clone(),
+                    room_id.clone(),
+                    room_addr.clone(),
+                )
+                .await
+                .unwrap()
+                .start();
 
-                WebSocketConnectMessageResult {
-                    session_id,
+                // 通知房间新会话加入
+                room_addr.do_send(RoomJoinMessage {
+                    session_id: session_id.clone(),
+                    rtc_session_addr: rtc_session_addr.clone(),
+                    ws_session_addr: ws_addr.clone(),
+                });
+
+                EngineJoinRoomMessageResult {
+                    room_id,
+                    session_id: msg.session_id,
                     rtc_session_addr,
                 }
             }
@@ -98,6 +138,15 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
         log::info!("WebSocket会话断开，会话ID：{}", &msg.session_id);
         self.ws_message_addrs.remove(&msg.session_id);
 
+        // 通知房间会话退出
+        if let Some(room_id) = self.session_room_map.get(&msg.session_id) {
+            if let Some(room_addr) = self.room_addrs.get(room_id) {
+                room_addr.do_send(RoomExitMessage {
+                    session_id: msg.session_id.clone(),
+                })
+            }
+        }
+
         // 关闭RTC会话
         if let Some(rtc_addr) = self.rtc_session_addrs.get(&msg.session_id) {
             rtc_addr.do_send(RTCStopMessage {});
@@ -106,32 +155,32 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
     }
 }
 
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct EngineNewTrackMessage {
-    pub session_id: String,
-    pub local_track: Arc<TrackLocalStaticRTP>,
-}
+// #[derive(Message)]
+// #[rtype(result = "()")]
+// pub struct EngineNewTrackMessage {
+//     pub session_id: String,
+//     pub local_track: LocalTrack,
+// }
 
-// 当有新轨道时，筛选需要加入的会话，通知加入会话
-impl Handler<EngineNewTrackMessage> for Engine {
-    type Result = ResponseFuture<()>;
+// // 当有新轨道时，筛选需要加入的会话，通知加入会话
+// impl Handler<EngineNewTrackMessage> for Engine {
+//     type Result = ResponseFuture<()>;
 
-    fn handle(&mut self, msg: EngineNewTrackMessage, _: &mut Self::Context) -> Self::Result {
-        let rtc_session_addrs = self.rtc_session_addrs.clone();
+//     fn handle(&mut self, msg: EngineNewTrackMessage, _: &mut Self::Context) -> Self::Result {
+//         let rtc_session_addrs = self.rtc_session_addrs.clone();
 
-        Box::pin(async move {
-            for (current_session_id, rtc_session_addr) in rtc_session_addrs {
-                // 如果来源会话和循环当前会话为同一会话，则忽略
-                if msg.session_id == current_session_id {
-                    continue;
-                }
+//         Box::pin(async move {
+//             for (current_session_id, rtc_session_addr) in rtc_session_addrs {
+//                 // 如果来源会话和循环当前会话为同一会话，则忽略
+//                 if msg.session_id == current_session_id {
+//                     continue;
+//                 }
 
-                rtc_session_addr.do_send(RTCAddTrackMessage {
-                    source_session_id: msg.session_id.clone(),
-                    local_track: msg.local_track.clone(),
-                })
-            }
-        })
-    }
-}
+//                 rtc_session_addr.do_send(RTCAddTrackMessage {
+//                     source_session_id: msg.session_id.clone(),
+//                     local_tracks: HashSet::from([msg.local_track.clone()]),
+//                 })
+//             }
+//         })
+//     }
+// }

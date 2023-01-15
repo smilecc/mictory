@@ -3,8 +3,9 @@ use actix::{
     Message, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{self, ProtocolError};
+use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use webrtc::{
     ice_transport::ice_candidate::RTCIceCandidateInit,
     peer_connection::sdp::session_description::RTCSessionDescription,
@@ -12,10 +13,10 @@ use webrtc::{
 
 use crate::engine::{
     engine,
-    rtc::{RTCCandidateMessage, RTCReceiveOfferMessage},
+    rtc::message::{RTCCandidateMessage, RTCReceiveAnswerMessage, RTCReceiveOfferMessage},
 };
 
-use super::rtc::{RTCReceiveAnswerMessage, RTCSession};
+use super::rtc::session::RTCSession;
 
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Option<()>")]
@@ -40,6 +41,29 @@ pub struct WebSocketSession {
 
 impl Actor for WebSocketSession {
     type Context = ws::WebsocketContext<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        ctx.set_mailbox_capacity(64);
+        let session_id = nanoid!();
+        self.session_id = session_id.clone();
+
+        let new_session_data = &json!({
+            "sessionId": session_id,
+        });
+
+        let new_session_data_json = if let Ok(msg_json) = serde_json::to_string(&new_session_data) {
+            msg_json
+        } else {
+            return;
+        };
+
+        if let Ok(msg_json) = serde_json::to_string(&WebSocketSendMessage {
+            event: "new_session".to_owned(),
+            data: new_session_data_json,
+        }) {
+            ctx.text(msg_json);
+        }
+    }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         log::info!("WebSocketSession终止，{}", self.session_id)
@@ -89,10 +113,15 @@ impl Handler<WebSocketMessage> for WebSocketSession {
             "rtc_join_room" => {
                 let data = msg.data.clone();
                 let data_json: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
+                let room_id = data_json["roomId"].as_str().unwrap_or("").to_string();
+                let session_id = self.session_id.clone();
 
                 async move {
+                    // 通知Engine有新会话加入房间
                     let connect_res = engine_addr
-                        .send(engine::WebSocketConnectMessage {
+                        .send(engine::EngineJoinRoomMessage {
+                            room_id: room_id.to_string(),
+                            session_id,
                             ws_addr: address.clone(),
                         })
                         .await;
