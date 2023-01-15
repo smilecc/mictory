@@ -126,12 +126,19 @@
         console.log(pc);
 
         pc.ontrack = (event) => {
-          console.log("NewTrack", event);
+          console.log("Track Add", event);
           el = document.createElement(event.track.kind);
-          el.id = new Date().getTime();
+          el.id = `audio-${event.track.id}`;
           el.srcObject = event.streams[0];
           el.autoplay = true;
           document.getElementById("peers").appendChild(el);
+
+          event.streams.forEach((stream) => {
+            stream.onremovetrack = () => {
+              console.log("Track Remove", el.id);
+              document.getElementById(el.id).remove();
+            };
+          });
         };
 
         pc.onicecandidate = (event) => {

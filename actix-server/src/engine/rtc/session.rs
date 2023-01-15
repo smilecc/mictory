@@ -14,7 +14,10 @@ use webrtc::{
     peer_connection::{
         configuration::RTCConfiguration, sdp::sdp_type::RTCSdpType, RTCPeerConnection,
     },
-    rtp_transceiver::rtp_codec::{RTCRtpCodecCapability, RTCRtpCodecParameters, RTPCodecType},
+    rtp_transceiver::{
+        rtp_codec::{RTCRtpCodecCapability, RTCRtpCodecParameters, RTPCodecType},
+        rtp_sender::RTCRtpSender,
+    },
     track::track_local::{track_local_static_rtp::TrackLocalStaticRTP, TrackLocalWriter},
 };
 
@@ -34,6 +37,7 @@ pub struct RTCLocalTrack {
     pub track_id: String,
     pub session_id: String,
     pub track: Arc<TrackLocalStaticRTP>,
+    pub sender: Arc<Mutex<RefCell<ValueWrapper<Option<Arc<RTCRtpSender>>>>>>,
 }
 
 #[derive(Debug)]
@@ -174,6 +178,7 @@ impl RTCSession {
                         track_id,
                         session_id: session_id_ontrack.clone(),
                         track: local_track_arc.clone(),
+                        sender: Arc::new(Mutex::new(RefCell::new(ValueWrapper(None)))),
                     }));
 
                     // 通知房间有新track
@@ -272,7 +277,13 @@ impl Actor for RTCSession {
         ctx.set_mailbox_capacity(64);
     }
 
-    fn stopped(&mut self, _ctx: &mut Self::Context) {
+    fn stopped(&mut self, ctx: &mut Self::Context) {
+        let peer_connection = self.peer_connection.clone();
+        async move {
+            peer_connection.close().await.unwrap_or_default();
+        }
+        .into_actor(self)
+        .wait(ctx);
         log::info!("RTC会话终止，会话ID: {}", self.session_id);
     }
 }

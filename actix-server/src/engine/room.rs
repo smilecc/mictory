@@ -2,6 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
 
+use crate::engine::rtc::message::RTCRemoveTrackMessage;
+
 use super::{
     engine::Engine,
     rtc::{
@@ -85,6 +87,16 @@ impl Handler<RoomExitMessage> for Room {
         self.ws_session_addrs.remove(&msg.session_id);
 
         // 移除该会话相关轨道
+        let mut removed_tracks = self.all_tracks.clone();
+        removed_tracks.retain(|t| t.0.session_id == msg.session_id);
+
+        for (_, session) in self.rtc_session_addrs.iter() {
+            session.do_send(RTCRemoveTrackMessage {
+                source_session_id: msg.session_id.clone(),
+                local_tracks: removed_tracks.clone(),
+            })
+        }
+
         self.all_tracks.retain(|t| t.0.session_id != msg.session_id);
     }
 }

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use actix::prelude::*;
 
@@ -32,7 +32,43 @@ impl Handler<RTCAddTrackMessage> for RTCSession {
             );
 
             for track in msg.local_tracks {
-                peer_connection.add_track(track.0.track.clone()).await.unwrap();
+                let sender = peer_connection
+                    .add_track(track.0.track.clone())
+                    .await
+                    .unwrap();
+
+                track.0.sender.lock().await.borrow_mut().set(Some(sender));
+            }
+        })
+    }
+}
+
+// RTC移除轨道消息
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RTCRemoveTrackMessage {
+    pub source_session_id: String,
+    pub local_tracks: HashSet<LocalTrack>,
+}
+
+impl Handler<RTCRemoveTrackMessage> for RTCSession {
+    type Result = ResponseFuture<()>;
+
+    fn handle(&mut self, msg: RTCRemoveTrackMessage, _ctx: &mut Self::Context) -> Self::Result {
+        let peer_connection = self.peer_connection.clone();
+        let session_id = self.session_id.clone();
+
+        Box::pin(async move {
+            log::info!(
+                "RTC会话{}移除来自于{}的轨道",
+                session_id,
+                msg.source_session_id
+            );
+
+            for track in msg.local_tracks {
+                if let Some(s) = track.0.sender.lock().await.borrow().0.clone() {
+                    peer_connection.remove_track(&s).await.unwrap_or_default();
+                }
             }
         })
     }
