@@ -40,6 +40,7 @@ async fn ws_handler(
             session_id: "".to_owned(),
             // 此处将Engine的Address存入会话类，用于和引擎做事件交互
             engine_addr: engine_addr.get_ref().clone(),
+            rtc_session_addr: None,
         },
         &req,
         stream,

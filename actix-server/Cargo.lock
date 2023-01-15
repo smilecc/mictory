@@ -2582,6 +2582,7 @@ dependencies = [
  "env_logger",
  "log",
  "nanoid",
+ "serde",
  "serde_json",
  "tokio",
  "webrtc",

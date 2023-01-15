@@ -1,0 +1,98 @@
+<html>
+  <body>
+    <div id="peers"></div>
+    <button id="renegotiate">重新协商</button>
+    <script>
+      window.onload = async () => {
+        let media = await navigator.mediaDevices.getUserMedia({
+          video: false,
+          audio: true,
+        });
+
+        let ws = new WebSocket("ws://localhost:3000/ws");
+        ws.onopen = async (e) => {
+          media.getTracks().forEach((t) => pc.addTrack(t, media));
+          let offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          let sessionDesc = JSON.stringify(pc.localDescription);
+          window.sessionDesc = sessionDesc;
+          console.log(sessionDesc);
+          ws.send(
+            JSON.stringify({
+              event: "rtc_join_room",
+              data: JSON.stringify({
+                sdp: sessionDesc,
+              }),
+            })
+          );
+        };
+        ws.onclose = (e) => {
+          console.log("close", e);
+        };
+        ws.onmessage = async (e) => {
+          console.log("msg", e);
+          let msg = JSON.parse(e.data);
+          let data = JSON.parse(msg.data);
+          console.log("msg data", data);
+          if (msg.event == "rtc_offer") {
+            pc.setRemoteDescription(JSON.parse(data.sdp));
+            let sdp = await pc.createAnswer();
+            await pc.setLocalDescription(sdp);
+            ws.send(
+              JSON.stringify({
+                event: "rtc_answer",
+                data: JSON.stringify(sdp),
+              })
+            );
+          }
+
+          if (msg.event == "rtc_answer") {
+            pc.setRemoteDescription(JSON.parse(data.sdp));
+          }
+        };
+
+        let pc = new RTCPeerConnection({
+          iceServers: [
+            // {
+            //   urls: "stun:stun.gmx.net:3478",
+            // },
+            {
+              urls: "turn:106.54.172.71",
+              username: "test",
+              credential: "test",
+            },
+          ],
+        });
+        console.log(pc);
+
+        pc.ontrack = (event) => {
+          console.log("NewTrack", event);
+          el = document.createElement(event.track.kind);
+          el.id = new Date().getTime();
+          el.srcObject = event.streams[0];
+          el.autoplay = true;
+          document.getElementById("peers").appendChild(el);
+        };
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate === null) return;
+          ws.send(
+            JSON.stringify({
+              event: "candidate",
+              data: JSON.stringify(event.candidate),
+            })
+          );
+          console.log(event);
+        };
+
+        pc.onnegotiationneeded = (e) => {
+          console.log("onnegotiationneeded", e);
+        };
+
+        pc.onconnectionstatechange = (e) => {
+          console.log("onconnectionstatechange", pc.connectionState);
+        };
+      };
+    </script>
+  </body>
+</html>

@@ -3,43 +3,43 @@ use actix::{
     Message, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{self, ProtocolError};
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use webrtc::{
+    ice_transport::ice_candidate::RTCIceCandidateInit,
+    peer_connection::sdp::session_description::RTCSessionDescription,
+};
 
-use crate::engine::engine;
+use crate::engine::{
+    engine,
+    rtc::{RTCCandidateMessage, RTCOfferMessage},
+};
 
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct WebSocketMessage {}
+use super::rtc::{RTCAnswerMessage, RTCSession};
+
+#[derive(Debug, Message, Serialize, Deserialize)]
+#[rtype(result = "Option<()>")]
+pub struct WebSocketSendMessage {
+    pub event: String,
+    pub data: String,
+}
+
+#[derive(Debug, Message, Serialize, Deserialize)]
+#[rtype(result = "Option<()>")]
+pub struct WebSocketMessage {
+    pub event: String,
+    pub data: String,
+}
 
 #[derive(Debug)]
 pub struct WebSocketSession {
     pub session_id: String,
     pub engine_addr: Addr<engine::Engine>,
+    pub rtc_session_addr: Option<Addr<RTCSession>>,
 }
 
 impl Actor for WebSocketSession {
     type Context = ws::WebsocketContext<Self>;
-
-    // 实现Actor启动事件
-    fn started(&mut self, ctx: &mut Self::Context) {
-        let address = ctx.address();
-
-        // 发送消息给Engine，告知websocket链接创建
-        self.engine_addr
-            .send(engine::WebSocketConnectMessage {
-                ws_message_subscriber: address.recipient(),
-            })
-            .into_actor(self)
-            .then(|res, act, ctx| {
-                // 将Engine分配的会话ID写入当前会话
-                match res {
-                    Ok(res) => act.session_id = res,
-                    _ => ctx.stop(),
-                }
-                fut::ready(())
-            })
-            .wait(ctx);
-    }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         log::info!("WebSocketSession终止，{}", self.session_id)
@@ -53,12 +53,13 @@ impl StreamHandler<Result<actix_web_actors::ws::Message, ProtocolError>> for Web
         msg: Result<actix_web_actors::ws::Message, ProtocolError>,
         ctx: &mut Self::Context,
     ) {
-        println!("ws: {msg:?}");
+        // log::info!("WebSocket Message: {msg:?}");
 
         match msg {
             Ok(ws::Message::Text(text)) => {
-                if let Ok(v) = serde_json::from_str::<Value>(&text) {
-                    println!("收到消息 {v:?}")
+                if let Ok(v) = serde_json::from_str::<WebSocketMessage>(&text) {
+                    // println!("收到消息 {v:?}");
+                    ctx.address().do_send(v);
                 }
             }
             Ok(ws::Message::Close(reason)) => {
@@ -77,9 +78,112 @@ impl StreamHandler<Result<actix_web_actors::ws::Message, ProtocolError>> for Web
 
 // 监听外部发送的WebSocket消息
 impl Handler<WebSocketMessage> for WebSocketSession {
-    type Result = ();
+    type Result = Option<()>;
 
-    fn handle(&mut self, _msg: WebSocketMessage, _ctx: &mut Self::Context) -> Self::Result {
-        todo!()
+    fn handle(&mut self, msg: WebSocketMessage, ctx: &mut Self::Context) -> Self::Result {
+        let address = ctx.address();
+        let engine_addr = self.engine_addr.clone();
+        log::info!("WebSocket Message: {}", msg.event);
+
+        match msg.event.as_str() {
+            "rtc_join_room" => {
+                let data = msg.data.clone();
+                let data_json: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
+
+                async move {
+                    let connect_res = engine_addr
+                        .send(engine::WebSocketConnectMessage {
+                            ws_addr: address.clone(),
+                        })
+                        .await;
+
+                    if connect_res.is_ok() {
+                        let rtc_session_addr =
+                            connect_res.as_ref().unwrap().rtc_session_addr.clone();
+
+                        if let Some(sdp) = data_json.get("sdp") {
+                            rtc_session_addr
+                                .send(RTCOfferMessage {
+                                    sdp: sdp.as_str().unwrap().to_owned(),
+                                })
+                                .await
+                                .unwrap_or_default();
+                        }
+                    }
+
+                    connect_res
+                }
+                .into_actor(self)
+                .then(|res, act, ctx| {
+                    // 将Engine分配的会话ID写入当前会话
+                    match res {
+                        Ok(res) => {
+                            act.session_id = res.session_id;
+                            act.rtc_session_addr = Some(res.rtc_session_addr);
+                        }
+                        _ => ctx.stop(),
+                    }
+                    fut::ready(())
+                })
+                .wait(ctx);
+
+                // // 发送消息给Engine，告知websocket链接创建
+                // self.engine_addr
+                //     .send(engine::WebSocketConnectMessage {
+                //         ws_message_subscriber: address.recipient(),
+                //     })
+                //     .into_actor(self)
+                //     .then(|res, act, ctx| {
+                //         // 将Engine分配的会话ID写入当前会话
+                //         match res {
+                //             Ok(res) => {
+                //                 act.session_id = res.session_id;
+                //                 act.rtc_session_addr = Some(res.rtc_session_addr);
+                //             }
+                //             _ => ctx.stop(),
+                //         }
+                //         fut::ready(())
+                //     })
+                //     .wait(ctx);
+            }
+            "candidate" => {
+                let rtc_addr = self.rtc_session_addr.as_mut()?;
+                let candidate = msg.data.clone();
+                rtc_addr.do_send(RTCCandidateMessage {
+                    candidate: RTCIceCandidateInit {
+                        candidate,
+                        ..Default::default()
+                    },
+                });
+            }
+            "rtc_answer" => {
+                let rtc_addr = self.rtc_session_addr.as_mut()?;
+                let answer = match serde_json::from_str::<RTCSessionDescription>(&msg.data) {
+                    Ok(a) => a,
+                    Err(err) => {
+                        log::error!("{}", err);
+                        return None;
+                    }
+                };
+
+                rtc_addr.do_send(RTCAnswerMessage { sdp: answer });
+            }
+            _ => return None,
+        }
+
+        return None;
+    }
+}
+
+impl Handler<WebSocketSendMessage> for WebSocketSession {
+    type Result = Option<()>;
+
+    fn handle(&mut self, msg: WebSocketSendMessage, ctx: &mut Self::Context) -> Self::Result {
+        if let Ok(msg_json) = serde_json::to_string(&msg) {
+            ctx.text(msg_json);
+            Some(())
+        } else {
+            None
+        }
     }
 }

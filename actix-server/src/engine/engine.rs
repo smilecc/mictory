@@ -1,22 +1,25 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use actix::prelude::*;
 use nanoid::nanoid;
 
 use crate::engine::rtc::{self, RTCStopMessage};
 
-use super::{rtc::RTCSession, websocket};
+use super::{
+    rtc::RTCSession,
+    websocket::{self, WebSocketSession},
+};
 
 #[derive(Debug)]
 pub struct Engine {
-    pub ws_message_subscribers: HashMap<String, Recipient<websocket::WebSocketMessage>>,
+    pub ws_message_addrs: HashMap<String, Addr<WebSocketSession>>,
     pub rtc_session_addrs: HashMap<String, Addr<RTCSession>>,
 }
 
 impl Engine {
     pub fn new() -> Self {
         Engine {
-            ws_message_subscribers: HashMap::new(),
+            ws_message_addrs: HashMap::new(),
             rtc_session_addrs: HashMap::new(),
         }
     }
@@ -26,42 +29,51 @@ impl Actor for Engine {
     type Context = Context<Self>;
 }
 
+#[derive(Debug)]
+pub struct WebSocketConnectMessageResult {
+    pub session_id: String,
+    pub rtc_session_addr: Addr<RTCSession>,
+}
+
 #[derive(Message)]
-#[rtype(String)]
+#[rtype(WebSocketConnectMessageResult)]
 pub struct WebSocketConnectMessage {
-    pub ws_message_subscriber: Recipient<websocket::WebSocketMessage>,
+    pub ws_addr: Addr<WebSocketSession>,
 }
 
 // 处理新Websocket连接
 impl Handler<WebSocketConnectMessage> for Engine {
-    type Result = String;
+    type Result = ResponseActFuture<Self, WebSocketConnectMessageResult>;
 
-    fn handle(&mut self, msg: WebSocketConnectMessage, ctx: &mut Self::Context) -> Self::Result {
-        let session_id = nanoid!();
-        let session_id_return = session_id.clone();
+    fn handle(&mut self, msg: WebSocketConnectMessage, _ctx: &mut Self::Context) -> Self::Result {
+        let ws_addr = msg.ws_addr.clone();
+        Box::pin(
+            async {
+                let session_id = nanoid!();
+                log::info!("WebSocket会话连接，会话ID: {}", &session_id);
 
-        log::info!("WebSocket会话连接，会话ID: {}", &session_id);
+                // 创建RTC会话和连接
+                let rtc_session_addr =
+                    rtc::RTCSession::new(ws_addr, session_id.clone(), "1".to_owned())
+                        .await
+                        .unwrap()
+                        .start();
 
-        self.ws_message_subscribers
-            .insert(session_id, msg.ws_message_subscriber);
-
-        // 开始创建RTC连接
-        let session_id_rtc = session_id_return.clone();
-
-        async move {
-            let rtc_session = rtc::RTCSession::new(session_id_rtc.clone(), "1".to_owned())
-                .await
-                .start();
-            (session_id_rtc, rtc_session)
-        }
-        .into_actor(self)
-        .map(|res, act, _ctx| {
-            // res.do_send(RTCStopMessage {});
-            act.rtc_session_addrs.insert(res.0, res.1);
-        })
-        .wait(ctx);
-
-        return session_id_return;
+                WebSocketConnectMessageResult {
+                    session_id,
+                    rtc_session_addr,
+                }
+            }
+            .into_actor(self)
+            .map(|res, act, _ctx| {
+                // 写入到当前actor
+                act.ws_message_addrs
+                    .insert(res.session_id.clone(), msg.ws_addr);
+                act.rtc_session_addrs
+                    .insert(res.session_id.clone(), res.rtc_session_addr.clone());
+                res
+            }),
+        )
     }
 }
 
@@ -77,7 +89,7 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
 
     fn handle(&mut self, msg: WebSocketDisconnectMessage, _: &mut Self::Context) -> Self::Result {
         log::info!("WebSocket会话断开，会话ID：{}", &msg.session_id);
-        self.ws_message_subscribers.remove(&msg.session_id);
+        self.ws_message_addrs.remove(&msg.session_id);
 
         // 关闭RTC会话
         if let Some(rtc_addr) = self.rtc_session_addrs.get(&msg.session_id) {
