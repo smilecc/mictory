@@ -16,7 +16,7 @@ use super::{
 #[derive(Debug)]
 pub struct Room {
     pub room_id: String,
-    engine_addr: Addr<Engine>,
+    pub engine_addr: Addr<Engine>,
     ws_session_addrs: HashMap<String, Addr<WebSocketSession>>,
     rtc_session_addrs: HashMap<String, Addr<RTCSession>>,
     all_tracks: HashSet<LocalTrack>,

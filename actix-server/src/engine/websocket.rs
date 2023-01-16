@@ -66,7 +66,11 @@ impl Actor for WebSocketSession {
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        log::info!("WebSocketSession终止，{}", self.session_id)
+        log::info!("WebSocketSession终止，{}", self.session_id);
+        self.engine_addr
+            .do_send(engine::WebSocketDisconnectMessage {
+                session_id: self.session_id.clone(),
+            });
     }
 }
 
@@ -89,10 +93,6 @@ impl StreamHandler<Result<actix_web_actors::ws::Message, ProtocolError>> for Web
             Ok(ws::Message::Close(reason)) => {
                 // 客户端通知关闭连接，关闭连接并通知Engine
                 ctx.close(reason);
-                self.engine_addr
-                    .do_send(engine::WebSocketDisconnectMessage {
-                        session_id: self.session_id.clone(),
-                    });
                 ctx.stop();
             }
             _ => ctx.stop(),
@@ -155,25 +155,6 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                     fut::ready(())
                 })
                 .wait(ctx);
-
-                // // 发送消息给Engine，告知websocket链接创建
-                // self.engine_addr
-                //     .send(engine::WebSocketConnectMessage {
-                //         ws_message_subscriber: address.recipient(),
-                //     })
-                //     .into_actor(self)
-                //     .then(|res, act, ctx| {
-                //         // 将Engine分配的会话ID写入当前会话
-                //         match res {
-                //             Ok(res) => {
-                //                 act.session_id = res.session_id;
-                //                 act.rtc_session_addr = Some(res.rtc_session_addr);
-                //             }
-                //             _ => ctx.stop(),
-                //         }
-                //         fut::ready(())
-                //     })
-                //     .wait(ctx);
             }
             "candidate" => {
                 let rtc_addr = self.rtc_session_addr.as_mut()?;
