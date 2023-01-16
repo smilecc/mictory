@@ -1,4 +1,4 @@
-use std::{cell::RefCell, sync::Arc, time::Duration};
+use std::{cell::RefCell, env::consts::OS, sync::Arc, time::Duration};
 
 use by_address::ByAddress;
 use nanoid::nanoid;
@@ -100,7 +100,13 @@ impl RTCSession {
             Some(Duration::from_secs(2)),
         );
         // 指定网卡设备
-        setting_engine.set_interface_filter(Box::new(|x| x == "以太网"));
+        setting_engine.set_interface_filter(Box::new(|x| {
+            if OS == "windows" {
+                x == "以太网"
+            } else {
+                x == "eth0"
+            }
+        }));
         setting_engine.set_network_types(vec![NetworkType::Udp4, NetworkType::Tcp4]);
         // setting_engine
         //     .set_nat_1to1_ips(vec!["192.168.123.2".to_owned()], RTCIceCandidateType::Host);
