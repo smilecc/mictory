@@ -81,8 +81,6 @@ impl StreamHandler<Result<actix_web_actors::ws::Message, ProtocolError>> for Web
         msg: Result<actix_web_actors::ws::Message, ProtocolError>,
         ctx: &mut Self::Context,
     ) {
-        // log::info!("WebSocket Message: {msg:?}");
-
         match msg {
             Ok(ws::Message::Text(text)) => {
                 if let Ok(v) = serde_json::from_str::<WebSocketMessage>(&text) {
@@ -90,12 +88,13 @@ impl StreamHandler<Result<actix_web_actors::ws::Message, ProtocolError>> for Web
                     ctx.address().do_send(v);
                 }
             }
-            Ok(ws::Message::Close(reason)) => {
+            Ok(ws::Message::Close(_reason)) => {
                 // 客户端通知关闭连接，关闭连接并通知Engine
-                ctx.close(reason);
                 ctx.stop();
             }
-            _ => ctx.stop(),
+            _ => {
+                log::info!("未知WebSocket Message: {msg:?}");
+            }
         }
     }
 }
@@ -177,6 +176,9 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                 };
 
                 rtc_addr.do_send(RTCReceiveAnswerMessage { sdp: answer });
+            }
+            "close" => {
+                ctx.stop();
             }
             _ => return None,
         }

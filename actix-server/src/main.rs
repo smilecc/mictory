@@ -23,7 +23,7 @@ async fn main() -> std::io::Result<()> {
                     .wrap(middleware::Logger::default()),
             )
     })
-    .bind(("0.0.0.0", 3000))?
+    .bind(("0.0.0.0", 20424))?
     .run()
     .await
 }

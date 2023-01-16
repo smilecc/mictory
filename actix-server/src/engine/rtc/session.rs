@@ -49,6 +49,7 @@ pub struct RTCSession {
     pub ws_addr: Addr<WebSocketSession>,
     pub engine_addr: Addr<Engine>,
     pub room_addr: Addr<Room>,
+    peer_connection_stopped: bool,
 }
 
 #[derive(Debug)]
@@ -80,6 +81,7 @@ impl RTCSession {
                     ws_addr,
                     engine_addr,
                     room_addr,
+                    peer_connection_stopped: false,
                 };
 
                 session.start_handle_rtc_event();
@@ -157,6 +159,7 @@ impl RTCSession {
 
     pub fn start_handle_rtc_event(&self) {
         let peer_connection = self.peer_connection.clone();
+        // let peer_connection_clone = peer_connection.clone();
 
         let session_id = self.session_id.clone();
         let local_track = self.local_track.clone();
@@ -181,7 +184,7 @@ impl RTCSession {
                     let local_track_arc_read = local_track_arc.clone();
 
                     let local_track_byaddr = ByAddress(Arc::new(RTCLocalTrack {
-                        track_id,
+                        track_id: track_id.clone(),
                         session_id: session_id_ontrack.clone(),
                         track: local_track_arc.clone(),
                         sender: Arc::new(Mutex::new(RefCell::new(ValueWrapper(None)))),
@@ -203,10 +206,20 @@ impl RTCSession {
                     // 把远端的Track数据包写入本地Track
                     while let Ok((packet, _)) = remote_track.read_rtp().await {
                         if let Err(err) = local_track_arc_read.write_rtp(&packet).await {
-                            println!("output track write_rtp got error: {}", err);
-                            break;
+                            if webrtc::Error::ErrClosedPipe != err {
+                                log::error!("output track write_rtp got error: {} and break", err);
+                                break;
+                            } else {
+                                log::error!("output track write_rtp got error: {}", err);
+                            }
                         }
                     }
+
+                    log::info!(
+                        "会话[{}]的轨道[{}]on_track监听结束",
+                        session_id_ontrack,
+                        track_id
+                    );
                 } else {
                     return;
                 }
@@ -283,13 +296,35 @@ impl Actor for RTCSession {
         ctx.set_mailbox_capacity(64);
     }
 
-    fn stopped(&mut self, ctx: &mut Self::Context) {
-        let peer_connection = self.peer_connection.clone();
-        async move {
-            peer_connection.close().await.unwrap_or_default();
+    fn stopping(&mut self, ctx: &mut Self::Context) -> Running {
+        if self.peer_connection_stopped == false {
+            // 开始终止连接，由于peer_connection.close()为异步，则当前上下文需要等待连接关闭再结束
+            let peer_connection = self.peer_connection.clone();
+            let session_id = self.session_id.clone();
+            async move {
+                log::info!("RTC会话终止开始(stopping)，会话ID: {}", session_id);
+                if let Some(close_err) = peer_connection.close().await.err() {
+                    log::error!(
+                        "RTC会话终止失败，会话ID: {}，Error：{}",
+                        session_id,
+                        close_err
+                    );
+                }
+            }
+            .into_actor(self)
+            .map(|_, act, ctx| {
+                act.peer_connection_stopped = true;
+                ctx.stop();
+            })
+            .wait(ctx);
+
+            Running::Continue
+        } else {
+            Running::Stop
         }
-        .into_actor(self)
-        .wait(ctx);
-        log::info!("RTC会话终止，会话ID: {}", self.session_id);
+    }
+
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
+        log::info!("RTC会话终止完毕(stopped)，会话ID: {}", self.session_id);
     }
 }

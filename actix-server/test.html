@@ -2,6 +2,8 @@
   <body>
     <div id="peers"></div>
     <button id="checkTURNServer">checkTURNServer</button>
+    <button id="closeWS">WebSocket Send Close</button>
+
     <script>
       function checkTURNServer(turnConfig, timeout) {
         return new Promise(function (resolve, reject) {
@@ -55,6 +57,15 @@
           .catch(console.error.bind(console));
       };
 
+      document.getElementById("closeWS").onclick = () => {
+        window.ws.send(
+          JSON.stringify({
+            event: "close",
+            data: "{}",
+          })
+        );
+      };
+
       window.onload = async () => {
         let media = await navigator.mediaDevices.getUserMedia({
           video: false,
@@ -62,6 +73,8 @@
         });
 
         let ws = new WebSocket("wss://rocket.smilec.cc/ws");
+        // let ws = new WebSocket("ws://localhost:20424/ws");
+        window.ws = ws;
 
         ws.onclose = (e) => {
           console.log("close", e);
