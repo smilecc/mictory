@@ -106,7 +106,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
     fn handle(&mut self, msg: WebSocketMessage, ctx: &mut Self::Context) -> Self::Result {
         let address = ctx.address();
         let engine_addr = self.engine_addr.clone();
-        log::info!("WebSocket Message: {}", msg.event);
+        // log::info!("WebSocket Message: {}", msg.event);
 
         match msg.event.as_str() {
             "rtc_join_room" => {

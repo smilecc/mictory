@@ -154,33 +154,3 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
         self.rtc_session_addrs.remove(&msg.session_id);
     }
 }
-
-// #[derive(Message)]
-// #[rtype(result = "()")]
-// pub struct EngineNewTrackMessage {
-//     pub session_id: String,
-//     pub local_track: LocalTrack,
-// }
-
-// // 当有新轨道时，筛选需要加入的会话，通知加入会话
-// impl Handler<EngineNewTrackMessage> for Engine {
-//     type Result = ResponseFuture<()>;
-
-//     fn handle(&mut self, msg: EngineNewTrackMessage, _: &mut Self::Context) -> Self::Result {
-//         let rtc_session_addrs = self.rtc_session_addrs.clone();
-
-//         Box::pin(async move {
-//             for (current_session_id, rtc_session_addr) in rtc_session_addrs {
-//                 // 如果来源会话和循环当前会话为同一会话，则忽略
-//                 if msg.session_id == current_session_id {
-//                     continue;
-//                 }
-
-//                 rtc_session_addr.do_send(RTCAddTrackMessage {
-//                     source_session_id: msg.session_id.clone(),
-//                     local_tracks: HashSet::from([msg.local_track.clone()]),
-//                 })
-//             }
-//         })
-//     }
-// }

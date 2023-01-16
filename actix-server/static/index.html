@@ -76,6 +76,17 @@
         // let ws = new WebSocket("ws://localhost:20424/ws");
         window.ws = ws;
 
+        ws.onopen = () => {
+          // 十秒钟心跳一次
+          setInterval(() => {
+            ws.send(
+              JSON.stringify({
+                event: "ping",
+                data: "",
+              })
+            );
+          }, 10 * 1000);
+        };
         ws.onclose = (e) => {
           console.log("close", e);
         };

@@ -1,9 +1,12 @@
 use actix::{Actor, Addr};
 use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws;
+use actix_web_static_files::ResourceFiles;
 use engine::{engine::Engine, websocket::WebSocketSession};
 
 mod engine;
+
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -14,8 +17,10 @@ async fn main() -> std::io::Result<()> {
 
     // 创建Http与Websocket服务
     HttpServer::new(move || {
+        let generated = generate();
         App::new()
             .app_data(web::Data::new(engine_state.clone()))
+            .service(ResourceFiles::new("/", generated))
             .route(
                 "/ws",
                 web::get()
