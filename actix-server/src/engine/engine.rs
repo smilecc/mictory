@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use actix::prelude::*;
+use sea_orm::DatabaseConnection;
 
 use crate::engine::{
     room::{RoomExitMessage, RoomJoinMessage},
@@ -15,15 +16,17 @@ pub struct Engine {
     pub rtc_session_addrs: HashMap<String, Addr<RTCSession>>,
     room_addrs: HashMap<String, Addr<Room>>,
     session_room_map: HashMap<String, String>,
+    db: Arc<DatabaseConnection>,
 }
 
 impl Engine {
-    pub fn new() -> Self {
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Engine {
             ws_message_addrs: HashMap::new(),
             rtc_session_addrs: HashMap::new(),
             room_addrs: HashMap::new(),
             session_room_map: HashMap::new(),
+            db,
         }
     }
 }

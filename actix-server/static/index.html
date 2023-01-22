@@ -72,8 +72,8 @@
           audio: true,
         });
 
-        let ws = new WebSocket("wss://rocket.smilec.cc/ws");
-        // let ws = new WebSocket("ws://localhost:20424/ws");
+        // let ws = new WebSocket("wss://rocket.smilec.cc/ws");
+        let ws = new WebSocket("ws://localhost:20424/ws");
         window.ws = ws;
 
         ws.onopen = () => {
