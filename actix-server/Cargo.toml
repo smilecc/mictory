@@ -13,6 +13,8 @@ actix-web-static-files = "4.0.0"
 by_address = "1.1.0"
 dotenvy = "0.15.6"
 env_logger = "0.10.0"
+futures = "0.3.25"
+jwt-simple = "0.11.3"
 log = "0.4.17"
 nanoid = "0.4.0"
 sea-orm = { version = "0.10.7", features = [ "sqlx-mysql", "runtime-actix-native-tls", "macros"] }

@@ -1,9 +1,11 @@
-use actix_web::HttpResponse;
+use actix_web::{http::StatusCode, HttpResponse};
 use serde::Serialize;
 use serde_json::json;
 
-pub mod room_controller;
-pub mod server_controller;
+pub mod middleware;
+pub mod room_api;
+pub mod server_api;
+pub mod user_api;
 
 pub struct ResultBuilder {
     result: serde_json::Value,
@@ -29,7 +31,7 @@ impl ResultBuilder {
     where
         T: Serialize,
     {
-        Self::result(0, "success".to_owned(), serde_json::Value::Null)
+        Self::result(0, "success".to_owned(), data)
     }
 
     pub fn fail(code: i32, message: String) -> Self {
@@ -42,5 +44,9 @@ impl ResultBuilder {
 
     pub fn ok(&self) -> HttpResponse {
         HttpResponse::Ok().json(self.result.clone())
+    }
+
+    pub fn err(&self, status_code: StatusCode) -> HttpResponse {
+        HttpResponse::build(status_code).json(self.result.clone())
     }
 }

@@ -1,8 +1,10 @@
-use actix_web::{post, web, Responder};
+use actix_web::{get, post, web, Responder};
 use sea_orm::EntityTrait;
 use serde_json::json;
 
-use crate::{controller::ResultBuilder, model::server, AppState};
+use crate::{api::ResultBuilder, model::server, AppState};
+
+use super::middleware::JWTAuthClaims;
 
 #[post("/api/server")]
 pub async fn create_server(
@@ -16,4 +18,9 @@ pub async fn create_server(
     let new_id = insert_result.last_insert_id;
 
     ResultBuilder::success(json!({"new_id": new_id, })).ok()
+}
+
+#[get("/api/user/servers")]
+pub async fn list_user_server(claims: JWTAuthClaims) -> impl Responder {
+    ResultBuilder::success(claims).ok()
 }

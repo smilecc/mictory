@@ -2,7 +2,7 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
 use serde_json::json;
 
-use crate::controller::ResultBuilder;
+use crate::api::ResultBuilder;
 use crate::model::*;
 use crate::AppState;
 

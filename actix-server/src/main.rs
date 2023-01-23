@@ -4,11 +4,12 @@ use actix::{Actor, Addr};
 use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws;
 use actix_web_static_files::ResourceFiles;
-use controller::*;
+use api::*;
 use engine::{engine::Engine, websocket::WebSocketSession};
+use jwt_simple::prelude::HS512Key;
 use sea_orm::{Database, DatabaseConnection};
 
-mod controller;
+mod api;
 mod engine;
 mod model;
 
@@ -18,6 +19,7 @@ include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 pub struct AppState {
     pub engine: Addr<Engine>,
     pub db: Arc<DatabaseConnection>,
+    pub jwt_key: HS512Key,
 }
 
 #[actix_web::main]
@@ -28,11 +30,13 @@ async fn main() -> std::io::Result<()> {
     let db_conn = Arc::new(Database::connect(&db_url).await.unwrap());
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    let jwt_key = api::middleware::init_jwt_key();
 
     // 初始化引擎类
     let app_state = AppState {
         engine: Engine::new(db_conn.clone()).start(),
         db: db_conn.clone(),
+        jwt_key,
     };
 
     // 创建Http与Websocket服务
@@ -55,8 +59,17 @@ fn init_config(cfg: &mut web::ServiceConfig) {
             .to(ws_handler)
             .wrap(middleware::Logger::default()),
     );
-    cfg.service(server_controller::create_server);
-    cfg.service(room_controller::get_rooms);
+
+    cfg.service(api::user_api::login);
+
+    let jwt_key = api::middleware::init_jwt_key();
+    cfg.service(
+        web::scope("")
+            .wrap(api::middleware::JWTAuth { jwt_key })
+            .service(room_api::get_rooms)
+            .service(server_api::create_server)
+            .service(server_api::list_user_server),
+    );
 }
 
 async fn ws_handler(
