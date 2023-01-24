@@ -38,6 +38,10 @@ impl ResultBuilder {
         Self::result(code, message, serde_json::Value::Null)
     }
 
+    pub fn fail_str(code: i32, message: &str) -> Self {
+        Self::fail(code, message.to_string())
+    }
+
     pub fn new(result: serde_json::Value) -> Self {
         ResultBuilder { result }
     }

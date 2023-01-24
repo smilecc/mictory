@@ -19,6 +19,7 @@ use crate::api::ResultBuilder;
 const JWT_SECRET_PATH: &str = "./.jwt_secret";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct JWTAuthClaims {
     pub user_id: i64,
 }

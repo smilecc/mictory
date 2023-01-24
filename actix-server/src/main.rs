@@ -60,7 +60,8 @@ fn init_config(cfg: &mut web::ServiceConfig) {
             .wrap(middleware::Logger::default()),
     );
 
-    cfg.service(api::user_api::login);
+    cfg.service(api::user_api::login)
+        .service(api::user_api::create_user);
 
     let jwt_key = api::middleware::init_jwt_key();
     cfg.service(
