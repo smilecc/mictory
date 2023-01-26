@@ -36,25 +36,43 @@ export class Session {
   }
 
   handleEvent() {
-    this.websocket.onmessage = (e) => {
+    this.websocket.onmessage = async (e) => {
       console.log("收到WebSocket新消息", e.data);
       let message = JSON.parse(e.data) as Record<string, string>;
-      let eventRecord = JSON.parse(message.data);
-      let event = eventRecord.event;
-      let data = eventRecord.data;
+      let event = message.event;
+      let data = JSON.parse(message.data);
 
       switch (event) {
         case "new_session":
-          this.onNewSessionEvent(data);
+          await this.onNewSessionEvent(data);
           break;
         case "rtc_offer":
-          this.onRTCOfferEvent(data);
+          await this.onRTCOfferEvent(data);
           break;
         case "rtc_answer":
-          this.onRTCAnswerEvent(data);
+          await this.onRTCAnswerEvent(data);
+          break;
+        case "server_user_join":
+          window.dispatchEvent(
+            new CustomEvent("session:server_user_join", { detail: data })
+          );
+          break;
+        case "server_user_exit":
+          window.dispatchEvent(
+            new CustomEvent("session:server_user_exit", { detail: data })
+          );
           break;
       }
     };
+  }
+
+  async auth(accessToken: string) {
+    this.websocket.send(
+      JSON.stringify({
+        event: "auth",
+        data: accessToken,
+      })
+    );
   }
 
   async joinRoom(roomId: string) {
@@ -149,7 +167,17 @@ export class Session {
   }
 
   async onRTCAnswerEvent(data: any) {
+    console.log(this.peerConnection, data.sdp);
     this.peerConnection?.setRemoteDescription(JSON.parse(data.sdp));
+  }
+
+  async exitRoom() {
+    this.websocket.send(
+      JSON.stringify({
+        event: "rtc_exit_room",
+        data: "{}",
+      })
+    );
   }
 
   close() {

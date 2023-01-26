@@ -1,8 +1,19 @@
-use std::collections::{HashMap, HashSet};
+use actix::prelude::*;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
-use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture};
+use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture, WrapFuture};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QueryFilter,
+    Set,
+};
 
-use crate::engine::rtc::message::RTCRemoveTrackMessage;
+use crate::{
+    engine::{engine::EngineSendWebSocketMessage, rtc::message::RTCRemoveTrackMessage},
+    model::{room, room_user},
+};
 
 use super::{
     engine::Engine,
@@ -15,22 +26,26 @@ use super::{
 
 #[derive(Debug)]
 pub struct Room {
+    pub room: Option<room::Model>,
     pub room_id: String,
     pub engine_addr: Addr<Engine>,
     ws_session_addrs: HashMap<String, Addr<WebSocketSession>>,
     rtc_session_addrs: HashMap<String, Addr<RTCSession>>,
     all_tracks: HashSet<LocalTrack>,
+    db: Arc<DatabaseConnection>,
 }
 
 impl Room {
-    pub fn new(room_id: String, engine_addr: Addr<Engine>) -> Room {
+    pub fn new(room_id: String, engine_addr: Addr<Engine>, db: Arc<DatabaseConnection>) -> Room {
         log::info!("创建房间[ID: {}]", room_id);
         Room {
+            room: None,
             room_id,
             engine_addr,
             ws_session_addrs: HashMap::new(),
             rtc_session_addrs: HashMap::new(),
             all_tracks: HashSet::new(),
+            db,
         }
     }
 }
@@ -40,6 +55,38 @@ impl Actor for Room {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         ctx.set_mailbox_capacity(64);
+        let db = self.db.clone();
+        let room_id = self.room_id.clone();
+
+        async move {
+            // 创建房间，把该房间号原有在线用户列表删除
+            let db_ref = db.as_ref();
+
+            let room = room::Entity::find_by_id(room_id.parse().unwrap())
+                .one(db_ref)
+                .await
+                .unwrap();
+
+            room_user::Entity::delete_many()
+                .filter(room_user::Column::RoomId.eq(room_id))
+                .exec(db_ref)
+                .await
+                .unwrap();
+
+            (room,)
+        }
+        .into_actor(self)
+        .map(|res, act, ctx| {
+            // 如果房间在数据库中不存在，则直接停止actor
+            if res.0.is_none() {
+                log::warn!("Engine房间创建失败，房间[{}]不存在", &act.room_id);
+                ctx.stop();
+                return;
+            }
+
+            act.room = res.0;
+        })
+        .wait(ctx);
     }
 }
 
@@ -47,6 +94,7 @@ impl Actor for Room {
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct RoomJoinMessage {
+    pub user_id: i64,
     pub session_id: String,
     pub rtc_session_addr: Addr<RTCSession>,
     pub ws_session_addr: Addr<WebSocketSession>,
@@ -55,19 +103,58 @@ pub struct RoomJoinMessage {
 impl Handler<RoomJoinMessage> for Room {
     type Result = ();
 
-    fn handle(&mut self, msg: RoomJoinMessage, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: RoomJoinMessage, ctx: &mut Self::Context) -> Self::Result {
         log::info!("房间[{}]会话加入[{}]", self.room_id, msg.session_id);
-        // 将已经存在的轨道发送给会话
-        msg.rtc_session_addr.do_send(RTCAddTrackMessage {
-            source_session_id: msg.session_id.clone(),
-            local_tracks: self.all_tracks.clone(),
-        });
+        let db = self.db.clone();
+        let user_id = msg.user_id.clone();
+        let room = self.room.clone().unwrap();
+        let session_id = msg.session_id.clone();
+        let engine_addr = self.engine_addr.clone();
 
-        // 将会话信息写入房间
-        self.rtc_session_addrs
-            .insert(msg.session_id.clone(), msg.rtc_session_addr);
-        self.ws_session_addrs
-            .insert(msg.session_id, msg.ws_session_addr);
+        async move {
+            // 创建房间记录
+            let room_user_record = room_user::ActiveModel {
+                server_id: Set(room.server_id.clone()),
+                room_id: Set(room.id.clone()),
+                user_id: Set(user_id),
+                session_id: Set(session_id),
+                ..Default::default()
+            }
+            .insert(db.as_ref())
+            .await
+            .unwrap();
+
+            // 查询该服务器所有在线用户
+            let room_users = room_user::Entity::find()
+                .filter(room_user::Column::ServerId.eq(room.server_id.clone()))
+                .all(db.as_ref())
+                .await
+                .unwrap_or(vec![]);
+
+            // 通知该服务器其他用户，有用户加入
+            for notice_room_user in room_users.iter() {
+                engine_addr.do_send(EngineSendWebSocketMessage {
+                    session_id: notice_room_user.session_id.clone(),
+                    event: "server_user_join".to_string(),
+                    data: serde_json::to_string(&room_user_record).unwrap(),
+                })
+            }
+        }
+        .into_actor(self)
+        .map(|_, act, _ctx| {
+            // 将已经存在的轨道发送给会话
+            msg.rtc_session_addr.do_send(RTCAddTrackMessage {
+                source_session_id: msg.session_id.clone(),
+                local_tracks: act.all_tracks.clone(),
+            });
+
+            // 将会话信息写入房间
+            act.rtc_session_addrs
+                .insert(msg.session_id.clone(), msg.rtc_session_addr);
+            act.ws_session_addrs
+                .insert(msg.session_id, msg.ws_session_addr);
+        })
+        .wait(ctx);
     }
 }
 
@@ -81,23 +168,67 @@ pub struct RoomExitMessage {
 impl Handler<RoomExitMessage> for Room {
     type Result = ();
 
-    fn handle(&mut self, msg: RoomExitMessage, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: RoomExitMessage, ctx: &mut Self::Context) -> Self::Result {
         log::info!("房间[{}]会话退出[{}]", self.room_id, msg.session_id);
-        self.rtc_session_addrs.remove(&msg.session_id);
-        self.ws_session_addrs.remove(&msg.session_id);
+        let session_id = msg.session_id.clone();
+        let room = self.room.clone().unwrap();
+        let db = self.db.clone();
+        let engine_addr = self.engine_addr.clone();
 
-        // 移除该会话相关轨道
-        let mut removed_tracks = self.all_tracks.clone();
-        removed_tracks.retain(|t| t.0.session_id == msg.session_id);
+        async move {
+            // 移除房间用户记录
+            let room_user_record = room_user::Entity::find()
+                .filter(room_user::Column::SessionId.eq(session_id))
+                .filter(room_user::Column::RoomId.eq(room.id.clone()))
+                .one(db.as_ref())
+                .await
+                .unwrap();
 
-        for (_, session) in self.rtc_session_addrs.iter() {
-            session.do_send(RTCRemoveTrackMessage {
-                source_session_id: msg.session_id.clone(),
-                local_tracks: removed_tracks.clone(),
-            })
+            if let Some(record) = room_user_record {
+                // 删除该记录
+                room_user::Entity::delete(record.clone().into_active_model())
+                    .exec(db.as_ref())
+                    .await
+                    .unwrap();
+
+                // 查询该服务器所有在线用户
+                let room_users = room_user::Entity::find()
+                    .filter(room_user::Column::ServerId.eq(record.server_id.clone()))
+                    .all(db.as_ref())
+                    .await
+                    .unwrap_or(vec![]);
+
+                // 通知该服务器其他用户，有用户退出
+                for notice_room_user in room_users.iter() {
+                    engine_addr.do_send(EngineSendWebSocketMessage {
+                        session_id: notice_room_user.session_id.clone(),
+                        event: "server_user_exit".to_string(),
+                        data: serde_json::to_string(&record).unwrap(),
+                    })
+                }
+            }
+            (msg,)
         }
+        .into_actor(self)
+        .map(|res, act, _ctx| {
+            act.rtc_session_addrs.remove(&res.0.session_id);
+            act.ws_session_addrs.remove(&res.0.session_id);
 
-        self.all_tracks.retain(|t| t.0.session_id != msg.session_id);
+            // 移除该会话相关轨道
+            let mut removed_tracks = act.all_tracks.clone();
+            removed_tracks.retain(|t| t.0.session_id == res.0.session_id);
+
+            for (_, session) in act.rtc_session_addrs.iter() {
+                session.do_send(RTCRemoveTrackMessage {
+                    source_session_id: res.0.session_id.clone(),
+                    local_tracks: removed_tracks.clone(),
+                })
+            }
+
+            act.all_tracks
+                .retain(|t| t.0.session_id != res.0.session_id);
+        })
+        .wait(ctx);
     }
 }
 

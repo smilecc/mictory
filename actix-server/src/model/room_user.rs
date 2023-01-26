@@ -12,7 +12,7 @@ pub struct Model {
     pub server_id: i64,
     pub room_id: i64,
     pub user_id: i64,
-    pub is_delete: i8,
+    pub session_id: String,
     pub created_time: DateTime,
     pub updated_time: DateTime,
 }

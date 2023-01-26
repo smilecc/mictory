@@ -1,9 +1,13 @@
+use std::sync::Arc;
+
 use actix::{
     fut, Actor, ActorContext, ActorFutureExt, Addr, AsyncContext, ContextFutureSpawner, Handler,
     Message, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{self, ProtocolError};
+use jwt_simple::prelude::{HS512Key, MACLike};
 use nanoid::nanoid;
+use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use webrtc::{
@@ -11,9 +15,12 @@ use webrtc::{
     peer_connection::sdp::session_description::RTCSessionDescription,
 };
 
-use crate::engine::{
-    engine,
-    rtc::message::{RTCCandidateMessage, RTCReceiveAnswerMessage, RTCReceiveOfferMessage},
+use crate::{
+    api::middleware::JWTAuthClaims,
+    engine::{
+        engine,
+        rtc::message::{RTCCandidateMessage, RTCReceiveAnswerMessage, RTCReceiveOfferMessage},
+    },
 };
 
 use super::rtc::session::RTCSession;
@@ -37,6 +44,26 @@ pub struct WebSocketSession {
     pub session_id: String,
     pub engine_addr: Addr<engine::Engine>,
     pub rtc_session_addr: Option<Addr<RTCSession>>,
+    pub jwt_key: HS512Key,
+    pub user_id: Option<i64>,
+    pub db: Arc<DatabaseConnection>,
+}
+
+impl WebSocketSession {
+    pub fn new(
+        engine_addr: Addr<engine::Engine>,
+        jwt_key: HS512Key,
+        db: Arc<DatabaseConnection>,
+    ) -> Self {
+        WebSocketSession {
+            session_id: nanoid!(),
+            engine_addr,
+            rtc_session_addr: None,
+            jwt_key,
+            user_id: None,
+            db,
+        }
+    }
 }
 
 impl Actor for WebSocketSession {
@@ -44,33 +71,14 @@ impl Actor for WebSocketSession {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         ctx.set_mailbox_capacity(64);
-        let session_id = nanoid!();
-        self.session_id = session_id.clone();
-
-        let new_session_data = &json!({
-            "sessionId": session_id,
-        });
-
-        let new_session_data_json = if let Ok(msg_json) = serde_json::to_string(&new_session_data) {
-            msg_json
-        } else {
-            return;
-        };
-
-        if let Ok(msg_json) = serde_json::to_string(&WebSocketSendMessage {
-            event: "new_session".to_owned(),
-            data: new_session_data_json,
-        }) {
-            ctx.text(msg_json);
-        }
+        self.session_id = nanoid!();
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         log::info!("WebSocketSession终止，{}", self.session_id);
-        self.engine_addr
-            .do_send(engine::WebSocketDisconnectMessage {
-                session_id: self.session_id.clone(),
-            });
+        self.engine_addr.do_send(engine::EngineExitRoomMessage {
+            session_id: self.session_id.clone(),
+        });
     }
 }
 
@@ -108,17 +116,46 @@ impl Handler<WebSocketMessage> for WebSocketSession {
         let engine_addr = self.engine_addr.clone();
         // log::info!("WebSocket Message: {}", msg.event);
 
+        // 未授权状态下，只处理auth事件
+        if msg.event != "auth" && self.user_id.is_none() {
+            return None;
+        }
+
         match msg.event.as_str() {
+            "auth" => {
+                if let Ok(claims) = self.jwt_key.verify_token::<JWTAuthClaims>(&msg.data, None) {
+                    log::info!("WebSocket收到用户鉴权，UserId: {}", claims.custom.user_id);
+                    self.user_id = Some(claims.custom.user_id.clone());
+
+                    // 通知客户端会话ID
+                    let new_session_data = &json!({
+                        "sessionId": self.session_id.clone(),
+                    });
+
+                    if let Ok(msg_data_json) = serde_json::to_string(&new_session_data) {
+                        if let Ok(msg_json) = serde_json::to_string(&WebSocketSendMessage {
+                            event: "new_session".to_owned(),
+                            data: msg_data_json,
+                        }) {
+                            ctx.text(msg_json);
+                        }
+                    }
+                }
+            }
             "rtc_join_room" => {
+                log::info!("rtc_join_room");
+
                 let data = msg.data.clone();
                 let data_json: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
                 let room_id = data_json["roomId"].as_str().unwrap_or("").to_string();
                 let session_id = self.session_id.clone();
+                let user_id = self.user_id.clone().unwrap();
 
                 async move {
                     // 通知Engine有新会话加入房间
                     let connect_res = engine_addr
                         .send(engine::EngineJoinRoomMessage {
+                            user_id,
                             room_id: room_id.to_string(),
                             session_id,
                             ws_addr: address.clone(),
@@ -154,6 +191,12 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                     fut::ready(())
                 })
                 .wait(ctx);
+            }
+            "rtc_exit_room" => {
+                log::info!("RTC退出房间，{}", self.session_id);
+                self.engine_addr.do_send(engine::EngineExitRoomMessage {
+                    session_id: self.session_id.clone(),
+                });
             }
             "candidate" => {
                 let rtc_addr = self.rtc_session_addr.as_mut()?;

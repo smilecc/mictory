@@ -110,8 +110,6 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        println!("Hi from start. You requested: {}", req.path());
-
         let service = self.service.clone();
         let jwt_key = self.jwt_key.clone();
 

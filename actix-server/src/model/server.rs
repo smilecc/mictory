@@ -21,7 +21,21 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::user_server::Entity",
+        from = "Column::Id",
+        to = "super::user_server::Column::ServerId"
+    )]
+    UserSever,
+}
+
+// `Related` trait has to be implemented by hand
+impl Related<super::user_server::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::UserSever.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}
 

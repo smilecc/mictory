@@ -61,7 +61,8 @@ fn init_config(cfg: &mut web::ServiceConfig) {
     );
 
     cfg.service(api::user_api::login)
-        .service(api::user_api::create_user);
+        .service(api::user_api::create_user)
+        .service(api::server_api::list_server_users);
 
     let jwt_key = api::middleware::init_jwt_key();
     cfg.service(
@@ -80,13 +81,11 @@ async fn ws_handler(
 ) -> Result<HttpResponse, Error> {
     // 使用会话结构体作为ws的actor
     ws::start(
-        WebSocketSession {
-            // session_id将会由Engine类的Connect事件分配
-            session_id: "".to_owned(),
-            // 此处将Engine的Address存入会话类，用于和引擎做事件交互
-            engine_addr: app_state.engine.clone(),
-            rtc_session_addr: None,
-        },
+        WebSocketSession::new(
+            app_state.engine.clone(),
+            app_state.jwt_key.clone(),
+            app_state.db.clone(),
+        ),
         &req,
         stream,
     )

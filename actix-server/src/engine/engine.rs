@@ -1,11 +1,15 @@
 use std::{collections::HashMap, sync::Arc};
 
 use actix::prelude::*;
-use sea_orm::DatabaseConnection;
+use sea_orm::{DatabaseConnection, EntityTrait};
 
-use crate::engine::{
-    room::{RoomExitMessage, RoomJoinMessage},
-    rtc::message::RTCStopMessage,
+use crate::{
+    engine::{
+        room::{RoomExitMessage, RoomJoinMessage},
+        rtc::message::RTCStopMessage,
+        websocket::WebSocketSendMessage,
+    },
+    model::room_user,
 };
 
 use super::{room::Room, rtc::session::RTCSession, websocket::WebSocketSession};
@@ -36,6 +40,18 @@ impl Actor for Engine {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         ctx.set_mailbox_capacity(1024);
+        let db = self.db.clone();
+
+        ctx.wait(
+            async move {
+                log::info!("Engine启动，清除全部在线记录（room_user）");
+                room_user::Entity::delete_many()
+                    .exec(db.as_ref())
+                    .await
+                    .unwrap();
+            }
+            .into_actor(self),
+        );
     }
 }
 
@@ -49,6 +65,7 @@ pub struct EngineJoinRoomMessageResult {
 #[derive(Message, Debug)]
 #[rtype(EngineJoinRoomMessageResult)]
 pub struct EngineJoinRoomMessage {
+    pub user_id: i64,
     pub room_id: String,
     pub session_id: String,
     pub ws_addr: Addr<WebSocketSession>,
@@ -61,8 +78,10 @@ impl Handler<EngineJoinRoomMessage> for Engine {
     fn handle(&mut self, msg: EngineJoinRoomMessage, ctx: &mut Self::Context) -> Self::Result {
         let room_id = msg.room_id.clone();
         let session_id = msg.session_id.clone();
+        let user_id = msg.user_id.clone();
         let ws_addr = msg.ws_addr.clone();
         let engine_addr = ctx.address();
+        let db = self.db.clone();
 
         // 如果会话已经在另外一个房间，则从房间退出
         if let Some(room_id) = self.session_room_map.get(&session_id) {
@@ -80,7 +99,7 @@ impl Handler<EngineJoinRoomMessage> for Engine {
         let room_addr = if let Some(room_addr) = self.room_addrs.get(&room_id) {
             room_addr.clone()
         } else {
-            let room_addr = Room::new(room_id.clone(), ctx.address()).start();
+            let room_addr = Room::new(room_id.clone(), ctx.address(), db).start();
             self.room_addrs.insert(room_id.clone(), room_addr.clone());
             room_addr
         };
@@ -103,6 +122,7 @@ impl Handler<EngineJoinRoomMessage> for Engine {
 
                 // 通知房间新会话加入
                 room_addr.do_send(RoomJoinMessage {
+                    user_id: user_id.clone(),
                     session_id: session_id.clone(),
                     rtc_session_addr: rtc_session_addr.clone(),
                     ws_session_addr: ws_addr.clone(),
@@ -129,16 +149,16 @@ impl Handler<EngineJoinRoomMessage> for Engine {
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct WebSocketDisconnectMessage {
+pub struct EngineExitRoomMessage {
     pub session_id: String,
 }
 
-// 处理Websocket连接断开
-impl Handler<WebSocketDisconnectMessage> for Engine {
+// 处理退出房间
+impl Handler<EngineExitRoomMessage> for Engine {
     type Result = ();
 
-    fn handle(&mut self, msg: WebSocketDisconnectMessage, _: &mut Self::Context) -> Self::Result {
-        log::info!("WebSocket会话断开，会话ID：{}", &msg.session_id);
+    fn handle(&mut self, msg: EngineExitRoomMessage, _: &mut Self::Context) -> Self::Result {
+        log::info!("处理退出房间，会话ID：{}", &msg.session_id);
         self.ws_message_addrs.remove(&msg.session_id);
 
         // 通知房间会话退出
@@ -155,5 +175,28 @@ impl Handler<WebSocketDisconnectMessage> for Engine {
             rtc_addr.do_send(RTCStopMessage {});
         }
         self.rtc_session_addrs.remove(&msg.session_id);
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct EngineSendWebSocketMessage {
+    pub session_id: String,
+    pub event: String,
+    pub data: String,
+}
+
+// 给目标会话发送WebSocket消息
+impl Handler<EngineSendWebSocketMessage> for Engine {
+    type Result = ();
+
+    fn handle(&mut self, msg: EngineSendWebSocketMessage, _: &mut Self::Context) -> Self::Result {
+        log::info!("发送WebSocket消息，会话ID：{}", &msg.session_id);
+        if let Some(ws_addr) = self.ws_message_addrs.get(&msg.session_id) {
+            ws_addr.do_send(WebSocketSendMessage {
+                event: msg.event.clone(),
+                data: msg.data.clone(),
+            })
+        }
     }
 }

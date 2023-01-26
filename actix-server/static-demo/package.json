@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.2.4",
     "pinia": "^2.0.29",
     "vue": "^3.2.45"
   },

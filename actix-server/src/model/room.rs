@@ -12,7 +12,10 @@ pub struct Model {
     pub name: String,
     pub server_id: i64,
     pub max_member: i32,
+    pub sort: i32,
+    #[serde(skip_deserializing)]
     pub created_time: DateTime,
+    #[serde(skip_deserializing)]
     pub updated_time: DateTime,
 }
 

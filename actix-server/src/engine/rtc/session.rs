@@ -12,7 +12,8 @@ use webrtc::{
     ice::network_type::NetworkType,
     interceptor::registry::Registry,
     peer_connection::{
-        configuration::RTCConfiguration, sdp::sdp_type::RTCSdpType, RTCPeerConnection,
+        configuration::RTCConfiguration, peer_connection_state::RTCPeerConnectionState,
+        sdp::sdp_type::RTCSdpType, RTCPeerConnection,
     },
     rtp_transceiver::{
         rtp_codec::{RTCRtpCodecCapability, RTCRtpCodecParameters, RTPCodecType},
@@ -24,7 +25,7 @@ use webrtc::{
 use actix::prelude::*;
 
 use crate::engine::{
-    engine::Engine,
+    engine::{Engine, EngineExitRoomMessage},
     room::{Room, RoomNewTrackMessage},
     websocket::{WebSocketSendMessage, WebSocketSession},
 };
@@ -242,6 +243,19 @@ impl RTCSession {
                 .await
                 .unwrap_or_default();
             })
+        }));
+
+        let engine_addr = self.engine_addr.clone();
+        let session_id = self.session_id.clone();
+        peer_connection.on_peer_connection_state_change(Box::new(move |state| {
+            if state == RTCPeerConnectionState::Failed {
+                log::info!("RTC会话[{}]连接失败，通知Engine退出", session_id);
+                engine_addr.do_send(EngineExitRoomMessage {
+                    session_id: session_id.clone(),
+                });
+            }
+
+            Box::pin(async move {})
         }));
     }
 
