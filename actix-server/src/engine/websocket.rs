@@ -7,7 +7,7 @@ use actix::{
 use actix_web_actors::ws::{self, ProtocolError};
 use jwt_simple::prelude::{HS512Key, MACLike};
 use nanoid::nanoid;
-use sea_orm::DatabaseConnection;
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use webrtc::{
@@ -21,6 +21,7 @@ use crate::{
         engine,
         rtc::message::{RTCCandidateMessage, RTCReceiveAnswerMessage, RTCReceiveOfferMessage},
     },
+    model::room_user,
 };
 
 use super::rtc::session::RTCSession;
@@ -150,8 +151,25 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                 let room_id = data_json["roomId"].as_str().unwrap_or("").to_string();
                 let session_id = self.session_id.clone();
                 let user_id = self.user_id.clone().unwrap();
+                let db = self.db.clone();
 
                 async move {
+                    // 将原有会话全部退出
+                    let user_sessions = room_user::Entity::find()
+                        .filter(room_user::Column::UserId.eq(user_id.clone()))
+                        .all(db.as_ref())
+                        .await
+                        .unwrap();
+
+                    for user_session in user_sessions.iter() {
+                        engine_addr
+                            .send(engine::EngineExitRoomMessage {
+                                session_id: user_session.session_id.clone(),
+                            })
+                            .await
+                            .unwrap_or_default();
+                    }
+
                     // 通知Engine有新会话加入房间
                     let connect_res = engine_addr
                         .send(engine::EngineJoinRoomMessage {
