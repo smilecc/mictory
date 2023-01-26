@@ -1,0 +1,189 @@
+<html>
+  <body>
+    <div id="peers"></div>
+    <button id="checkTURNServer">checkTURNServer</button>
+    <button id="closeWS">WebSocket Send Close</button>
+
+    <script>
+      function checkTURNServer(turnConfig, timeout) {
+        return new Promise(function (resolve, reject) {
+          setTimeout(function () {
+            if (promiseResolved) return;
+            resolve(false);
+            promiseResolved = true;
+          }, timeout || 5000);
+
+          var promiseResolved = false,
+            myPeerConnection =
+              window.RTCPeerConnection ||
+              window.mozRTCPeerConnection ||
+              window.webkitRTCPeerConnection, //compatibility for firefox and chrome
+            pc = new myPeerConnection({ iceServers: [turnConfig] }),
+            noop = function () {};
+          pc.createDataChannel(""); //create a bogus data channel
+          pc.createOffer(function (sdp) {
+            if (sdp.sdp.indexOf("typ relay") > -1) {
+              // sometimes sdp contains the ice candidates...
+              promiseResolved = true;
+              resolve(true);
+            }
+            pc.setLocalDescription(sdp, noop, noop);
+          }, noop); // create offer and set local description
+          pc.onicecandidate = function (ice) {
+            //listen for candidate events
+            if (
+              promiseResolved ||
+              !ice ||
+              !ice.candidate ||
+              !ice.candidate.candidate ||
+              !(ice.candidate.candidate.indexOf("typ relay") > -1)
+            )
+              return;
+            promiseResolved = true;
+            resolve(true);
+          };
+        });
+      }
+
+      document.getElementById("checkTURNServer").onclick = () => {
+        checkTURNServer({
+          urls: "turn:106.54.172.71",
+          username: "test",
+          credential: "test",
+        })
+          .then(function (bool) {
+            console.log("is TURN server active? ", bool ? "yes" : "no");
+          })
+          .catch(console.error.bind(console));
+      };
+
+      document.getElementById("closeWS").onclick = () => {
+        window.ws.send(
+          JSON.stringify({
+            event: "close",
+            data: "{}",
+          })
+        );
+      };
+
+      window.onload = async () => {
+        let media = await navigator.mediaDevices.getUserMedia({
+          video: false,
+          audio: true,
+        });
+
+        // let ws = new WebSocket("wss://rocket.smilec.cc/ws");
+        let ws = new WebSocket("ws://localhost:20424/ws");
+        window.ws = ws;
+
+        ws.onopen = () => {
+          // 十秒钟心跳一次
+          setInterval(() => {
+            ws.send(
+              JSON.stringify({
+                event: "ping",
+                data: "",
+              })
+            );
+          }, 10 * 1000);
+        };
+        ws.onclose = (e) => {
+          console.log("close", e);
+        };
+        ws.onmessage = async (e) => {
+          console.log("msg", e);
+          let msg = JSON.parse(e.data);
+          let data = JSON.parse(msg.data);
+          console.log("msg data", data);
+
+          if (msg.event == "new_session") {
+            media.getTracks().forEach((t) => pc.addTrack(t, media));
+            let offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            let sessionDesc = JSON.stringify(pc.localDescription);
+            window.sessionDesc = sessionDesc;
+            console.log(sessionDesc);
+            window._sessionId = data.sessionId;
+            console.log(window._sessionId);
+
+            ws.send(
+              JSON.stringify({
+                event: "rtc_join_room",
+                data: JSON.stringify({
+                  sessionId: window._sessionId,
+                  roomId: "233",
+                  sdp: sessionDesc,
+                }),
+              })
+            );
+          }
+
+          if (msg.event == "rtc_offer") {
+            pc.setRemoteDescription(JSON.parse(data.sdp));
+            let sdp = await pc.createAnswer();
+            await pc.setLocalDescription(sdp);
+            ws.send(
+              JSON.stringify({
+                event: "rtc_answer",
+                data: JSON.stringify(sdp),
+              })
+            );
+          }
+
+          if (msg.event == "rtc_answer") {
+            pc.setRemoteDescription(JSON.parse(data.sdp));
+          }
+        };
+
+        let pc = new RTCPeerConnection({
+          iceServers: [
+            // {
+            //   urls: "stun:stun.gmx.net:3478",
+            // },
+            {
+              urls: "turn:106.54.172.71",
+              username: "test",
+              credential: "test",
+            },
+          ],
+        });
+        console.log(pc);
+
+        pc.ontrack = (event) => {
+          console.log("Track Add", event);
+          el = document.createElement(event.track.kind);
+          el.id = `audio-${event.track.id}`;
+          el.srcObject = event.streams[0];
+          el.autoplay = true;
+          document.getElementById("peers").appendChild(el);
+
+          event.streams.forEach((stream) => {
+            stream.onremovetrack = () => {
+              console.log("Track Remove", el.id);
+              document.getElementById(el.id).remove();
+            };
+          });
+        };
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate === null) return;
+          ws.send(
+            JSON.stringify({
+              event: "candidate",
+              data: JSON.stringify(event.candidate),
+            })
+          );
+          console.log(event);
+        };
+
+        pc.onnegotiationneeded = (e) => {
+          console.log("onnegotiationneeded", e);
+        };
+
+        pc.onconnectionstatechange = (e) => {
+          console.log("onconnectionstatechange", pc.connectionState);
+        };
+      };
+    </script>
+  </body>
+</html>
