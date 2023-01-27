@@ -87,6 +87,7 @@ pub async fn list_server_users(
         room_id: i64,
         user_id: i64,
         session_id: String,
+        online: bool,
         user_nickname: String,
         created_time: DateTime,
         updated_time: DateTime,
