@@ -46,7 +46,7 @@ impl Actor for Engine {
             async move {
                 log::info!("Engine启动，清除全部在线记录（room_user）");
                 room_user::Entity::update_many()
-                    .col_expr(room_user::Column::Online, Expr::value(true))
+                    .col_expr(room_user::Column::Online, Expr::value(false))
                     .exec(db.as_ref())
                     .await
                     .unwrap();
