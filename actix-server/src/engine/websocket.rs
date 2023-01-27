@@ -79,6 +79,7 @@ impl Actor for WebSocketSession {
         log::info!("WebSocketSession终止，{}", self.session_id);
         self.engine_addr.do_send(engine::EngineExitRoomMessage {
             session_id: self.session_id.clone(),
+            is_ws_disconnect: true,
         });
     }
 }
@@ -164,6 +165,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                     for user_session in user_sessions.iter() {
                         engine_addr
                             .send(engine::EngineExitRoomMessage {
+                                is_ws_disconnect: false,
                                 session_id: user_session.session_id.clone(),
                             })
                             .await
@@ -214,6 +216,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                 log::info!("RTC退出房间，{}", self.session_id);
                 self.engine_addr.do_send(engine::EngineExitRoomMessage {
                     session_id: self.session_id.clone(),
+                    is_ws_disconnect: false,
                 });
             }
             "candidate" => {

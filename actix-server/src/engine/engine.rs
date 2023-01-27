@@ -152,6 +152,7 @@ impl Handler<EngineJoinRoomMessage> for Engine {
 #[rtype(result = "()")]
 pub struct EngineExitRoomMessage {
     pub session_id: String,
+    pub is_ws_disconnect: bool,
 }
 
 // 处理退出房间
@@ -160,7 +161,10 @@ impl Handler<EngineExitRoomMessage> for Engine {
 
     fn handle(&mut self, msg: EngineExitRoomMessage, _: &mut Self::Context) -> Self::Result {
         log::info!("处理退出房间，会话ID：{}", &msg.session_id);
-        self.ws_message_addrs.remove(&msg.session_id);
+        // 只有Websocket连接断开才从列表中移除
+        if msg.is_ws_disconnect {
+            self.ws_message_addrs.remove(&msg.session_id);
+        }
 
         // 通知房间会话退出
         if let Some(room_id) = self.session_room_map.get(&msg.session_id) {
