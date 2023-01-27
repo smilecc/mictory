@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use actix::{Actor, Addr};
+use actix_cors::Cors;
 use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws;
 use actix_web_static_files::ResourceFiles;
@@ -43,6 +44,13 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header()
+                    .max_age(3600),
+            )
             .configure(init_config)
     })
     .bind(("0.0.0.0", 20424))?
