@@ -113,18 +113,34 @@ impl Handler<RoomJoinMessage> for Room {
         let engine_addr = self.engine_addr.clone();
 
         async move {
-            // 创建房间记录
-            let room_user_record = room_user::ActiveModel {
-                server_id: Set(room.server_id.clone()),
-                room_id: Set(room.id.clone()),
-                user_id: Set(user_id),
-                session_id: Set(session_id),
-                online: Set(true),
-                ..Default::default()
-            }
-            .insert(db.as_ref())
-            .await
-            .unwrap();
+            // 查询用户是否已经加入过该房间
+            let room_user_record = room_user::Entity::find()
+                .filter(room_user::Column::RoomId.eq(room.id.clone()))
+                .filter(room_user::Column::UserId.eq(user_id.clone()))
+                .one(db.as_ref())
+                .await
+                .unwrap();
+
+            let room_user_record = if let Some(record) = room_user_record {
+                // 更新在线状态
+                let mut update_record = record.clone().into_active_model();
+                update_record.online = Set(true);
+                update_record.session_id = Set(session_id);
+                update_record.update(db.as_ref()).await.unwrap()
+            } else {
+                // 写入记录
+                room_user::ActiveModel {
+                    server_id: Set(room.server_id.clone()),
+                    room_id: Set(room.id.clone()),
+                    user_id: Set(user_id.clone()),
+                    session_id: Set(session_id),
+                    online: Set(true),
+                    ..Default::default()
+                }
+                .insert(db.as_ref())
+                .await
+                .unwrap()
+            };
 
             // 查询该服务器所有在线用户
             let room_users = room_user::Entity::find()
