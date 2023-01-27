@@ -18,6 +18,21 @@ function createWindow(): void {
     },
   });
 
+  // 忽略CORS校验
+  // mainWindow.webContents.session.webRequest.onBeforeSendHeaders((details, callback) => {
+  //   callback({ requestHeaders: { Origin: "*", ...details.requestHeaders } });
+  // });
+
+  // mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+  //   console.log(details);
+  //   callback({
+  //     responseHeaders: {
+  //       "Access-Control-Allow-Origin": ["*"],
+  //       ...details.responseHeaders,
+  //     },
+  //   });
+  // });
+
   ipcMain.on("app:close", () => {
     app.quit();
   });

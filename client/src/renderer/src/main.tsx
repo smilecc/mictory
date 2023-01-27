@@ -2,17 +2,26 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BaseLayout } from "./Layout";
 import { MantineProvider } from "@mantine/core";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import { getStores, StoreContext } from "@renderer/stores";
-import { HomePage } from "@renderer/pages";
+import { HomePage, UserLoginPage } from "@renderer/pages";
+import { RouteGuard } from "./components";
 import "./style.css";
 
 const stores = getStores();
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: (
+      <RouteGuard>
+        <HomePage />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: "/user/login",
+    element: <UserLoginPage />,
   },
 ]);
 
