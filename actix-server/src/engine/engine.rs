@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use actix::prelude::*;
-use sea_orm::{DatabaseConnection, EntityTrait};
+use sea_orm::{sea_query::Expr, DatabaseConnection, EntityTrait};
 
 use crate::{
     engine::{
@@ -45,7 +45,8 @@ impl Actor for Engine {
         ctx.wait(
             async move {
                 log::info!("Engine启动，清除全部在线记录（room_user）");
-                room_user::Entity::delete_many()
+                room_user::Entity::update_many()
+                    .col_expr(room_user::Column::Online, Expr::value(true))
                     .exec(db.as_ref())
                     .await
                     .unwrap();

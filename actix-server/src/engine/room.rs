@@ -6,8 +6,8 @@ use std::{
 
 use actix::{Actor, Addr, Context, Handler, Message, ResponseFuture, WrapFuture};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QueryFilter,
-    Set,
+    sea_query::Expr, ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait,
+    IntoActiveModel, QueryFilter, Set,
 };
 
 use crate::{
@@ -59,7 +59,7 @@ impl Actor for Room {
         let room_id = self.room_id.clone();
 
         async move {
-            // 创建房间，把该房间号原有在线用户列表删除
+            // 创建房间，把该房间号原有在线用户列表清除
             let db_ref = db.as_ref();
 
             let room = room::Entity::find_by_id(room_id.parse().unwrap())
@@ -67,7 +67,8 @@ impl Actor for Room {
                 .await
                 .unwrap();
 
-            room_user::Entity::delete_many()
+            room_user::Entity::update_many()
+                .col_expr(room_user::Column::Online, Expr::value(true))
                 .filter(room_user::Column::RoomId.eq(room_id))
                 .exec(db_ref)
                 .await
@@ -118,6 +119,7 @@ impl Handler<RoomJoinMessage> for Room {
                 room_id: Set(room.id.clone()),
                 user_id: Set(user_id),
                 session_id: Set(session_id),
+                online: Set(true),
                 ..Default::default()
             }
             .insert(db.as_ref())
@@ -185,11 +187,10 @@ impl Handler<RoomExitMessage> for Room {
                 .unwrap();
 
             if let Some(record) = room_user_record {
-                // 删除该记录
-                room_user::Entity::delete(record.clone().into_active_model())
-                    .exec(db.as_ref())
-                    .await
-                    .unwrap();
+                // 更新状态为下线
+                let mut update_record = record.clone().into_active_model();
+                update_record.online = Set(false);
+                update_record.update(db.as_ref()).await.unwrap();
 
                 // 查询该服务器所有在线用户
                 let room_users = room_user::Entity::find()
