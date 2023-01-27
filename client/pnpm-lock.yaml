@@ -13,6 +13,7 @@ specifiers:
   '@mantine/modals': ^5.10.2
   '@mantine/notifications': ^5.10.2
   '@tabler/icons-react': ^2.1.2
+  '@types/lodash': ^4.14.191
   '@types/node': 16.18.11
   '@types/react': 18.0.26
   '@types/react-dom': 18.0.10
@@ -30,6 +31,7 @@ specifiers:
   eslint-config-prettier: ^8.6.0
   eslint-plugin-prettier: ^4.2.1
   eslint-plugin-react: ^7.31.11
+  lodash: ^4.17.21
   mobx: ^6.7.0
   mobx-react-lite: ^3.4.0
   postcss: ^8.4.21
@@ -55,6 +57,7 @@ dependencies:
   ahooks: 3.7.4_react@18.2.0
   axios: 1.2.5
   electron-updater: 5.3.0
+  lodash: 4.17.21
   mobx: 6.7.0
   mobx-react-lite: 3.4.0_jofyzmwkboewm6mjrhi25mngky
   react-router-dom: 6.8.0_biqbaboplfbrettd7655fr4n2y
@@ -63,6 +66,7 @@ devDependencies:
   '@electron-forge/cli': 6.0.4
   '@electron-toolkit/tsconfig': 1.0.1_@types+node@16.18.11
   '@electron/notarize': 1.2.3
+  '@types/lodash': 4.14.191
   '@types/node': 16.18.11
   '@types/react': 18.0.26
   '@types/react-dom': 18.0.10
@@ -1437,6 +1441,10 @@ packages:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
       '@types/node': 16.18.11
+
+  /@types/lodash/4.14.191:
+    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
+    dev: true
 
   /@types/minimatch/5.1.2:
     resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}

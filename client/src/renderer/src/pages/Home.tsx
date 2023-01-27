@@ -12,6 +12,7 @@ export const HomePage: React.FC = () => {
   const [userServers, setUserServers] = useState<IUserServer[]>([]);
   const [rooms, setRooms] = useState<IServerRoom[]>([]);
   const [users, setUsers] = useState<IServerUser[]>([]);
+  const [speakingSessions, setSpeakingSessions] = useState<string[]>([]);
 
   const onlineUsers = useMemo(() => users.filter((it) => it.online), [users]);
   const offlineUsers = useMemo(() => users.filter((it) => !it.online), [users]);
@@ -49,6 +50,7 @@ export const HomePage: React.FC = () => {
   }, []);
 
   const loadServerInfo = useCallback((serverId: number, serverName: string) => {
+    setSpeakingSessions([]);
     state.loading = true;
     state.serverName = serverName;
     state.serverId = serverId;
@@ -70,6 +72,27 @@ export const HomePage: React.FC = () => {
       queryServerInfo(state.serverId);
     }
   }, 30 * 1000);
+
+  useEventListener(
+    "session:speak",
+    (e: CustomEvent) => {
+      console.log("session:speak", e.detail.sessionId);
+      setSpeakingSessions((pre) => [...new Set([...pre, e.detail.sessionId])]);
+    },
+    {
+      target: window,
+    }
+  );
+  useEventListener(
+    "session:stop_speak",
+    (e: CustomEvent) => {
+      console.log("session:stop_speak", e.detail.sessionId);
+      setSpeakingSessions((pre) => pre.filter((it) => it !== e.detail.sessionId));
+    },
+    {
+      target: window,
+    }
+  );
 
   return (
     <div className="flex h-full">
@@ -117,7 +140,12 @@ export const HomePage: React.FC = () => {
                         {users
                           .filter((it) => it.online && it.roomId === room.id)
                           .map((user) => (
-                            <div className="flex cursor-pointer items-center rounded-md py-2 px-3 text-sm leading-none text-zinc-300 hover:bg-zinc-700">
+                            <div
+                              className={`flex cursor-pointer items-center rounded-md py-2 px-3 text-sm leading-none text-zinc-300 hover:bg-zinc-700 
+                              ${
+                                speakingSessions.includes(user.sessionId) ? "bg-orange-500/25" : ""
+                              }`}
+                            >
                               <IconUser size={18} />
                               <span className="ml-1">{user.userNickname}</span>
                             </div>

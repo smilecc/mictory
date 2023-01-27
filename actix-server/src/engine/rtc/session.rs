@@ -174,11 +174,12 @@ impl RTCSession {
             Box::pin(async move {
                 if let Some(remote_track) = track {
                     // 创建本地track
-                    let track_id = nanoid!();
+                    let track_id = format!("{};{}", session_id_ontrack.clone(), nanoid!());
+                    log::info!("创建本地track {}", track_id);
                     let local_track = TrackLocalStaticRTP::new(
                         remote_track.codec().await.capability,
                         track_id.clone(),
-                        nanoid!(),
+                        track_id.clone(),
                     );
 
                     let local_track_arc = Arc::new(local_track);

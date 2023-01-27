@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 export class Session {
   websocketUrl: string;
   websocket!: WebSocket;
@@ -5,6 +7,7 @@ export class Session {
   isClosed: boolean = false;
   userMedia!: MediaStream;
   sessionId: string = "";
+  watchVolumeSessions: Set<string> = new Set();
 
   constructor(websocketUrl: string) {
     this.websocketUrl = websocketUrl;
@@ -18,6 +21,9 @@ export class Session {
           noiseSuppression: true,
         },
       });
+
+      this.watchVolumeSessions.add("MYSELF");
+      this.watchMediaStreamVolume(this.userMedia, "MYSELF");
     })();
   }
 
@@ -26,6 +32,46 @@ export class Session {
     this.websocket = new WebSocket(this.websocketUrl);
     this.startPing();
     this.handleEvent();
+  }
+
+  // 监听麦克风音量变化
+  watchMediaStreamVolume(stream: MediaStream, sessionId: string) {
+    this.watchVolumeSessions.add(sessionId);
+    const audioContext = new AudioContext();
+    const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+    const analyserNode = audioContext.createAnalyser();
+    mediaStreamAudioSourceNode.connect(analyserNode);
+    const onStopSpeak = _.debounce(() => {
+      window.dispatchEvent(new CustomEvent("session:stop_speak", { detail: { sessionId } }));
+    }, 1000);
+    const onSpeak = _.throttle(
+      () => {
+        window.dispatchEvent(new CustomEvent("session:speak", { detail: { sessionId } }));
+        onStopSpeak();
+      },
+      500,
+      {
+        leading: true,
+      }
+    );
+
+    const pcmData = new Float32Array(analyserNode.fftSize);
+    const onFrame = () => {
+      analyserNode.getFloatTimeDomainData(pcmData);
+      let sumSquares = 0.0;
+      for (const amplitude of pcmData) {
+        sumSquares += amplitude * amplitude;
+      }
+      let volume = Math.sqrt(sumSquares / pcmData.length);
+      if (volume > 0.01) {
+        onSpeak();
+      }
+
+      if (this.watchVolumeSessions.has(sessionId)) {
+        window.requestAnimationFrame(onFrame);
+      }
+    };
+    window.requestAnimationFrame(onFrame);
   }
 
   startPing() {
@@ -131,15 +177,21 @@ export class Session {
 
       // 创建Audio标签
       let el = document.createElement(event.track.kind) as HTMLAudioElement;
+      let stream = event.streams[0];
       el.id = `track-${event.track.id}`;
-      el.srcObject = event.streams[0];
+      el.srcObject = stream;
       el.autoplay = true;
       document.getElementById("tracks")?.appendChild(el);
+      console.log(event, stream.id);
+      const sessionId = stream.id.split(";")[0];
+
+      this.watchMediaStreamVolume(stream, sessionId);
 
       // 增加轨道移除事件
       el.srcObject!.onremovetrack = () => {
         console.log("RTC轨道移除", el.id);
         document.getElementById(el.id)?.remove();
+        this.watchVolumeSessions.delete(sessionId);
       };
     };
 
