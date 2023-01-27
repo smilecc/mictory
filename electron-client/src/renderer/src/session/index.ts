@@ -1,15 +1,14 @@
 export class Session {
-  websocket: WebSocket;
+  websocketUrl: string;
+  websocket!: WebSocket;
   peerConnection?: RTCPeerConnection;
   isClosed: boolean = false;
   userMedia!: MediaStream;
   sessionId: string = "";
 
-  constructor(websocket: WebSocket) {
-    this.websocket = websocket;
-
-    this.startPing();
-    this.handleEvent();
+  constructor(websocketUrl: string) {
+    this.websocketUrl = websocketUrl;
+    this.connectWebsocket();
 
     (async () => {
       this.userMedia = await navigator.mediaDevices.getUserMedia({
@@ -20,6 +19,13 @@ export class Session {
         },
       });
     })();
+  }
+
+  connectWebsocket() {
+    this.isClosed = false;
+    this.websocket = new WebSocket(this.websocketUrl);
+    this.startPing();
+    this.handleEvent();
   }
 
   startPing() {
@@ -56,16 +62,17 @@ export class Session {
           await this.onRTCAnswerEvent(data);
           break;
         case "server_user_join":
-          window.dispatchEvent(
-            new CustomEvent("session:server_user_join", { detail: data })
-          );
+          window.dispatchEvent(new CustomEvent("session:server_user_join", { detail: data }));
           break;
         case "server_user_exit":
-          window.dispatchEvent(
-            new CustomEvent("session:server_user_exit", { detail: data })
-          );
+          window.dispatchEvent(new CustomEvent("session:server_user_exit", { detail: data }));
           break;
       }
+    };
+
+    this.websocket.onclose = () => {
+      console.log("WebSocket连接断开");
+      this.isClosed = true;
     };
   }
 
