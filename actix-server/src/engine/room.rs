@@ -68,7 +68,7 @@ impl Actor for Room {
                 .unwrap();
 
             room_user::Entity::update_many()
-                .col_expr(room_user::Column::Online, Expr::value(true))
+                .col_expr(room_user::Column::Online, Expr::value(false))
                 .filter(room_user::Column::RoomId.eq(room_id))
                 .exec(db_ref)
                 .await

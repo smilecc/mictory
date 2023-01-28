@@ -1,4 +1,4 @@
-use actix_web::{http::StatusCode, post, web, Responder};
+use actix_web::{get, http::StatusCode, post, web, Responder};
 use jwt_simple::{
     prelude::{Base64, Claims, Duration, MACLike},
     reexports::ct_codecs::{Encoder, Error as Base64Error},
@@ -20,6 +20,16 @@ use crate::{
 };
 
 use super::{middleware::JWTAuthClaims, ResultBuilder};
+
+#[get("/api/user/{id}")]
+pub async fn get_user(app_state: web::Data<AppState>, path: web::Path<(i64,)>) -> impl Responder {
+    let user = user::Entity::find_by_id(path.0)
+        .one(app_state.db.clone().as_ref())
+        .await
+        .unwrap();
+
+    ResultBuilder::success(user).ok()
+}
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -66,6 +76,7 @@ pub async fn login(
 
     ResultBuilder::success(json!({
         "accessToken": token,
+        "userId": user.id.clone(),
     }))
     .ok()
 }
