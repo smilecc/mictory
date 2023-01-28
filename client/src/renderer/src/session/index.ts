@@ -148,7 +148,7 @@ export class Session {
     this.handlePeerConnectionEvent(this.peerConnection);
 
     // 给连接增加轨道
-    this.userMedia.getTracks().forEach((t) => {
+    this.userMedia?.getTracks()?.forEach((t) => {
       this.peerConnection?.addTrack(t);
       console.log(t);
     });
