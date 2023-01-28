@@ -164,6 +164,11 @@ export class Session {
     });
 
     // 创建Offer
+    if (!this.userMedia) {
+      // 如果没有音频设备，则创建一个接收器
+      this.peerConnection.addTransceiver("audio");
+    }
+
     let offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(offer);
     let sdp = JSON.stringify(this.peerConnection.localDescription);

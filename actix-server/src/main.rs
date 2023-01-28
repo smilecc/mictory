@@ -8,7 +8,7 @@ use actix_web_static_files::ResourceFiles;
 use api::*;
 use engine::{engine::Engine, websocket::WebSocketSession};
 use jwt_simple::prelude::HS512Key;
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 mod api;
 mod business;
@@ -40,8 +40,15 @@ async fn main() -> std::io::Result<()> {
 
     // 初始化环境变量
     dotenvy::dotenv().ok();
+
+    // 连接数据库
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
-    let db_conn = Arc::new(Database::connect(&db_url).await.unwrap());
+    let mut db_opt = ConnectOptions::new(db_url);
+    db_opt
+        .sqlx_logging(false) // Disabling SQLx log
+        .sqlx_logging_level(log::LevelFilter::Debug); // Setting SQLx log level
+
+    let db_conn = Arc::new(Database::connect(db_opt).await.unwrap());
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     let jwt_key = api::middleware::init_jwt_key();
