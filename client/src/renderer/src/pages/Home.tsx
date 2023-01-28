@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useEventListener, useInterval, useReactive } from "ahooks";
 import { useCommonStore } from "@renderer/stores";
 import { IconUser } from "@tabler/icons-react";
+import _ from "lodash";
 
 export const HomePage: React.FC = () => {
   // const navigate = useNavigate();
@@ -14,8 +15,16 @@ export const HomePage: React.FC = () => {
   const [users, setUsers] = useState<IServerUser[]>([]);
   const [speakingSessions, setSpeakingSessions] = useState<string[]>([]);
 
-  const onlineUsers = useMemo(() => users.filter((it) => it.online), [users]);
-  const offlineUsers = useMemo(() => users.filter((it) => !it.online), [users]);
+  // 用户列表会出现重复，根据在线状态排序，如果在线则优先保留在线记录
+  let distinctUsers = useMemo(() => {
+    const userMap = _.groupBy(users, (it) => it.userId);
+    return Object.keys(userMap).map(
+      (key) => _.orderBy(userMap[key], (it) => (it.online ? 0 : 1))[0]
+    );
+  }, [users]);
+
+  const onlineUsers = useMemo(() => distinctUsers.filter((it) => it.online), [distinctUsers]);
+  const offlineUsers = useMemo(() => distinctUsers.filter((it) => !it.online), [distinctUsers]);
 
   const state = useReactive({
     serverId: 0,
@@ -162,7 +171,7 @@ export const HomePage: React.FC = () => {
                           .filter((it) => it.online && it.roomId === room.id)
                           .map((user) => (
                             <div
-                              className={`flex cursor-pointer items-center rounded-md py-2 px-3 text-sm leading-none text-zinc-300 hover:bg-zinc-700 
+                              className={`my-1 flex cursor-pointer items-center rounded-md py-2 px-3 text-sm leading-none text-zinc-300 hover:bg-zinc-700 
                               ${
                                 speakingSessions.includes(user.sessionId) ? "bg-orange-500/25" : ""
                               }`}

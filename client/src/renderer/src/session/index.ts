@@ -13,18 +13,22 @@ export class Session {
     this.websocketUrl = websocketUrl;
     this.connectWebsocket();
 
-    (async () => {
-      this.userMedia = await navigator.mediaDevices.getUserMedia({
+    navigator.mediaDevices
+      .getUserMedia({
         video: false,
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
         },
+      })
+      .then((media) => {
+        this.userMedia = media;
+        this.watchVolumeSessions.add("MYSELF");
+        this.watchMediaStreamVolume(this.userMedia, "MYSELF");
+      })
+      .catch((e) => {
+        console.warn("用户无麦克风设备", e);
       });
-
-      this.watchVolumeSessions.add("MYSELF");
-      this.watchMediaStreamVolume(this.userMedia, "MYSELF");
-    })();
   }
 
   connectWebsocket() {
