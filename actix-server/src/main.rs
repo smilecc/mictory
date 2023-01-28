@@ -11,6 +11,7 @@ use jwt_simple::prelude::HS512Key;
 use sea_orm::{Database, DatabaseConnection};
 
 mod api;
+mod business;
 mod engine;
 mod model;
 
@@ -25,6 +26,18 @@ pub struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    println!(r"$$\      $$\ $$\             $$\                                   ");
+    println!(r"$$$\    $$$ |\__|            $$ |                                  ");
+    println!(r"$$$$\  $$$$ |$$\  $$$$$$$\ $$$$$$\    $$$$$$\   $$$$$$\  $$\   $$\ ");
+    println!(r"$$\$$\$$ $$ |$$ |$$  _____|\_$$  _|  $$  __$$\ $$  __$$\ $$ |  $$ |");
+    println!(r"$$ \$$$  $$ |$$ |$$ /        $$ |    $$ /  $$ |$$ |  \__|$$ |  $$ |");
+    println!(r"$$ |\$  /$$ |$$ |$$ |        $$ |$$\ $$ |  $$ |$$ |      $$ |  $$ |");
+    println!(r"$$ | \_/ $$ |$$ |\$$$$$$$\   \$$$$  |\$$$$$$  |$$ |      \$$$$$$$ |");
+    println!(r"\__|     \__|\__| \_______|   \____/  \______/ \__|       \____$$ |");
+    println!(r"                                                         $$\   $$ |");
+    println!(r"                                                         \$$$$$$  |");
+    println!(r"                                                          \______/ ");
+
     // 初始化环境变量
     dotenvy::dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");

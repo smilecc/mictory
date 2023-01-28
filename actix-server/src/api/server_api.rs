@@ -1,8 +1,7 @@
 use actix_web::{get, post, web, Responder};
-use nanoid::nanoid;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult, JoinType, QueryFilter, QueryOrder,
-    QuerySelect, Set, TransactionTrait,
+    ColumnTrait, EntityTrait, FromQueryResult, JoinType, QueryFilter, QueryOrder, QuerySelect,
+    TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -10,6 +9,7 @@ use validator::Validate;
 
 use crate::{
     api::ResultBuilder,
+    business::server_business,
     model::{room_user, server, user, user_server},
     AppState,
 };
@@ -31,25 +31,7 @@ pub async fn create_server(
 ) -> impl Responder {
     let txn = app_state.db.begin().await.unwrap();
     // 创建服务器
-    let insert_server = server::ActiveModel {
-        name: Set(query.name.clone()),
-        code: Set(nanoid!()),
-        creator_id: Set(claims.user_id.clone()),
-        state: Set(server::ServerState::Enable),
-        ..Default::default()
-    };
-
-    let new_server = insert_server.insert(&txn).await.unwrap();
-
-    // 创建用户记录
-    user_server::ActiveModel {
-        server_id: Set(new_server.id.clone()),
-        user_id: Set(claims.user_id.clone()),
-        ..Default::default()
-    }
-    .insert(&txn)
-    .await
-    .unwrap();
+    let new_server = server_business::create_server(&txn, &query.name, &claims.user_id).await;
 
     txn.commit().await.unwrap();
     ResultBuilder::success(json!({"serverId": new_server.id.clone(), })).ok()

@@ -1,5 +1,5 @@
-use actix_web::{get, post, web, HttpResponse, Responder};
-use sea_orm::{ActiveModelTrait, EntityTrait, Set};
+use actix_web::{get, web, Responder};
+use sea_orm::EntityTrait;
 use sea_orm::{ColumnTrait, QueryFilter};
 
 use crate::api::ResultBuilder;

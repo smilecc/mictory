@@ -1,4 +1,4 @@
-use actix_web::{get, http::StatusCode, post, web, Responder};
+use actix_web::{http::StatusCode, post, web, Responder};
 use jwt_simple::{
     prelude::{Base64, Claims, Duration, MACLike},
     reexports::ct_codecs::{Encoder, Error as Base64Error},
@@ -14,6 +14,7 @@ use sha2::{Digest, Sha512};
 use validator::Validate;
 
 use crate::{
+    business::server_business,
     model::{user, user_nickname},
     AppState,
 };
@@ -134,8 +135,18 @@ pub async fn create_user(
         password: Set(password_hash),
         password_salt: Set(password_salt.clone()),
         ..Default::default()
-    };
-    new_user.insert(&txn).await.unwrap();
+    }
+    .insert(&txn)
+    .await
+    .unwrap();
+
+    // 给用户创建默认服务器
+    server_business::create_server(
+        &txn,
+        &format!("{}的服务器", create_query.nickname),
+        &new_user.id,
+    )
+    .await;
 
     txn.commit().await.unwrap();
     ResultBuilder::success_with_null().ok()

@@ -41,12 +41,18 @@ export class Session {
     const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
     const analyserNode = audioContext.createAnalyser();
     mediaStreamAudioSourceNode.connect(analyserNode);
+    // 如果是自己说话则使用当前用户会话ID
+    const getSessionId = () => (sessionId === "MYSELF" ? this.sessionId : sessionId);
     const onStopSpeak = _.debounce(() => {
-      window.dispatchEvent(new CustomEvent("session:stop_speak", { detail: { sessionId } }));
+      window.dispatchEvent(
+        new CustomEvent("session:stop_speak", { detail: { sessionId: getSessionId() } })
+      );
     }, 1000);
     const onSpeak = _.throttle(
       () => {
-        window.dispatchEvent(new CustomEvent("session:speak", { detail: { sessionId } }));
+        window.dispatchEvent(
+          new CustomEvent("session:speak", { detail: { sessionId: getSessionId() } })
+        );
         onStopSpeak();
       },
       500,
