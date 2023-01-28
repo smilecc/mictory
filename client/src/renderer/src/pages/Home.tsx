@@ -1,4 +1,4 @@
-import { LoadingOverlay, Title } from "@mantine/core";
+import { Button, LoadingOverlay, Title } from "@mantine/core";
 import { IServerRoom, IServerUser, IUserServer, ServerApi } from "@renderer/api";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 // import { useNavigate } from "react-router-dom";
@@ -20,6 +20,8 @@ export const HomePage: React.FC = () => {
   const state = useReactive({
     serverId: 0,
     serverName: "",
+    joinedServerId: 0,
+    joinedServerName: "",
     loading: false,
   });
 
@@ -97,22 +99,39 @@ export const HomePage: React.FC = () => {
   return (
     <div className="flex h-full">
       <LoadingOverlay visible={state.loading} overlayBlur={2} overlayOpacity={0.05} />
-      <div className="h-full w-1/4 overflow-y-auto bg-app-dark px-3 py-2 text-gray-400">
-        {userServers.map((userServer) => (
-          <div
-            className="mb-3 cursor-pointer overflow-hidden text-ellipsis rounded-md bg-white/5 p-3 leading-none transition-all hover:bg-white/20 hover:text-white"
-            onClick={() => loadServerInfo(userServer.id, userServer.name)}
-          >
-            {userServer.name}
-          </div>
-        ))}
-        <button
-          onClick={() => {
-            commonStore.session.exitRoom();
-          }}
-        >
-          退出房间
-        </button>
+      <div className="flex h-full w-1/4 flex-col overflow-y-auto bg-app-dark px-3 py-2 text-gray-400">
+        {/* 服务器列表 */}
+        <div className="flex-1">
+          {userServers.map((userServer) => (
+            <div
+              className="mb-3 cursor-pointer overflow-hidden text-ellipsis rounded-md bg-white/5 p-3 leading-none transition-all hover:bg-white/20 hover:text-white"
+              onClick={() => loadServerInfo(userServer.id, userServer.name)}
+            >
+              {userServer.name}
+            </div>
+          ))}
+        </div>
+        {/* 用户信息 */}
+        <div className="rounded-md bg-zinc-800 p-2">
+          {state.joinedServerId ? (
+            <div className="leading-none">
+              <div className="mb-2 text-xs font-bold">语音已连接</div>
+              <div className="mb-3 text-zinc-200">{state.serverName}</div>
+              <Button
+                fullWidth
+                onClick={() => {
+                  commonStore.session.exitRoom();
+                  state.joinedServerId = 0;
+                  state.joinedServerName = "";
+                }}
+              >
+                断开语音
+              </Button>
+            </div>
+          ) : (
+            <div className="text-xs font-bold">语音未连接</div>
+          )}
+        </div>
       </div>
 
       {/* 服务器信息 */}
@@ -132,6 +151,8 @@ export const HomePage: React.FC = () => {
                         className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
                         onDoubleClick={() => {
                           commonStore.session.joinRoom(room.id.toString());
+                          state.joinedServerId = state.serverId;
+                          state.joinedServerName = state.serverName;
                         }}
                       >
                         {room.name}
@@ -157,17 +178,17 @@ export const HomePage: React.FC = () => {
               </div>
               <div className="w-60 p-3 text-zinc-300">
                 {onlineUsers.length > 0 && (
-                  <>
-                    <div>在线</div>
+                  <div className="mb-2">
+                    <div className="text-sm">在线 - {onlineUsers.length}</div>
                     {onlineUsers.map((user) => (
                       <div>{user.userNickname}</div>
                     ))}
-                  </>
+                  </div>
                 )}
 
                 {offlineUsers.length > 0 && (
                   <>
-                    <div>离线</div>
+                    <div className="text-sm">离线 - {offlineUsers.length}</div>
                     {offlineUsers.map((user) => (
                       <div>{user.userNickname}</div>
                     ))}
