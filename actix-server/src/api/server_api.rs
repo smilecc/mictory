@@ -1,7 +1,7 @@
 use actix_web::{get, post, web, Responder};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, FromQueryResult, JoinType,
-    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, Statement, TransactionTrait,
+    ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult, JoinType, PaginatorTrait,
+    QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -116,19 +116,10 @@ pub async fn list_server_users(
 
     let server_id = path.0.clone();
     let db = app_state.db.clone().begin().await.unwrap();
-    // 临时关闭ONLY_FULL_GROUP_BY，防止无法查询
-    db.execute(Statement::from_string(
-        sea_orm::DatabaseBackend::MySql,
-        "SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY,',''));".to_owned(),
-    ))
-    .await
-    .unwrap();
 
     // 查询房间用户列表
     let mut users = room_user::Entity::find()
         .column_as(user::Column::Nickname, "user_nickname")
-        .column_as(room_user::Column::Online, "_online")
-        .column_as(room_user::Column::Online.max(), "online")
         .filter(room_user::Column::ServerId.eq(server_id))
         .join_rev(
             JoinType::LeftJoin,
@@ -137,7 +128,6 @@ pub async fn list_server_users(
                 .to(room_user::Column::UserId)
                 .into(),
         )
-        .group_by(room_user::Column::UserId)
         .into_model::<SelectUserResult>()
         .all(&db)
         .await
