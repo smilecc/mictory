@@ -13,7 +13,9 @@ pub struct Model {
     pub nickname: String,
     pub nickname_no: i32,
     pub avatar: Option<String>,
+    #[serde(skip_serializing)]
     pub password: String,
+    #[serde(skip_serializing)]
     pub password_salt: String,
     pub created_time: DateTime,
     pub updated_time: DateTime,

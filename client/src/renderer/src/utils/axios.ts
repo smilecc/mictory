@@ -1,3 +1,4 @@
+import { showNotification } from "@mantine/notifications";
 import { STORAGE_ACCESS_TOKEN } from "@renderer/stores/CommonStore";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
@@ -36,3 +37,13 @@ Request.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export function NoticeErrorHandler(e: AxiosError<IApiResult>) {
+  if (e.isAxiosError) {
+    showNotification({
+      color: "red",
+      title: "抱歉，出错啦",
+      message: e.response?.data?.message || "服务器响应异常",
+    });
+  }
+}

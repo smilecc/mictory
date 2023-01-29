@@ -20,26 +20,18 @@ export const UserLoginPage: React.FC = () => {
       <Card shadow="sm" radius="md" withBorder className=" w-96">
         <form
           onSubmit={form.onSubmit((value) => {
-            UserApi.login(value.account, value.password).then(({ data }) => {
-              commonStore.setAccessToken(data.data.accessToken);
-              navigate("/");
-            });
+            UserApi.login(value.account, value.password)
+              .then(({ data }) => {
+                commonStore.setAccessToken(data.data.accessToken);
+                return UserApi.getUserInfo(0);
+              })
+              .then(() => {
+                navigate("/");
+              });
           })}
         >
-          <TextInput
-            label="账号"
-            placeholder="请输入账号"
-            required
-            {...form.getInputProps("account")}
-          />
-          <TextInput
-            className="mt-4"
-            label="密码"
-            placeholder="请输入密码"
-            type="password"
-            required
-            {...form.getInputProps("password")}
-          />
+          <TextInput label="账号" placeholder="请输入账号" required {...form.getInputProps("account")} />
+          <TextInput className="mt-4" label="密码" placeholder="请输入密码" type="password" required {...form.getInputProps("password")} />
           <Button className="mt-4" fullWidth type="submit">
             登录
           </Button>

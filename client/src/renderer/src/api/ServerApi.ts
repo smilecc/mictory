@@ -13,4 +13,8 @@ export class ServerApi {
   static listServerUsers(serverId: number): IResponse<IServerUser[]> {
     return Request.get(`/api/server/${serverId}/users`);
   }
+
+  static joinServer(serverId: number | string): IResponse<null> {
+    return Request.post(`/api/server/${serverId}/join`);
+  }
 }

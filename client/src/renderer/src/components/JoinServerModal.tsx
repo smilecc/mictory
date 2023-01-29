@@ -1,0 +1,53 @@
+import { Button, Group, Modal, ModalProps, TextInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { showNotification } from "@mantine/notifications";
+import { ServerApi } from "@renderer/api";
+import { NoticeErrorHandler } from "@renderer/utils";
+import { IconCheck } from "@tabler/icons-react";
+import { useReactive } from "ahooks";
+import React from "react";
+
+export const JoinServerModal: React.FC<
+  ModalProps & {
+    onJoined: (serverId: string) => void;
+  }
+> = (props) => {
+  const state = useReactive({
+    loading: false,
+  });
+  const form = useForm({
+    initialValues: {
+      serverId: "",
+    },
+  });
+
+  return (
+    <Modal {...props} title="加入服务器">
+      <form
+        onSubmit={form.onSubmit((value) => {
+          state.loading = true;
+          ServerApi.joinServer(value.serverId)
+            .then(() => {
+              showNotification({
+                message: "服务器加入成功",
+                color: "green",
+                icon: <IconCheck />,
+              });
+              props.onJoined(value.serverId);
+            })
+            .catch(NoticeErrorHandler)
+            .finally(() => {
+              state.loading = false;
+            });
+        })}
+      >
+        <TextInput label="服务器ID" placeholder="请输入服务器ID" required {...form.getInputProps("serverId")} />
+        <Group position="right" mt="md">
+          <Button type="submit" loading={state.loading}>
+            立即加入
+          </Button>
+        </Group>
+      </form>
+    </Modal>
+  );
+};

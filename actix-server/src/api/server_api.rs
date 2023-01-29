@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, Responder};
+use actix_web::{get, http::StatusCode, post, web, Responder};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult, JoinType, PaginatorTrait,
     QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
@@ -44,6 +44,18 @@ pub async fn join_server(
     claims: JWTAuthClaims,
 ) -> impl Responder {
     let txn = app_state.db.begin().await.unwrap();
+
+    // 查询服务器是否存在
+    let current_server = server::Entity::find()
+        .filter(server::Column::Id.eq(path.0.clone()))
+        .one(&txn)
+        .await
+        .unwrap();
+
+    if current_server.is_none() {
+        return ResultBuilder::fail_str(10404, "服务器不存在").err(StatusCode::NOT_FOUND);
+    }
+
     // 查询是否已经加入
     let exist_count = user_server::Entity::find()
         .filter(user_server::Column::ServerId.eq(path.0.clone()))

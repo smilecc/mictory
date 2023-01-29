@@ -51,7 +51,7 @@ export class Session {
       window.dispatchEvent(
         new CustomEvent("session:stop_speak", { detail: { sessionId: getSessionId() } })
       );
-    }, 1000);
+    }, 200);
     const onSpeak = _.throttle(
       () => {
         window.dispatchEvent(
@@ -59,7 +59,7 @@ export class Session {
         );
         onStopSpeak();
       },
-      500,
+      100,
       {
         leading: true,
       }
@@ -73,7 +73,7 @@ export class Session {
         sumSquares += amplitude * amplitude;
       }
       let volume = Math.sqrt(sumSquares / pcmData.length);
-      if (volume > 0.01) {
+      if (volume > 0.05) {
         onSpeak();
       }
 

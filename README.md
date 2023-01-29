@@ -8,4 +8,4 @@ Microphone + Victory = Mictory
 
 ## 雏形预览
 
-![](https://i.imgur.com/qpTMehM.png)
+![](hhttps://i.imgur.com/9P8rxOp.png)

@@ -29,3 +29,13 @@ export interface IServerUser {
   userNickname: string;
   online: boolean;
 }
+
+export interface IUserInfo {
+  avatar: null;
+  createdTime: string;
+  email: string;
+  id: number;
+  nickname: string;
+  nicknameNo: number;
+  updatedTime: string;
+}

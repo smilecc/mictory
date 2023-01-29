@@ -98,7 +98,9 @@ fn init_config(cfg: &mut web::ServiceConfig) {
             .wrap(api::middleware::JWTAuth { jwt_key })
             .service(room_api::get_rooms)
             .service(server_api::create_server)
-            .service(server_api::list_user_server),
+            .service(server_api::list_user_server)
+            .service(server_api::join_server)
+            .service(user_api::get_user),
     );
 }
 

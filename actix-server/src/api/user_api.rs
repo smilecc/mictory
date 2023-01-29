@@ -22,8 +22,18 @@ use crate::{
 use super::{middleware::JWTAuthClaims, ResultBuilder};
 
 #[get("/api/user/{id}")]
-pub async fn get_user(app_state: web::Data<AppState>, path: web::Path<(i64,)>) -> impl Responder {
-    let user = user::Entity::find_by_id(path.0)
+pub async fn get_user(
+    app_state: web::Data<AppState>,
+    path: web::Path<(i64,)>,
+    claims: JWTAuthClaims,
+) -> impl Responder {
+    let user_id = if path.0 == 0 {
+        claims.user_id.clone()
+    } else {
+        path.0.clone()
+    };
+
+    let user = user::Entity::find_by_id(user_id)
         .one(app_state.db.clone().as_ref())
         .await
         .unwrap();
