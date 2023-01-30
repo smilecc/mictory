@@ -198,11 +198,11 @@ export class Session {
       // 创建Audio标签
       let el = document.createElement(event.track.kind) as HTMLAudioElement;
       let stream = event.streams[0];
-      // this.modifyGain(stream, "volume");
+      this.modifyGain(stream, "volume");
       el.id = `track-${event.track.id}`;
       el.srcObject = stream;
       el.autoplay = true;
-      // el.muted = true;
+      el.muted = true;
       document.getElementById("tracks")?.appendChild(el);
       console.log(event, stream.id);
       const sessionId = stream.id.split(";")[0];
