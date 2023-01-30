@@ -10,10 +10,7 @@ use sea_orm::{
     IntoActiveModel, QueryFilter, Set,
 };
 
-use crate::{
-    engine::{engine::EngineSendWebSocketMessage, rtc::message::RTCRemoveTrackMessage},
-    model::{room, room_user},
-};
+use crate::engine::{engine::EngineSendWebSocketMessage, rtc::message::RTCRemoveTrackMessage};
 
 use super::{
     engine::Engine,
@@ -23,6 +20,7 @@ use super::{
     },
     websocket::WebSocketSession,
 };
+use model::{room, room_user};
 
 #[derive(Debug)]
 pub struct Room {

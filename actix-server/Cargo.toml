@@ -5,6 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+members = [".", "migration", "model"]
+
 [dependencies]
 actix = "0.13.0"
 actix-cors = "0.6.4"
@@ -18,7 +21,12 @@ futures = "0.3.25"
 jwt-simple = "0.11.3"
 log = "0.4.17"
 nanoid = "0.4.0"
-sea-orm = { version = "0.10.7", features = [ "sqlx-mysql", "runtime-actix-native-tls", "macros"] }
+sea-orm = { version = "0.10.7", features = [
+    "sqlx-mysql",
+    "sqlx-sqlite",
+    "runtime-actix-native-tls",
+    "macros",
+] }
 serde = "1.0.152"
 serde_json = "1.0.91"
 sha2 = "0.10.6"
@@ -26,6 +34,8 @@ static-files = "0.2.3"
 tokio = "1.24.1"
 validator = { version = "0.16.0", features = ["derive"] }
 webrtc = "0.6.0"
+migration = { path = "migration" } # depends on your needs
+model = { path = "model" } # depends on your needs
 
 [build-dependencies]
 static-files = "0.2.3"

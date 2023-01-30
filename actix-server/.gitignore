@@ -1,3 +1,4 @@
 /target
 .jwt_secret
 .env
+data.db

@@ -1,4 +1,6 @@
+use crate::{api::ResultBuilder, business::server_business, AppState, VERSION};
 use actix_web::{get, http::StatusCode, post, web, Responder};
+use model::{room_user, server, user, user_server};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult, JoinType, PaginatorTrait,
     QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
@@ -6,13 +8,6 @@ use sea_orm::{
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use validator::Validate;
-
-use crate::{
-    api::ResultBuilder,
-    business::server_business,
-    model::{room_user, server, user, user_server},
-    AppState, VERSION,
-};
 
 use super::middleware::JWTAuthClaims;
 use sea_orm::prelude::DateTime;

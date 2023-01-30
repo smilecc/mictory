@@ -1,7 +1,7 @@
 use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ConnectionTrait, Set};
 
-use crate::model::*;
+use model::*;
 
 pub async fn create_server<C>(db: &C, name: &str, creator_id: &i64) -> server::Model
 where

@@ -8,12 +8,12 @@ use actix_web_static_files::ResourceFiles;
 use api::*;
 use engine::{engine::Engine, websocket::WebSocketSession};
 use jwt_simple::prelude::HS512Key;
+use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 mod api;
 mod business;
 mod engine;
-mod model;
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
@@ -54,6 +54,7 @@ async fn main() -> std::io::Result<()> {
         .sqlx_logging_level(log::LevelFilter::Debug); // Setting SQLx log level
 
     let db_conn = Arc::new(Database::connect(db_opt).await.unwrap());
+    Migrator::up(db_conn.as_ref(), None).await.unwrap();
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     let jwt_key = api::middleware::init_jwt_key();

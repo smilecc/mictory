@@ -21,10 +21,10 @@ use crate::{
         engine,
         rtc::message::{RTCCandidateMessage, RTCReceiveAnswerMessage, RTCReceiveOfferMessage},
     },
-    model::room_user,
 };
 
 use super::rtc::session::RTCSession;
+use model::room_user;
 
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Option<()>")]

@@ -3,16 +3,14 @@ use std::{collections::HashMap, sync::Arc};
 use actix::prelude::*;
 use sea_orm::{sea_query::Expr, DatabaseConnection, EntityTrait};
 
-use crate::{
-    engine::{
-        room::{RoomExitMessage, RoomJoinMessage},
-        rtc::message::RTCStopMessage,
-        websocket::WebSocketSendMessage,
-    },
-    model::room_user,
+use crate::engine::{
+    room::{RoomExitMessage, RoomJoinMessage},
+    rtc::message::RTCStopMessage,
+    websocket::WebSocketSendMessage,
 };
 
 use super::{room::Room, rtc::session::RTCSession, websocket::WebSocketSession};
+use model::room_user;
 
 #[derive(Debug)]
 pub struct Engine {

@@ -13,11 +13,9 @@ use serde_json::json;
 use sha2::{Digest, Sha512};
 use validator::Validate;
 
-use crate::{
-    business::server_business,
-    model::{user, user_nickname},
-    AppState,
-};
+use model::{user, user_nickname};
+
+use crate::{business::server_business, AppState};
 
 use super::{middleware::JWTAuthClaims, ResultBuilder};
 
