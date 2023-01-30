@@ -93,7 +93,7 @@ export const HomePage: React.FC = () => {
                   value={commonStore.currentConnectServer?.host}
                   onChange={(e) => {
                     let selectServer = commonStore.connectServers.find((it) => it.host === e);
-                    if (selectServer) {
+                    if (selectServer && selectServer.host !== commonStore.currentConnectServer?.host) {
                       commonStore.activeConnectServer(selectServer);
                       commonStore.loadUserInfo();
                     }

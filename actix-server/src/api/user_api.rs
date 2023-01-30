@@ -159,16 +159,31 @@ pub async fn create_user(
     .await
     .unwrap();
 
-    // 给用户创建默认服务器
+    // 给用户创建默认频道
     server_business::create_server(
         &txn,
-        &format!("{}的服务器", create_query.nickname),
+        &format!("{}的频道", create_query.nickname),
         &new_user.id,
     )
     .await;
 
+    // 创建token
+    let jwt_key = app_state.jwt_key.clone();
+    let token = jwt_key
+        .authenticate(Claims::with_custom_claims(
+            JWTAuthClaims {
+                user_id: new_user.id.clone(),
+            },
+            Duration::from_days(365),
+        ))
+        .unwrap();
+
     txn.commit().await.unwrap();
-    ResultBuilder::success_with_null().ok()
+    ResultBuilder::success(json!({
+        "accessToken": token,
+        "userId": new_user.id.clone(),
+    }))
+    .ok()
 }
 
 pub fn build_paassword_hash(password: &str, salt: &str) -> Result<String, Base64Error> {

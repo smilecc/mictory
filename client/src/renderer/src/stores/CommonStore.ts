@@ -41,9 +41,7 @@ export class CommonStore {
   }
 
   activeConnectServer(server: IConnectServer) {
-    this.joinedServerId = 0;
-    this.viewServerId = 0;
-    this.userInfo = null;
+    this.logout();
     this.connectServers = this.connectServers.map((it) => ({
       ...it,
       active: it.url === server.url,
@@ -81,6 +79,8 @@ export class CommonStore {
   logout() {
     this.userInfo = null;
     this.accessToken = null;
+    this.joinedServerId = 0;
+    this.viewServerId = 0;
     window.localStorage.removeItem(STORAGE_ACCESS_TOKEN);
   }
 }

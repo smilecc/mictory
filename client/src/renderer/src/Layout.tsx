@@ -16,11 +16,8 @@ export const BaseLayout: React.FC<{
   }, [touchBarRef.current]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-app-bg">
-      <div
-        className="app-drag-bar flex w-screen justify-between bg-app-dark text-sm text-gray-300"
-        ref={touchBarRef}
-      >
+    <div className="h-screen w-screen overflow-hidden rounded-md bg-app-bg">
+      <div className="app-drag-bar flex w-screen justify-between bg-app-dark text-sm text-gray-300" ref={touchBarRef}>
         <div className="py-1 pl-3">Mictory</div>
         <div className="app-drag-bar-no">
           <ActionIcon
@@ -34,10 +31,7 @@ export const BaseLayout: React.FC<{
           </ActionIcon>
         </div>
       </div>
-      <div
-        className="max-h-full overflow-auto"
-        style={{ height: `calc(100vh - ${touchBarHeight}px)` }}
-      >
+      <div className="max-h-full overflow-auto" style={{ height: `calc(100vh - ${touchBarHeight}px)` }}>
         {props.children}
       </div>
     </div>

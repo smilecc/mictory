@@ -4,7 +4,7 @@ import { BaseLayout } from "./Layout";
 import { MantineProvider } from "@mantine/core";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { getStores, StoreContext } from "@renderer/stores";
-import { HomePage, SettingPage, UserLoginPage, UserConnectPage } from "@renderer/pages";
+import { HomePage, SettingPage, UserLoginPage, UserCreatePage, UserConnectPage } from "@renderer/pages";
 import { RouteGuard } from "./components";
 import "./style.css";
 import { NotificationsProvider } from "@mantine/notifications";
@@ -37,6 +37,10 @@ const router = createHashRouter([
   {
     path: "/user/login",
     element: <UserLoginPage />,
+  },
+  {
+    path: "/user/create",
+    element: <UserCreatePage />,
   },
   {
     path: "/user/connect",

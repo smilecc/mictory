@@ -60,8 +60,21 @@ export const UserConnectPage: React.FC = () => {
           >
             <TextInput label="服务器地址" placeholder="请输入服务器地址" required {...form.getInputProps("url")} />
             <Button className="mt-4" fullWidth type="submit" loading={state.submitting}>
-              连接
+              连接服务器
             </Button>
+            {commonStore.connectServers.length > 0 && (
+              <Button
+                className="mt-2"
+                variant="outline"
+                fullWidth
+                loading={state.submitting}
+                onClick={() => {
+                  navigate("/");
+                }}
+              >
+                返回主页
+              </Button>
+            )}
           </form>
         </Card>
       </MantineProvider>

@@ -1,4 +1,4 @@
-import { LoadingOverlay, Title } from "@mantine/core";
+import { LoadingOverlay, Title, Text, Button } from "@mantine/core";
 import { IServerRoom, IServerUser, IUserServer, ServerApi } from "@renderer/api";
 import { useCommonStore } from "@renderer/stores";
 import { IconUser } from "@tabler/icons-react";
@@ -6,11 +6,13 @@ import { useEventListener, useInterval, useReactive } from "ahooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { runInAction } from "mobx";
+import { useClipboard } from "@mantine/hooks";
 
 export const ServerPanel: React.FC<{
   server: IUserServer;
   visible: boolean;
 }> = (props) => {
+  const clipboard = useClipboard({ timeout: 1000 });
   const commonStore = useCommonStore();
   const state = useReactive({
     serverId: 0,
@@ -115,6 +117,20 @@ export const ServerPanel: React.FC<{
       <LoadingOverlay visible={state.loading} overlayBlur={2} overlayOpacity={0.05} />
 
       <div className="flex-1 bg-zinc-800/70 py-4 text-gray-400">
+        <div className="mb-2 flex items-center px-5">
+          <Text size={12}>频道ID: {state.serverId}</Text>
+          <Button
+            className="ml-1"
+            compact
+            size="xs"
+            variant="subtle"
+            onClick={() => {
+              clipboard.copy(state.serverId);
+            }}
+          >
+            {clipboard.copied ? "ID已复制" : "复制ID"}
+          </Button>
+        </div>
         <Title order={2} className="mb-6 px-5 leading-none text-zinc-200">
           {state.serverName}
         </Title>

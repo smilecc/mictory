@@ -26,7 +26,12 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(ColumnDef::new(room::Column::MaxMember).integer().not_null())
-                    .col(ColumnDef::new(room::Column::Sort).integer().not_null())
+                    .col(
+                        ColumnDef::new(room::Column::Sort)
+                            .integer()
+                            .default(9999)
+                            .not_null(),
+                    )
                     .col(
                         ColumnDef::new(room::Column::CreatedTime)
                             .date_time()
