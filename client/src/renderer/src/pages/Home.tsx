@@ -1,4 +1,4 @@
-import { ActionIcon, Button, HoverCard, Menu, Modal, Select } from "@mantine/core";
+import { ActionIcon, Button, HoverCard, Menu, Modal, Select, Slider } from "@mantine/core";
 import { IUserServer, ServerApi } from "@renderer/api";
 import React, { useCallback, useEffect, useState } from "react";
 import { useCommonStore } from "@renderer/stores";
@@ -7,7 +7,7 @@ import { Observer } from "mobx-react-lite";
 import { CreateServerModal, JoinServerModal, ServerPanel } from "@renderer/components";
 import { autorun, runInAction } from "mobx";
 import { useNavigate } from "react-router-dom";
-import { IconHomePlus, IconPlus, IconSettings, IconSquarePlus } from "@tabler/icons-react";
+import { IconHomePlus, IconMicrophone, IconMicrophoneOff, IconPlus, IconSettings, IconSquarePlus, IconVolume, IconVolumeOff } from "@tabler/icons-react";
 import { useReactive } from "ahooks";
 import { SettingPage } from "./Setting";
 
@@ -178,7 +178,7 @@ export const HomePage: React.FC = () => {
           {() => (
             <div className="select-none rounded-md bg-zinc-800 p-2 pt-1">
               {/* 用户昵称 */}
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-1 flex items-center justify-between">
                 <div className="text-md w-full overflow-hidden text-ellipsis leading-none text-zinc-200">
                   <HoverCard width={200} shadow="md" position="right">
                     <HoverCard.Target>
@@ -200,8 +200,7 @@ export const HomePage: React.FC = () => {
                 </ActionIcon>
               </div>
               {commonStore.joinedServerId ? (
-                <div className="leading-none">
-                  <div className="mb-2 text-xs font-bold">语音已连接</div>
+                <div className="mb-2 leading-none">
                   <div className="mb-3 text-zinc-200">{joinedServer?.name}</div>
                   <Button
                     fullWidth
@@ -215,9 +214,34 @@ export const HomePage: React.FC = () => {
                     断开语音
                   </Button>
                 </div>
-              ) : (
-                <div className="text-xs font-bold">语音未连接</div>
-              )}
+              ) : null}
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-bold">{commonStore.joinedServerId ? "语音已连接" : "语音未连接"}</div>
+                <div className="flex">
+                  {/* 麦克风音量 */}
+                  <HoverCard width={200} withArrow openDelay={100}>
+                    <HoverCard.Target>
+                      <ActionIcon onClick={() => commonStore.setGainItem("microphone", commonStore.gainSetting.microphone ? 0 : 100)}>
+                        {commonStore.gainSetting.microphone ? <IconMicrophone size={18} /> : <IconMicrophoneOff size={18} />}
+                      </ActionIcon>
+                    </HoverCard.Target>
+                    <HoverCard.Dropdown>
+                      <Slider max={300} labelAlwaysOn value={commonStore.gainSetting.microphone} onChange={(v) => commonStore.setGainItem("microphone", v)} />
+                    </HoverCard.Dropdown>
+                  </HoverCard>
+                  {/* 播放音量 */}
+                  <HoverCard width={200} withArrow openDelay={100}>
+                    <HoverCard.Target>
+                      <ActionIcon className="ml-1" onClick={() => commonStore.setGainItem("volume", commonStore.gainSetting.volume ? 0 : 100)}>
+                        {commonStore.gainSetting.volume ? <IconVolume size={18} /> : <IconVolumeOff size={18} />}
+                      </ActionIcon>
+                    </HoverCard.Target>
+                    <HoverCard.Dropdown>
+                      <Slider max={300} labelAlwaysOn value={commonStore.gainSetting.volume} onChange={(v) => commonStore.setGainItem("volume", v)} />
+                    </HoverCard.Dropdown>
+                  </HoverCard>
+                </div>
+              </div>
             </div>
           )}
         </Observer>

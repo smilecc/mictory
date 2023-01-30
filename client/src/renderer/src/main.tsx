@@ -9,6 +9,11 @@ import { RouteGuard } from "./components";
 import "./style.css";
 import { NotificationsProvider } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
+import { IGainSetting } from "./stores/CommonStore";
+
+declare global {
+  var _gainSetting: IGainSetting | undefined;
+}
 
 // 禁止鼠标的前进返回按钮
 window.addEventListener("mouseup", (e) => {

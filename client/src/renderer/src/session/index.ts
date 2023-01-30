@@ -1,3 +1,4 @@
+import { IGainSetting } from "@renderer/stores/CommonStore";
 import _ from "lodash";
 
 export class Session {
@@ -5,6 +6,7 @@ export class Session {
   websocket!: WebSocket;
   peerConnection?: RTCPeerConnection;
   isClosed: boolean = false;
+  isJoined: boolean = false;
   userMedia!: MediaStream;
   sessionId: string = "";
   watchVolumeSessions: Set<string> = new Set();
@@ -22,6 +24,8 @@ export class Session {
         },
       })
       .then((media) => {
+        console.log("初始化麦克风", media);
+        this.modifyGain(media, "microphone");
         this.userMedia = media;
         this.watchVolumeSessions.add("MYSELF");
         this.watchMediaStreamVolume(this.userMedia, "MYSELF");
@@ -48,15 +52,11 @@ export class Session {
     // 如果是自己说话则使用当前用户会话ID
     const getSessionId = () => (sessionId === "MYSELF" ? this.sessionId : sessionId);
     const onStopSpeak = _.debounce(() => {
-      window.dispatchEvent(
-        new CustomEvent("session:stop_speak", { detail: { sessionId: getSessionId() } })
-      );
+      window.dispatchEvent(new CustomEvent("session:stop_speak", { detail: { sessionId: getSessionId() } }));
     }, 200);
     const onSpeak = _.throttle(
       () => {
-        window.dispatchEvent(
-          new CustomEvent("session:speak", { detail: { sessionId: getSessionId() } })
-        );
+        window.dispatchEvent(new CustomEvent("session:speak", { detail: { sessionId: getSessionId() } }));
         onStopSpeak();
       },
       100,
@@ -142,6 +142,7 @@ export class Session {
   }
 
   async joinRoom(roomId: string) {
+    this.isJoined = true;
     this.peerConnection = new RTCPeerConnection({
       iceServers: [
         // {
@@ -155,7 +156,11 @@ export class Session {
       ],
     });
 
-    this.handlePeerConnectionEvent(this.peerConnection);
+    try {
+      this.handlePeerConnectionEvent(this.peerConnection);
+    } catch (e) {
+      console.error(e);
+    }
 
     // 给连接增加轨道
     this.userMedia?.getTracks()?.forEach((t) => {
@@ -193,9 +198,11 @@ export class Session {
       // 创建Audio标签
       let el = document.createElement(event.track.kind) as HTMLAudioElement;
       let stream = event.streams[0];
+      this.modifyGain(stream, "volume");
       el.id = `track-${event.track.id}`;
       el.srcObject = stream;
       el.autoplay = true;
+      el.muted = true;
       document.getElementById("tracks")?.appendChild(el);
       console.log(event, stream.id);
       const sessionId = stream.id.split(";")[0];
@@ -252,6 +259,7 @@ export class Session {
   }
 
   async exitRoom() {
+    this.isJoined = false;
     this.websocket.send(
       JSON.stringify({
         event: "rtc_exit_room",
@@ -263,5 +271,30 @@ export class Session {
   close() {
     this.isClosed = true;
     this.websocket.close();
+  }
+
+  modifyGain(stream: MediaStream, gainKey: keyof IGainSetting) {
+    const getValue = () => {
+      const globalGainValue = window._gainSetting?.[gainKey];
+      return typeof globalGainValue === "number" ? globalGainValue / 100 : 1;
+    };
+
+    const ctx = new AudioContext();
+    const gainNode = ctx.createGain();
+    const source = ctx.createMediaStreamSource(stream);
+    source.connect(gainNode).connect(ctx.destination);
+
+    const onFrame = () => {
+      gainNode.gain.value = getValue();
+      gainNode.gain.linearRampToValueAtTime(getValue(), ctx.currentTime + 1);
+
+      if (gainKey === "microphone") {
+        window.requestAnimationFrame(onFrame);
+      }
+      if (gainKey === "volume" && !this.isClosed && this.isJoined) {
+        window.requestAnimationFrame(onFrame);
+      }
+    };
+    window.requestAnimationFrame(onFrame);
   }
 }

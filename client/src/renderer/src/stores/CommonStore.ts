@@ -5,6 +5,7 @@ import { IUserInfo, UserApi } from "@renderer/api";
 export const STORAGE_CONNECT_SERVERS = "_connect_servers";
 export const STORAGE_ACCESS_TOKEN = "_access_token";
 export const STORAGE_USER_ID = "_user_id";
+export const STORAGE_GAIN_SETTING = "_gain_setting";
 
 export interface IConnectServer {
   url: string;
@@ -16,6 +17,11 @@ export interface IConnectServer {
   active: boolean;
 }
 
+export interface IGainSetting {
+  microphone: number;
+  volume: number;
+}
+
 export class CommonStore {
   connectServers: IConnectServer[] = [];
   accessToken: string | null;
@@ -23,17 +29,43 @@ export class CommonStore {
   userInfo: IUserInfo | null = null;
   viewServerId: number = 0;
   joinedServerId: number = 0;
+  gainSetting: IGainSetting = {
+    microphone: 100,
+    volume: 100,
+  };
 
   constructor() {
     makeAutoObservable(this);
+
+    // 初始化音量增益配置
+    let gainSettingJson = window.localStorage.getItem(STORAGE_GAIN_SETTING);
+    if (gainSettingJson) {
+      this.gainSetting = JSON.parse(gainSettingJson);
+    }
+    window._gainSetting = this.gainSetting;
+
     this.accessToken = window.localStorage.getItem(STORAGE_ACCESS_TOKEN);
     this.connectServers = JSON.parse(window.localStorage.getItem(STORAGE_CONNECT_SERVERS) || "[]");
+
     // 激活存储中的服务器
     const activeServer = this.connectServers.find((it) => it.active);
     if (activeServer) {
       this.activeConnectServer(activeServer);
     }
     this.loadUserInfo();
+  }
+
+  setGainSetting(gain: IGainSetting) {
+    this.gainSetting = gain;
+    window._gainSetting = gain;
+    window.localStorage.setItem(STORAGE_GAIN_SETTING, JSON.stringify(gain));
+  }
+
+  setGainItem(key: keyof IGainSetting, v: number) {
+    this.setGainSetting({
+      ...this.gainSetting,
+      [key]: v,
+    });
   }
 
   addConnectServer(server: IConnectServer) {
