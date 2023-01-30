@@ -156,11 +156,7 @@ export class Session {
       ],
     });
 
-    try {
-      this.handlePeerConnectionEvent(this.peerConnection);
-    } catch (e) {
-      console.error(e);
-    }
+    this.handlePeerConnectionEvent(this.peerConnection);
 
     // 给连接增加轨道
     this.userMedia?.getTracks()?.forEach((t) => {
@@ -290,10 +286,10 @@ export class Session {
     } else {
       source.connect(gainNode).connect(ctx.destination);
     }
+    gainNode.gain.value = getValue();
 
     const onFrame = () => {
-      gainNode.gain.value = getValue();
-      gainNode.gain.linearRampToValueAtTime(getValue(), ctx.currentTime + 1);
+      gainNode.gain.linearRampToValueAtTime(getValue(), ctx.currentTime);
 
       if (gainKey === "microphone") {
         window.requestAnimationFrame(onFrame);
