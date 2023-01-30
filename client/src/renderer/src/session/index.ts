@@ -198,11 +198,11 @@ export class Session {
       // 创建Audio标签
       let el = document.createElement(event.track.kind) as HTMLAudioElement;
       let stream = event.streams[0];
-      this.modifyGain(stream, "volume");
+      // this.modifyGain(stream, "volume");
       el.id = `track-${event.track.id}`;
       el.srcObject = stream;
       el.autoplay = true;
-      el.muted = true;
+      // el.muted = true;
       document.getElementById("tracks")?.appendChild(el);
       console.log(event, stream.id);
       const sessionId = stream.id.split(";")[0];
@@ -282,7 +282,14 @@ export class Session {
     const ctx = new AudioContext();
     const gainNode = ctx.createGain();
     const source = ctx.createMediaStreamSource(stream);
-    source.connect(gainNode).connect(ctx.destination);
+    if (gainKey === "microphone") {
+      const destination = ctx.createMediaStreamDestination();
+      source.connect(gainNode).connect(destination);
+      stream.removeTrack(stream.getAudioTracks()[0]);
+      stream.addTrack(destination.stream.getAudioTracks()[0]);
+    } else {
+      source.connect(gainNode).connect(ctx.destination);
+    }
 
     const onFrame = () => {
       gainNode.gain.value = getValue();
