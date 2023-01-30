@@ -126,6 +126,7 @@ export const HomePage: React.FC = () => {
                     if (selectServer && selectServer.host !== commonStore.currentConnectServer?.host) {
                       commonStore.activeConnectServer(selectServer);
                       commonStore.loadUserInfo();
+                      loadUserServers();
                     }
                   }}
                 />
