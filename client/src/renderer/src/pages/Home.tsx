@@ -1,14 +1,15 @@
-import { ActionIcon, Button, HoverCard, Select } from "@mantine/core";
+import { ActionIcon, Button, HoverCard, Menu, Modal, Select } from "@mantine/core";
 import { IUserServer, ServerApi } from "@renderer/api";
 import React, { useCallback, useEffect, useState } from "react";
 import { useCommonStore } from "@renderer/stores";
 import _ from "lodash";
 import { Observer } from "mobx-react-lite";
-import { JoinServerModal, ServerPanel } from "@renderer/components";
+import { CreateServerModal, JoinServerModal, ServerPanel } from "@renderer/components";
 import { autorun, runInAction } from "mobx";
 import { useNavigate } from "react-router-dom";
-import { IconPlus, IconSettings } from "@tabler/icons-react";
+import { IconHomePlus, IconPlus, IconSettings, IconSquarePlus } from "@tabler/icons-react";
 import { useReactive } from "ahooks";
+import { SettingPage } from "./Setting";
 
 type IViewdUserServer = IUserServer & {
   timestamp: number;
@@ -22,6 +23,8 @@ export const HomePage: React.FC = () => {
   const [joinedServer, setJoinedServer] = useState<IUserServer>();
   const state = useReactive({
     joinServerOpen: false,
+    createServerOpen: false,
+    settingOpen: false,
   });
 
   useEffect(
@@ -79,6 +82,33 @@ export const HomePage: React.FC = () => {
           server && selectServer(server);
         }}
       />
+      <CreateServerModal
+        opened={state.createServerOpen}
+        onClose={() => {
+          state.createServerOpen = false;
+        }}
+        onCreated={async (serverId) => {
+          state.createServerOpen = false;
+          let servers = await loadUserServers();
+          let server = servers.find((it) => it.id === serverId);
+          server && selectServer(server);
+        }}
+      />
+      <Modal
+        title="设置"
+        opened={state.settingOpen}
+        onClose={() => (state.settingOpen = false)}
+        size="90vw"
+        styles={{
+          inner: {
+            paddingTop: 30,
+            paddingBottom: 30,
+          },
+        }}
+      >
+        <SettingPage />
+      </Modal>
+
       <div className="flex h-full w-1/4 flex-col overflow-y-auto bg-app-dark px-3 py-2 text-gray-400">
         {/* 频道列表 */}
         <div className="flex-1 select-none">
@@ -126,17 +156,21 @@ export const HomePage: React.FC = () => {
               {userServer.name}
             </Button>
           ))}
-          <Button
-            leftIcon={<IconPlus size={15} />}
-            fullWidth
-            color="cyan"
-            variant="outline"
-            onClick={() => {
-              state.joinServerOpen = true;
-            }}
-          >
-            加入频道
-          </Button>
+          <Menu width={200}>
+            <Menu.Target>
+              <Button leftIcon={<IconPlus size={15} />} fullWidth color="cyan" variant="outline">
+                创建/加入频道
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item icon={<IconHomePlus />} onClick={() => (state.joinServerOpen = true)}>
+                加入频道
+              </Menu.Item>
+              <Menu.Item icon={<IconSquarePlus />} onClick={() => (state.createServerOpen = true)}>
+                创建频道
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </div>
         {/* 用户信息 */}
         <Observer>
@@ -157,7 +191,8 @@ export const HomePage: React.FC = () => {
                 <ActionIcon
                   className="mt-1"
                   onClick={() => {
-                    navigate("/setting");
+                    // navigate("/setting");
+                    state.settingOpen = true;
                   }}
                 >
                   <IconSettings size={18} />

@@ -9,6 +9,7 @@ export const STORAGE_USER_ID = "_user_id";
 export interface IConnectServer {
   url: string;
   host: string;
+  nickname: string | null;
   isHttps: boolean;
   version: string;
   accessToken: string | null;
@@ -40,6 +41,19 @@ export class CommonStore {
     window.localStorage.setItem(STORAGE_CONNECT_SERVERS, JSON.stringify(this.connectServers));
   }
 
+  removeConnectServer(server: IConnectServer) {
+    if (server.host === this.currentConnectServer?.host) {
+      this.logout();
+    }
+
+    this.connectServers = this.connectServers.filter((it) => it.url !== server.url);
+    if (this.connectServers.length > 0) {
+      this.activeConnectServer(this.connectServers[0]);
+      this.loadUserInfo();
+    }
+    window.localStorage.setItem(STORAGE_CONNECT_SERVERS, JSON.stringify(this.connectServers));
+  }
+
   activeConnectServer(server: IConnectServer) {
     this.logout();
     this.connectServers = this.connectServers.map((it) => ({
@@ -66,12 +80,18 @@ export class CommonStore {
       ...it,
       accessToken: it.host === this.currentConnectServer?.host ? accessToken : it.accessToken,
     }));
+    window.localStorage.setItem(STORAGE_CONNECT_SERVERS, JSON.stringify(this.connectServers));
   }
 
   loadUserInfo() {
     return UserApi.getUserInfo(0).then(({ data }) => {
       runInAction(() => {
         this.userInfo = data.data;
+        this.connectServers = this.connectServers.map((it) => ({
+          ...it,
+          nickname: it.host === this.currentConnectServer?.host ? data.data?.nickname || "无昵称" : it.nickname,
+        }));
+        window.localStorage.setItem(STORAGE_CONNECT_SERVERS, JSON.stringify(this.connectServers));
       });
     });
   }

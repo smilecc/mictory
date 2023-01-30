@@ -1,15 +1,16 @@
 import { Button, Group, Modal, ModalProps, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import { ServerApi } from "@renderer/api";
+import { RoomApi } from "@renderer/api";
 import { NoticeErrorHandler } from "@renderer/utils";
 import { IconCheck } from "@tabler/icons-react";
 import { useReactive } from "ahooks";
 import React, { useEffect } from "react";
 
-export const JoinServerModal: React.FC<
+export const CreateRoomModal: React.FC<
   ModalProps & {
-    onJoined: (serverId: string) => void;
+    serverId: number;
+    onSuccess: (serverId: string) => void;
   }
 > = (props) => {
   const state = useReactive({
@@ -17,7 +18,7 @@ export const JoinServerModal: React.FC<
   });
   const form = useForm({
     initialValues: {
-      serverId: "",
+      roomName: "",
     },
   });
 
@@ -28,18 +29,18 @@ export const JoinServerModal: React.FC<
   }, [props.opened]);
 
   return (
-    <Modal {...props} title="加入频道">
+    <Modal {...props} title="创建房间">
       <form
         onSubmit={form.onSubmit((value) => {
           state.loading = true;
-          ServerApi.joinServer(value.serverId)
+          RoomApi.createRoom(props.serverId, value.roomName)
             .then(() => {
               showNotification({
-                message: "频道加入成功",
+                message: "创建房间成功",
                 color: "green",
                 icon: <IconCheck />,
               });
-              props.onJoined(value.serverId);
+              props.onSuccess(value.roomName);
             })
             .catch(NoticeErrorHandler)
             .finally(() => {
@@ -47,10 +48,10 @@ export const JoinServerModal: React.FC<
             });
         })}
       >
-        <TextInput label="频道ID" placeholder="请输入频道ID" required {...form.getInputProps("serverId")} />
+        <TextInput label="房间名" placeholder="请输入房间名称" required {...form.getInputProps("roomName")} />
         <Group position="right" mt="md">
           <Button type="submit" loading={state.loading}>
-            立即加入
+            创建
           </Button>
         </Group>
       </form>

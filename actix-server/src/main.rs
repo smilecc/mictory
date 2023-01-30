@@ -107,7 +107,8 @@ fn init_config(cfg: &mut web::ServiceConfig) {
             .service(server_api::create_server)
             .service(server_api::list_user_server)
             .service(server_api::join_server)
-            .service(user_api::get_user),
+            .service(user_api::get_user)
+            .service(room_api::create_room),
     );
 }
 

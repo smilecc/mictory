@@ -3,7 +3,7 @@ use actix_web::{get, http::StatusCode, post, web, Responder};
 use model::{room_user, server, user, user_server};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult, JoinType, PaginatorTrait,
-    QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
+    QueryFilter, QuerySelect, Set, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -88,7 +88,6 @@ pub async fn list_user_server(
     let servers: Vec<server::Model> = user_server::Entity::find()
         .filter(user_server::Column::UserId.eq(claims.user_id.clone()))
         .find_also_related(server::Entity)
-        .order_by_desc(user_server::Column::Id)
         .all(app_state.db.as_ref())
         .await
         .unwrap()

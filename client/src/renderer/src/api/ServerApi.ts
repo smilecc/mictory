@@ -18,6 +18,12 @@ export class ServerApi {
     return Request.post(`/api/server/${serverId}/join`);
   }
 
+  static createServer(name: string): IResponse<{ serverId: number }> {
+    return Request.post(`/api/server`, {
+      name,
+    });
+  }
+
   static getServerVersion(url: string): IResponse<{ version: string }> {
     return Request.get(`/api/version`, {
       baseURL: url,

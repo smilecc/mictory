@@ -1,10 +1,10 @@
-import { AppShell, createStyles, Group, Navbar, Text } from "@mantine/core";
+import { AppShell, createStyles, Navbar, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
+import { SettingServer } from "@renderer/components";
 import { useCommonStore } from "@renderer/stores";
 import { IconDashboard } from "@tabler/icons-react";
 import React, { useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import { SettingIndexPage } from "./setting/Index";
+import { useNavigate } from "react-router-dom";
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef("icon");
@@ -60,25 +60,24 @@ const useStyles = createStyles((theme, _params, getRef) => {
   };
 });
 
-const LINKS = [{ link: "/", label: "首页", icon: IconDashboard }];
+const LINKS = [{ link: "server", label: "服务器设置", icon: IconDashboard }];
 
 export const SettingPage: React.FC = () => {
   const { classes, cx } = useStyles();
   const navigate = useNavigate();
-  const [active, setActive] = useState("首页");
+  const [active, setActive] = useState("server");
   const commonStore = useCommonStore();
 
   const links = LINKS.map((item) => (
     <a
       className={cx(classes.link, {
-        [classes.linkActive]: item.label === active,
+        [classes.linkActive]: item.link === active,
       })}
       href={item.link}
       key={item.label}
       onClick={(event) => {
         event.preventDefault();
-        navigate(item.link);
-        setActive(item.label);
+        setActive(item.link);
       }}
     >
       <item.icon className={classes.linkIcon} />
@@ -101,7 +100,7 @@ export const SettingPage: React.FC = () => {
     <AppShell
       styles={{
         root: {
-          height: "100%",
+          height: "calc(85vh - 60px)",
         },
         body: {
           height: "100%",
@@ -112,35 +111,18 @@ export const SettingPage: React.FC = () => {
         },
       }}
       navbar={
-        <Navbar width={{ sm: 240 }} p="md" style={{ position: "relative", height: "100%" }}>
-          <Navbar.Section grow>
-            <Group className={classes.header} position="apart">
-              <div className="select-none font-bold">Settings</div>
-            </Group>
-            {links}
-          </Navbar.Section>
+        <Navbar width={{ sm: 240 }} p="md" style={{ position: "relative", height: "auto", paddingLeft: 0, paddingBottom: 0 }}>
+          <Navbar.Section grow>{links}</Navbar.Section>
 
           <Navbar.Section className={classes.footer}>
-            <a className={`${classes.link} text-red-600`} onClick={openLogoutModal}>
+            <a className={`${classes.link} cursor-pointer select-none text-red-600`} onClick={openLogoutModal}>
               <span>退出登录</span>
-            </a>
-            <a
-              href="#"
-              className={classes.link}
-              onClick={() => {
-                navigate(-1);
-              }}
-            >
-              <span>返回房间</span>
             </a>
           </Navbar.Section>
         </Navbar>
       }
     >
-      <Routes>
-        <Route path="/" element={<Navigate to="/setting/index" replace />} />
-        <Route path="/index" element={<SettingIndexPage />} />
-      </Routes>
+      <div className="h-full overflow-auto">{active === "server" ? <SettingServer /> : null}</div>
     </AppShell>
   );
 };

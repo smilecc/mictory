@@ -38,6 +38,7 @@ export const UserConnectPage: React.FC = () => {
                   const server: IConnectServer = {
                     url: value.url,
                     host: url.host,
+                    nickname: null,
                     isHttps: url.protocol.startsWith("https"),
                     version: data.data.version,
                     accessToken: null,

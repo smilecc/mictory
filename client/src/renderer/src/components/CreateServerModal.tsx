@@ -7,9 +7,9 @@ import { IconCheck } from "@tabler/icons-react";
 import { useReactive } from "ahooks";
 import React, { useEffect } from "react";
 
-export const JoinServerModal: React.FC<
+export const CreateServerModal: React.FC<
   ModalProps & {
-    onJoined: (serverId: string) => void;
+    onCreated: (serverId: number) => void;
   }
 > = (props) => {
   const state = useReactive({
@@ -17,7 +17,7 @@ export const JoinServerModal: React.FC<
   });
   const form = useForm({
     initialValues: {
-      serverId: "",
+      name: "",
     },
   });
 
@@ -28,18 +28,18 @@ export const JoinServerModal: React.FC<
   }, [props.opened]);
 
   return (
-    <Modal {...props} title="加入频道">
+    <Modal {...props} title="创建频道">
       <form
         onSubmit={form.onSubmit((value) => {
           state.loading = true;
-          ServerApi.joinServer(value.serverId)
-            .then(() => {
+          ServerApi.createServer(value.name)
+            .then(({ data }) => {
               showNotification({
-                message: "频道加入成功",
+                message: "频道创建成功",
                 color: "green",
                 icon: <IconCheck />,
               });
-              props.onJoined(value.serverId);
+              props.onCreated(data.data.serverId);
             })
             .catch(NoticeErrorHandler)
             .finally(() => {
@@ -47,10 +47,10 @@ export const JoinServerModal: React.FC<
             });
         })}
       >
-        <TextInput label="频道ID" placeholder="请输入频道ID" required {...form.getInputProps("serverId")} />
+        <TextInput label="频道名称" placeholder="请输入频道名称" required {...form.getInputProps("name")} />
         <Group position="right" mt="md">
           <Button type="submit" loading={state.loading}>
-            立即加入
+            立即创建
           </Button>
         </Group>
       </form>

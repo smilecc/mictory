@@ -1,12 +1,14 @@
-import { LoadingOverlay, Title, Text, Button } from "@mantine/core";
+import { LoadingOverlay, Title, Button, ActionIcon, Badge } from "@mantine/core";
 import { IServerRoom, IServerUser, IUserServer, ServerApi } from "@renderer/api";
 import { useCommonStore } from "@renderer/stores";
-import { IconUser } from "@tabler/icons-react";
+import { IconPlus, IconUser } from "@tabler/icons-react";
 import { useEventListener, useInterval, useReactive } from "ahooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { runInAction } from "mobx";
 import { useClipboard } from "@mantine/hooks";
+import { CreateRoomModal } from "./CreateRoomModal";
+import { Observer } from "mobx-react-lite";
 
 export const ServerPanel: React.FC<{
   server: IUserServer;
@@ -18,6 +20,7 @@ export const ServerPanel: React.FC<{
     serverId: 0,
     serverName: "",
     loading: false,
+    createRoomOpen: false,
   });
 
   const [rooms, setRooms] = useState<IServerRoom[]>([]);
@@ -115,10 +118,24 @@ export const ServerPanel: React.FC<{
   return (
     <>
       <LoadingOverlay visible={state.loading} overlayBlur={2} overlayOpacity={0.05} />
+      <CreateRoomModal
+        serverId={state.serverId}
+        opened={state.createRoomOpen}
+        onClose={() => {
+          state.createRoomOpen = false;
+        }}
+        onSuccess={() => {
+          queryServerInfo(state.serverId);
+          state.createRoomOpen = false;
+        }}
+      />
 
       <div className="flex-1 bg-zinc-800/70 py-4 text-gray-400">
-        <div className="mb-2 flex items-center px-5">
-          <Text size={12}>频道ID: {state.serverId}</Text>
+        <Title order={2} className="mb-2 px-5 leading-none text-zinc-200">
+          {state.serverName}
+        </Title>
+        <div className="mb-6 flex items-center px-5">
+          <Badge className="mt-[1px]">频道ID: {state.serverId}</Badge>
           <Button
             className="ml-1"
             compact
@@ -128,13 +145,22 @@ export const ServerPanel: React.FC<{
               clipboard.copy(state.serverId);
             }}
           >
-            {clipboard.copied ? "ID已复制" : "复制ID"}
+            {clipboard.copied ? "ID已复制" : "复制"}
           </Button>
         </div>
-        <Title order={2} className="mb-6 px-5 leading-none text-zinc-200">
-          {state.serverName}
-        </Title>
-        <div className="mb-2 px-5 text-xs">ROOMS</div>
+
+        <Observer>
+          {() => (
+            <div className="mb-2 flex px-5 text-xs">
+              <span>ROOMS</span>
+              {commonStore.userInfo?.id === props.server.creatorId && (
+                <ActionIcon size="xs" variant="filled" className="ml-2" onClick={() => (state.createRoomOpen = true)}>
+                  <IconPlus size={13} />
+                </ActionIcon>
+              )}
+            </div>
+          )}
+        </Observer>
         <div className="px-2">
           {rooms.map((room) => (
             <div key={room.id}>
