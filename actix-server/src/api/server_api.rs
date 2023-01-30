@@ -11,11 +11,16 @@ use crate::{
     api::ResultBuilder,
     business::server_business,
     model::{room_user, server, user, user_server},
-    AppState,
+    AppState, VERSION,
 };
 
 use super::middleware::JWTAuthClaims;
 use sea_orm::prelude::DateTime;
+
+#[get("/api/version")]
+pub async fn get_version() -> impl Responder {
+    ResultBuilder::success(json!({ "version": VERSION })).ok()
+}
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 #[serde(rename_all = "camelCase")]

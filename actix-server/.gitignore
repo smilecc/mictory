@@ -1,2 +1,3 @@
 /target
 .jwt_secret
+.env

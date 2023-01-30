@@ -9,6 +9,11 @@ export const RouteGuard: React.FC<{
   const commonStore = useCommonStore();
 
   useEffect(() => {
+    if (commonStore.connectServers.length === 0) {
+      navigate("/user/connect");
+      return;
+    }
+
     if (!commonStore.accessToken) {
       navigate("/user/login");
     }

@@ -22,14 +22,14 @@ export const JoinServerModal: React.FC<
   });
 
   return (
-    <Modal {...props} title="加入服务器">
+    <Modal {...props} title="加入频道">
       <form
         onSubmit={form.onSubmit((value) => {
           state.loading = true;
           ServerApi.joinServer(value.serverId)
             .then(() => {
               showNotification({
-                message: "服务器加入成功",
+                message: "频道加入成功",
                 color: "green",
                 icon: <IconCheck />,
               });
@@ -41,7 +41,7 @@ export const JoinServerModal: React.FC<
             });
         })}
       >
-        <TextInput label="服务器ID" placeholder="请输入服务器ID" required {...form.getInputProps("serverId")} />
+        <TextInput label="频道ID" placeholder="请输入频道ID" required {...form.getInputProps("serverId")} />
         <Group position="right" mt="md">
           <Button type="submit" loading={state.loading}>
             立即加入

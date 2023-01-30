@@ -1,5 +1,5 @@
 import { showNotification } from "@mantine/notifications";
-import { STORAGE_ACCESS_TOKEN } from "@renderer/stores/CommonStore";
+import { IConnectServer, STORAGE_ACCESS_TOKEN, STORAGE_CONNECT_SERVERS } from "@renderer/stores/CommonStore";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
 export const Request = axios.create();
@@ -11,7 +11,8 @@ export interface IApiResult<T = any> {
 export type IResponse<T> = Promise<AxiosResponse<IApiResult<T>>>;
 
 Request.interceptors.request.use(async (config) => {
-  config.baseURL = `https://rocket.smilec.cc`;
+  const connectServers: IConnectServer[] = JSON.parse(window.localStorage.getItem(STORAGE_CONNECT_SERVERS) || "[]");
+  config.baseURL = config.baseURL || connectServers.find((it) => it.active)?.url;
 
   const auth = window.localStorage.getItem(STORAGE_ACCESS_TOKEN);
   if (auth) {

@@ -24,9 +24,14 @@ pub struct AppState {
     pub jwt_key: HS512Key,
 }
 
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!(r"$$\      $$\ $$\             $$\                                   ");
+    println!(
+        r"$$\      $$\ $$\             $$\                     Version: {}",
+        VERSION
+    );
     println!(r"$$$\    $$$ |\__|            $$ |                                  ");
     println!(r"$$$$\  $$$$ |$$\  $$$$$$$\ $$$$$$\    $$$$$$\   $$$$$$\  $$\   $$\ ");
     println!(r"$$\$$\$$ $$ |$$ |$$  _____|\_$$  _|  $$  __$$\ $$  __$$\ $$ |  $$ |");
@@ -88,7 +93,8 @@ fn init_config(cfg: &mut web::ServiceConfig) {
             .wrap(middleware::Logger::default()),
     );
 
-    cfg.service(api::user_api::login)
+    cfg.service(api::server_api::get_version)
+        .service(api::user_api::login)
         .service(api::user_api::create_user)
         .service(api::server_api::list_server_users);
 

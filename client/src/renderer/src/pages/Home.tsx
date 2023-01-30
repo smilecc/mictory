@@ -1,4 +1,4 @@
-import { ActionIcon, Button, HoverCard } from "@mantine/core";
+import { ActionIcon, Button, HoverCard, Select } from "@mantine/core";
 import { IUserServer, ServerApi } from "@renderer/api";
 import React, { useCallback, useEffect, useState } from "react";
 import { useCommonStore } from "@renderer/stores";
@@ -80,8 +80,38 @@ export const HomePage: React.FC = () => {
         }}
       />
       <div className="flex h-full w-1/4 flex-col overflow-y-auto bg-app-dark px-3 py-2 text-gray-400">
-        {/* 服务器列表 */}
+        {/* 频道列表 */}
         <div className="flex-1 select-none">
+          {/* 选择服务器 */}
+          <Observer>
+            {() => (
+              <div className="mb-3 flex items-center">
+                <Select
+                  className="flex-1"
+                  placeholder="Pick one"
+                  data={commonStore.connectServers.map((it) => it.host)}
+                  value={commonStore.currentConnectServer?.host}
+                  onChange={(e) => {
+                    let selectServer = commonStore.connectServers.find((it) => it.host === e);
+                    if (selectServer) {
+                      commonStore.activeConnectServer(selectServer);
+                      commonStore.loadUserInfo();
+                    }
+                  }}
+                />
+                <ActionIcon
+                  className="ml-2"
+                  variant="light"
+                  size="lg"
+                  onClick={() => {
+                    navigate("/user/connect");
+                  }}
+                >
+                  <IconPlus />
+                </ActionIcon>
+              </div>
+            )}
+          </Observer>
           {userServers.map((userServer) => (
             <Button
               fullWidth
@@ -105,13 +135,14 @@ export const HomePage: React.FC = () => {
               state.joinServerOpen = true;
             }}
           >
-            加入服务器
+            加入频道
           </Button>
         </div>
         {/* 用户信息 */}
         <Observer>
           {() => (
             <div className="select-none rounded-md bg-zinc-800 p-2 pt-1">
+              {/* 用户昵称 */}
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-md w-full overflow-hidden text-ellipsis leading-none text-zinc-200">
                   <HoverCard width={200} shadow="md" position="right">
@@ -140,7 +171,7 @@ export const HomePage: React.FC = () => {
                     fullWidth
                     onClick={() => {
                       runInAction(() => {
-                        commonStore.session.exitRoom();
+                        commonStore.session?.exitRoom();
                         commonStore.joinedServerId = 0;
                       });
                     }}
@@ -156,7 +187,7 @@ export const HomePage: React.FC = () => {
         </Observer>
       </div>
 
-      {/* 服务器信息 */}
+      {/* 频道信息 */}
       <div className="flex-1 select-none bg-app-dark">
         <Observer>
           {() => (
@@ -164,7 +195,7 @@ export const HomePage: React.FC = () => {
               {commonStore.viewServerId ? (
                 viewdServers.map((server) => <ServerPanel key={server.id} server={server} visible={commonStore.viewServerId === server.id} />)
               ) : (
-                <div className="flex flex-1 items-center justify-center text-zinc-400">请选择或加入一个服务器</div>
+                <div className="flex flex-1 items-center justify-center text-zinc-400">请选择或加入一个频道</div>
               )}
             </div>
           )}

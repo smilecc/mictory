@@ -56,7 +56,7 @@ export const ServerPanel: React.FC<{
     state.loading = true;
     state.serverName = serverName;
     state.serverId = serverId;
-    commonStore.session.auth(commonStore.accessToken!);
+    commonStore.session?.auth(commonStore.accessToken!);
     queryServerInfo(serverId);
   }, []);
 
@@ -126,7 +126,7 @@ export const ServerPanel: React.FC<{
                 className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
                 onDoubleClick={() => {
                   runInAction(() => {
-                    commonStore.session.joinRoom(room.id.toString());
+                    commonStore.session?.joinRoom(room.id.toString());
                     commonStore.joinedServerId = state.serverId;
                   });
                 }}

@@ -4,10 +4,11 @@ import { BaseLayout } from "./Layout";
 import { MantineProvider } from "@mantine/core";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { getStores, StoreContext } from "@renderer/stores";
-import { HomePage, SettingPage, UserLoginPage } from "@renderer/pages";
+import { HomePage, SettingPage, UserLoginPage, UserConnectPage } from "@renderer/pages";
 import { RouteGuard } from "./components";
 import "./style.css";
 import { NotificationsProvider } from "@mantine/notifications";
+import { ModalsProvider } from "@mantine/modals";
 
 // 禁止鼠标的前进返回按钮
 window.addEventListener("mouseup", (e) => {
@@ -26,7 +27,7 @@ const router = createHashRouter([
     ),
   },
   {
-    path: "/setting",
+    path: "/setting/*",
     element: (
       <RouteGuard>
         <SettingPage />
@@ -37,6 +38,10 @@ const router = createHashRouter([
     path: "/user/login",
     element: <UserLoginPage />,
   },
+  {
+    path: "/user/connect",
+    element: <UserConnectPage />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -44,9 +49,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <StoreContext.Provider value={stores}>
       <MantineProvider withGlobalStyles withNormalizeCSS theme={{ colorScheme: "dark" }}>
         <NotificationsProvider>
-          <BaseLayout>
-            <RouterProvider router={router} />
-          </BaseLayout>
+          <ModalsProvider>
+            <BaseLayout>
+              <RouterProvider router={router} />
+            </BaseLayout>
+          </ModalsProvider>
         </NotificationsProvider>
       </MantineProvider>
     </StoreContext.Provider>
