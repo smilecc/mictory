@@ -175,7 +175,7 @@ impl RTCSession {
                 if let Some(remote_track) = track {
                     // 创建本地track
                     let track_id = format!("{};{}", session_id_ontrack.clone(), nanoid!());
-                    log::info!("创建本地track {}", track_id);
+                    log::debug!("创建本地track {}", track_id);
                     let local_track = TrackLocalStaticRTP::new(
                         remote_track.codec().await.capability,
                         track_id.clone(),
@@ -217,7 +217,7 @@ impl RTCSession {
                         }
                     }
 
-                    log::info!(
+                    log::debug!(
                         "会话[{}]的轨道[{}]on_track监听结束",
                         session_id_ontrack,
                         track_id
@@ -234,7 +234,7 @@ impl RTCSession {
             let peer_connection_clone = peer_connection_onnegotiation_needed_clone.clone();
             let ws_addr_clone = ws_addr.clone();
             Box::pin(async move {
-                log::info!("on_negotiation_needed");
+                log::debug!("on_negotiation_needed");
                 // 发送Offer
                 RTCSession::create_sdp_and_send(
                     peer_connection_clone,
@@ -267,7 +267,7 @@ impl RTCSession {
         sdp_type: RTCSdpType,
         ws_addr: Addr<WebSocketSession>,
     ) -> Result<(), webrtc::Error> {
-        log::info!("create_sdp_and_send");
+        log::debug!("create_sdp_and_send");
         let sdp = match sdp_type {
             RTCSdpType::Offer => {
                 let offer = peer_connection.create_offer(None).await?;
@@ -288,7 +288,7 @@ impl RTCSession {
 
         let mut gather_complete = peer_connection.gathering_complete_promise().await;
         gather_complete.recv().await;
-        log::info!("gather_complete");
+        log::debug!("gather_complete");
 
         // 将SDP发送给客户端
         if let Some(local_description) = peer_connection.local_description().await {

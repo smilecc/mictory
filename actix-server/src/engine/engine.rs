@@ -216,7 +216,7 @@ impl Handler<EngineSendWebSocketMessage> for Engine {
     type Result = ();
 
     fn handle(&mut self, msg: EngineSendWebSocketMessage, _: &mut Self::Context) -> Self::Result {
-        log::info!("发送WebSocket消息，会话ID：{}", &msg.session_id);
+        log::debug!("发送WebSocket消息，会话ID：{}", &msg.session_id);
         if let Some(ws_addr) = self.ws_message_addrs.get(&msg.session_id) {
             ws_addr.do_send(WebSocketSendMessage {
                 event: msg.event.clone(),

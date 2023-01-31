@@ -131,7 +131,7 @@ export const ServerPanel: React.FC<{
         }}
       />
 
-      <div className="flex-1 bg-zinc-800/70 py-4 text-gray-400">
+      <div className="flex flex-1 flex-col bg-zinc-800/70 pt-4 pb-2 text-gray-400">
         <Title order={2} className="mb-2 px-5 leading-none text-zinc-200">
           {state.serverName}
         </Title>
@@ -162,7 +162,7 @@ export const ServerPanel: React.FC<{
             </div>
           )}
         </Observer>
-        <div className="px-2">
+        <div className="flex-1 overflow-y-auto px-2">
           {rooms.map((room) => (
             <div key={room.id}>
               <div

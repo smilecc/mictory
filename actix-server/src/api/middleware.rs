@@ -46,14 +46,14 @@ impl FromRequest for JWTAuthClaims {
 // 读取JWT秘钥，如果没有则创建一个
 pub fn init_jwt_key() -> HS512Key {
     if let Ok(secret) = fs::read_to_string(JWT_SECRET_PATH) {
-        log::info!("加载JWT秘钥");
+        log::debug!("加载JWT秘钥");
         let secret_bytes = secret.as_bytes();
         let mut base64_bin = vec![0u8; secret_bytes.as_ref().len()];
 
         let key_base64 = Base64::decode(&mut base64_bin, secret_bytes, None).unwrap();
         HS512Key::from_bytes(key_base64)
     } else {
-        log::info!("初始化JWT秘钥");
+        log::debug!("初始化JWT秘钥");
         let key = HS512Key::generate();
         let key_base64 = Base64::encode_to_string(key.to_bytes()).unwrap();
         fs::write(JWT_SECRET_PATH, key_base64).unwrap();

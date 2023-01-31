@@ -35,7 +35,7 @@ pub struct Room {
 
 impl Room {
     pub fn new(room_id: String, engine_addr: Addr<Engine>, db: Arc<DatabaseConnection>) -> Room {
-        log::info!("创建房间[ID: {}]", room_id);
+        log::debug!("创建房间[ID: {}]", room_id);
         Room {
             room: None,
             room_id,
@@ -140,15 +140,15 @@ impl Handler<RoomJoinMessage> for Room {
                 .unwrap()
             };
 
-            // 查询该服务器所有在线用户
-            let room_users = room_user::Entity::find()
+            // 查询该服务器所有用户
+            let server_users = room_user::Entity::find()
                 .filter(room_user::Column::ServerId.eq(room.server_id.clone()))
                 .all(db.as_ref())
                 .await
                 .unwrap_or(vec![]);
 
             // 通知该服务器其他用户，有用户加入
-            for notice_room_user in room_users.iter() {
+            for notice_room_user in server_users.iter() {
                 engine_addr.do_send(EngineSendWebSocketMessage {
                     session_id: notice_room_user.session_id.clone(),
                     event: "server_user_join".to_string(),

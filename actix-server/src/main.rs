@@ -49,9 +49,7 @@ async fn main() -> std::io::Result<()> {
     // 连接数据库
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
     let mut db_opt = ConnectOptions::new(db_url);
-    db_opt
-        .sqlx_logging(false) // Disabling SQLx log
-        .sqlx_logging_level(log::LevelFilter::Debug); // Setting SQLx log level
+    db_opt.sqlx_logging_level(log::LevelFilter::Trace);
 
     let db_conn = Arc::new(Database::connect(db_opt).await.unwrap());
     Migrator::up(db_conn.as_ref(), None).await.unwrap();

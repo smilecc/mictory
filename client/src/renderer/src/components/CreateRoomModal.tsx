@@ -2,6 +2,7 @@ import { Button, Group, Modal, ModalProps, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { RoomApi } from "@renderer/api";
+import { useCommonStore } from "@renderer/stores";
 import { NoticeErrorHandler } from "@renderer/utils";
 import { IconCheck } from "@tabler/icons-react";
 import { useReactive } from "ahooks";
@@ -13,6 +14,7 @@ export const CreateRoomModal: React.FC<
     onSuccess: (serverId: string) => void;
   }
 > = (props) => {
+  const commonStore = useCommonStore();
   const state = useReactive({
     loading: false,
   });
@@ -40,6 +42,13 @@ export const CreateRoomModal: React.FC<
                 color: "green",
                 icon: <IconCheck />,
               });
+
+              commonStore.session?.serverNotify(
+                JSON.stringify({
+                  serverId: props.serverId,
+                  type: "serverChanged",
+                })
+              );
               props.onSuccess(value.roomName);
             })
             .catch(NoticeErrorHandler)

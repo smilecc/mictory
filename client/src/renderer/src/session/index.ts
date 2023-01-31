@@ -148,6 +148,15 @@ export class Session {
     );
   }
 
+  serverNotify(data: string) {
+    this.websocket.send(
+      JSON.stringify({
+        event: "server_notify",
+        data,
+      })
+    );
+  }
+
   async joinRoom(roomId: string) {
     this.isJoined = true;
     this.peerConnection = new RTCPeerConnection({

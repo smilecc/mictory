@@ -24,7 +24,7 @@ use crate::{
     },
 };
 
-use super::rtc::session::RTCSession;
+use super::{engine::EngineSendWebSocketMessage, rtc::session::RTCSession};
 use model::{room_user, user};
 
 #[derive(Debug, Message, Serialize, Deserialize)]
@@ -128,7 +128,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
         match msg.event.as_str() {
             "auth" => {
                 if let Ok(claims) = self.jwt_key.verify_token::<JWTAuthClaims>(&msg.data, None) {
-                    log::info!("WebSocket收到用户鉴权，UserId: {}", claims.custom.user_id);
+                    log::debug!("WebSocket收到用户鉴权，UserId: {}", claims.custom.user_id);
                     let user_id = claims.custom.user_id.clone();
                     self.user_id = Some(user_id.clone());
                     let db = self.db.clone();
@@ -161,7 +161,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                 }
             }
             "rtc_join_room" => {
-                log::info!("rtc_join_room");
+                log::debug!("rtc_join_room");
 
                 let data = msg.data.clone();
                 let data_json: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
@@ -258,6 +258,40 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                 };
 
                 rtc_addr.do_send(RTCReceiveAnswerMessage { sdp: answer });
+            }
+            "server_notify" => {
+                let db = self.db.clone();
+                let data = msg.data.clone();
+                let data_json: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
+                let server_id = data_json["serverId"].as_i64().unwrap_or(0);
+                let engine_addr = self.engine_addr.clone();
+
+                log::debug!(
+                    "WebSocket收到server_notify，UserId: {}, ServerId: {}, Data: {}",
+                    self.user_id.unwrap_or(0),
+                    server_id,
+                    msg.data
+                );
+
+                async move {
+                    // 查询该服务器所有用户，通知服务器其他用户消息
+                    let server_users = room_user::Entity::find()
+                        .filter(room_user::Column::ServerId.eq(server_id.clone()))
+                        .all(db.as_ref())
+                        .await
+                        .unwrap_or(vec![]);
+
+                    // 通知该服务器其他用户，有用户加入
+                    for server_user in server_users.iter() {
+                        engine_addr.do_send(EngineSendWebSocketMessage {
+                            session_id: server_user.session_id.clone(),
+                            event: msg.event.clone(),
+                            data: msg.data.clone(),
+                        })
+                    }
+                }
+                .into_actor(self)
+                .wait(ctx);
             }
             "close" => {
                 ctx.stop();
