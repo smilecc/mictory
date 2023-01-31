@@ -2,7 +2,7 @@ import { LoadingOverlay, Title, Button, ActionIcon, Badge } from "@mantine/core"
 import { IServerRoom, IServerUser, IUserServer, ServerApi } from "@renderer/api";
 import { useCommonStore } from "@renderer/stores";
 import { IconPlus, IconUser } from "@tabler/icons-react";
-import { useEventListener, useInterval, useReactive } from "ahooks";
+import { useEventListener, useInterval, useReactive, useThrottleFn } from "ahooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { runInAction } from "mobx";
@@ -37,25 +37,31 @@ export const ServerPanel: React.FC<{
   const onlineUsers = useMemo(() => distinctUsers.filter((it) => it.sessionOnline), [distinctUsers]);
   const offlineUsers = useMemo(() => distinctUsers.filter((it) => !it.sessionOnline), [distinctUsers]);
 
-  const queryServerInfo = useCallback((serverId: number) => {
-    Promise.all([ServerApi.listServerRooms(serverId), ServerApi.listServerUsers(serverId)])
-      .then(
-        ([
-          {
-            data: { data: rooms },
-          },
-          {
-            data: { data: users },
-          },
-        ]) => {
-          setRooms(rooms);
-          setUsers(users);
-        }
-      )
-      .finally(() => {
-        state.loading = false;
-      });
-  }, []);
+  const { run: queryServerInfo } = useThrottleFn(
+    (serverId: number) => {
+      Promise.all([ServerApi.listServerRooms(serverId), ServerApi.listServerUsers(serverId)])
+        .then(
+          ([
+            {
+              data: { data: rooms },
+            },
+            {
+              data: { data: users },
+            },
+          ]) => {
+            setRooms(rooms);
+            setUsers(users);
+          }
+        )
+        .finally(() => {
+          state.loading = false;
+        });
+    },
+    {
+      wait: 1000,
+      trailing: false,
+    }
+  );
 
   const loadServerInfo = useCallback((serverId: number, serverName: string) => {
     setSpeakingSessions([]);
