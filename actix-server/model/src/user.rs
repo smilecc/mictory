@@ -13,6 +13,7 @@ pub struct Model {
     pub nickname: String,
     pub nickname_no: i32,
     pub avatar: Option<String>,
+    pub session_online: bool,
     #[serde(skip_serializing)]
     pub password: String,
     #[serde(skip_serializing)]

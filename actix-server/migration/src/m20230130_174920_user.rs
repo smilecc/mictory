@@ -36,6 +36,12 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(user::Column::Avatar).string_len(512))
                     .col(
+                        ColumnDef::new(user::Column::SessionOnline)
+                            .boolean()
+                            .not_null()
+                            .default(0),
+                    )
+                    .col(
                         ColumnDef::new(user::Column::Password)
                             .string_len(255)
                             .not_null(),
