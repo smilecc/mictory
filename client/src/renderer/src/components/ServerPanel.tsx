@@ -34,8 +34,8 @@ export const ServerPanel: React.FC<{
     return Object.keys(userMap).map((key) => _.orderBy(userMap[key], (it) => (it.online ? 0 : 1))[0]);
   }, [users]);
 
-  const onlineUsers = useMemo(() => distinctUsers.filter((it) => it.online), [distinctUsers]);
-  const offlineUsers = useMemo(() => distinctUsers.filter((it) => !it.online), [distinctUsers]);
+  const onlineUsers = useMemo(() => distinctUsers.filter((it) => it.sessionOnline), [distinctUsers]);
+  const offlineUsers = useMemo(() => distinctUsers.filter((it) => !it.sessionOnline), [distinctUsers]);
 
   const queryServerInfo = useCallback((serverId: number) => {
     Promise.all([ServerApi.listServerRooms(serverId), ServerApi.listServerUsers(serverId)])

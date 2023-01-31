@@ -115,6 +115,7 @@ export class CommonStore {
       accessToken: it.host === this.currentConnectServer?.host ? accessToken : it.accessToken,
     }));
     window.localStorage.setItem(STORAGE_CONNECT_SERVERS, JSON.stringify(this.connectServers));
+    this.session?.auth(accessToken);
   }
 
   loadUserInfo() {

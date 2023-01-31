@@ -253,6 +253,7 @@ impl RTCSession {
                 log::info!("RTC会话[{}]连接失败，通知Engine退出", session_id);
                 engine_addr.do_send(EngineExitRoomMessage {
                     session_id: session_id.clone(),
+                    user_id: None,
                     is_ws_disconnect: false,
                 });
             }

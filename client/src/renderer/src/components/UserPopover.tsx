@@ -42,9 +42,11 @@ export const UserPopover: React.FC<{
                 {user.nickname?.[0]?.toUpperCase()}
               </Avatar>
               <div>
-                <Text>{user.nickname}</Text>
-                <Text size="xs" color="dimmed">
+                <Text>
                   {user.nickname}#{user.nicknameNo}
+                </Text>
+                <Text size="xs" color="dimmed">
+                  {user.sessionOnline ? "在线" : "离线"}
                 </Text>
               </div>
             </Group>

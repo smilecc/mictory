@@ -112,6 +112,7 @@ pub async fn list_server_users(
         user_id: i64,
         session_id: Option<String>,
         online: bool,
+        session_online: bool,
         user_nickname: String,
         created_time: Option<DateTime>,
         updated_time: Option<DateTime>,
@@ -123,6 +124,7 @@ pub async fn list_server_users(
         server_id: i64,
         user_id: i64,
         user_nickname: String,
+        session_online: bool,
     }
 
     let server_id = path.0.clone();
@@ -131,6 +133,7 @@ pub async fn list_server_users(
     // 查询房间用户列表
     let mut users = room_user::Entity::find()
         .column_as(user::Column::Nickname, "user_nickname")
+        .column(user::Column::SessionOnline)
         .filter(room_user::Column::ServerId.eq(server_id))
         .join_rev(
             JoinType::LeftJoin,
@@ -147,6 +150,7 @@ pub async fn list_server_users(
     // 查询服务器用户列表
     let server_users = user_server::Entity::find()
         .column_as(user::Column::Nickname, "user_nickname")
+        .column(user::Column::SessionOnline)
         .filter(user_server::Column::ServerId.eq(server_id))
         .join_rev(
             JoinType::LeftJoin,
@@ -172,6 +176,7 @@ pub async fn list_server_users(
                 room_id: 0,
                 user_id: server_user.user_id.clone(),
                 online: false,
+                session_online: server_user.session_online.clone(),
                 user_nickname: server_user.user_nickname.clone(),
                 id: None,
                 session_id: None,

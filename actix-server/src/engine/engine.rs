@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use actix::prelude::*;
-use sea_orm::{sea_query::Expr, DatabaseConnection, EntityTrait};
+use sea_orm::{sea_query::Expr, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 
 use crate::engine::{
     room::{RoomExitMessage, RoomJoinMessage},
@@ -10,7 +10,7 @@ use crate::engine::{
 };
 
 use super::{room::Room, rtc::session::RTCSession, websocket::WebSocketSession};
-use model::room_user;
+use model::{room_user, user};
 
 #[derive(Debug)]
 pub struct Engine {
@@ -42,9 +42,15 @@ impl Actor for Engine {
 
         ctx.wait(
             async move {
-                log::info!("Engine启动，清除全部在线记录（room_user）");
+                log::info!("Engine启动，清除全部在线记录（user、room_user）");
                 room_user::Entity::update_many()
                     .col_expr(room_user::Column::Online, Expr::value(false))
+                    .exec(db.as_ref())
+                    .await
+                    .unwrap();
+
+                user::Entity::update_many()
+                    .col_expr(user::Column::SessionOnline, Expr::value(false))
                     .exec(db.as_ref())
                     .await
                     .unwrap();
@@ -150,6 +156,7 @@ impl Handler<EngineJoinRoomMessage> for Engine {
 #[rtype(result = "()")]
 pub struct EngineExitRoomMessage {
     pub session_id: String,
+    pub user_id: Option<i64>,
     pub is_ws_disconnect: bool,
 }
 
@@ -157,11 +164,26 @@ pub struct EngineExitRoomMessage {
 impl Handler<EngineExitRoomMessage> for Engine {
     type Result = ();
 
-    fn handle(&mut self, msg: EngineExitRoomMessage, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: EngineExitRoomMessage, ctx: &mut Self::Context) -> Self::Result {
         log::info!("处理退出房间，会话ID：{}", &msg.session_id);
         // 只有Websocket连接断开才从列表中移除
         if msg.is_ws_disconnect {
             self.ws_message_addrs.remove(&msg.session_id);
+            // 更新用户ID状态下线
+            if msg.user_id.is_some() {
+                let user_id = msg.user_id.clone().unwrap();
+                let db = self.db.clone();
+                async move {
+                    user::Entity::update_many()
+                        .filter(user::Column::Id.eq(user_id))
+                        .col_expr(user::Column::SessionOnline, Expr::value(false))
+                        .exec(db.as_ref())
+                        .await
+                        .unwrap();
+                }
+                .into_actor(self)
+                .wait(ctx);
+            }
         }
 
         // 通知房间会话退出

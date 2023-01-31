@@ -6,6 +6,7 @@ use actix::{
 };
 use actix_web_actors::ws::{self, ProtocolError};
 use jwt_simple::prelude::{HS512Key, MACLike};
+use migration::Expr;
 use nanoid::nanoid;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
@@ -24,7 +25,7 @@ use crate::{
 };
 
 use super::rtc::session::RTCSession;
-use model::room_user;
+use model::{room_user, user};
 
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Option<()>")]
@@ -79,6 +80,7 @@ impl Actor for WebSocketSession {
         log::info!("WebSocketSession终止，{}", self.session_id);
         self.engine_addr.do_send(engine::EngineExitRoomMessage {
             session_id: self.session_id.clone(),
+            user_id: self.user_id.clone(),
             is_ws_disconnect: true,
         });
     }
@@ -127,7 +129,21 @@ impl Handler<WebSocketMessage> for WebSocketSession {
             "auth" => {
                 if let Ok(claims) = self.jwt_key.verify_token::<JWTAuthClaims>(&msg.data, None) {
                     log::info!("WebSocket收到用户鉴权，UserId: {}", claims.custom.user_id);
-                    self.user_id = Some(claims.custom.user_id.clone());
+                    let user_id = claims.custom.user_id.clone();
+                    self.user_id = Some(user_id.clone());
+                    let db = self.db.clone();
+
+                    // 更新用户状态上线
+                    async move {
+                        user::Entity::update_many()
+                            .filter(user::Column::Id.eq(user_id.clone()))
+                            .col_expr(user::Column::SessionOnline, Expr::value(true))
+                            .exec(db.as_ref())
+                            .await
+                            .unwrap();
+                    }
+                    .into_actor(self)
+                    .wait(ctx);
 
                     // 通知客户端会话ID
                     let new_session_data = &json!({
@@ -166,6 +182,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                         engine_addr
                             .send(engine::EngineExitRoomMessage {
                                 is_ws_disconnect: false,
+                                user_id: None,
                                 session_id: user_session.session_id.clone(),
                             })
                             .await
@@ -216,6 +233,7 @@ impl Handler<WebSocketMessage> for WebSocketSession {
                 log::info!("RTC退出房间，{}", self.session_id);
                 self.engine_addr.do_send(engine::EngineExitRoomMessage {
                     session_id: self.session_id.clone(),
+                    user_id: None,
                     is_ws_disconnect: false,
                 });
             }

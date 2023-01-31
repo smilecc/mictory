@@ -1,4 +1,4 @@
-import { IGainSetting } from "@renderer/stores/CommonStore";
+import { IGainSetting, STORAGE_ACCESS_TOKEN } from "@renderer/stores/CommonStore";
 import _ from "lodash";
 
 export class Session {
@@ -101,6 +101,13 @@ export class Session {
   }
 
   handleEvent() {
+    this.websocket.onopen = () => {
+      const accessToken = window.localStorage.getItem(STORAGE_ACCESS_TOKEN);
+      if (accessToken) {
+        this.auth(accessToken);
+      }
+    };
+
     this.websocket.onmessage = async (e) => {
       console.log("收到WebSocket新消息", e.data);
       let message = JSON.parse(e.data) as Record<string, string>;

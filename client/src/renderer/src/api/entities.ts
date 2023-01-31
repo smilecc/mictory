@@ -28,6 +28,7 @@ export interface IServerUser {
   userId: number;
   userNickname: string;
   online: boolean;
+  sessionOnline: boolean;
 }
 
 export interface IUserInfo {
@@ -38,4 +39,5 @@ export interface IUserInfo {
   nickname: string;
   nicknameNo: number;
   updatedTime: string;
+  sessionOnline: boolean;
 }
