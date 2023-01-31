@@ -221,7 +221,14 @@ export const HomePage: React.FC = () => {
                   {/* 麦克风音量 */}
                   <HoverCard width={200} withArrow openDelay={100}>
                     <HoverCard.Target>
-                      <ActionIcon onClick={() => commonStore.setGainItem("microphone", commonStore.gainSetting.microphone ? 0 : 100)}>
+                      <ActionIcon
+                        onClick={() => {
+                          const current = commonStore.gainSetting.microphone;
+                          const history = commonStore.gainSetting.historyMicrophone || 100;
+                          commonStore.setGainItem("microphone", commonStore.gainSetting.microphone ? 0 : history);
+                          commonStore.setGainItem("historyMicrophone", current);
+                        }}
+                      >
                         {commonStore.gainSetting.microphone ? <IconMicrophone size={18} /> : <IconMicrophoneOff size={18} />}
                       </ActionIcon>
                     </HoverCard.Target>
@@ -232,7 +239,15 @@ export const HomePage: React.FC = () => {
                   {/* 播放音量 */}
                   <HoverCard width={200} withArrow openDelay={100}>
                     <HoverCard.Target>
-                      <ActionIcon className="ml-1" onClick={() => commonStore.setGainItem("volume", commonStore.gainSetting.volume ? 0 : 100)}>
+                      <ActionIcon
+                        className="ml-1"
+                        onClick={() => {
+                          const current = commonStore.gainSetting.volume;
+                          const history = commonStore.gainSetting.historyVolume || 100;
+                          commonStore.setGainItem("volume", commonStore.gainSetting.volume ? 0 : history);
+                          commonStore.setGainItem("historyVolume", current);
+                        }}
+                      >
                         {commonStore.gainSetting.volume ? <IconVolume size={18} /> : <IconVolumeOff size={18} />}
                       </ActionIcon>
                     </HoverCard.Target>

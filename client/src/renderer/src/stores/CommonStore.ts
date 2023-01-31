@@ -20,6 +20,8 @@ export interface IConnectServer {
 export interface IGainSetting {
   microphone: number;
   volume: number;
+  historyMicrophone?: number;
+  historyVolume?: number;
 }
 
 export class CommonStore {
@@ -133,6 +135,7 @@ export class CommonStore {
     this.accessToken = null;
     this.joinedServerId = 0;
     this.viewServerId = 0;
+    this.session?.close();
     window.localStorage.removeItem(STORAGE_ACCESS_TOKEN);
   }
 }

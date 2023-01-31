@@ -9,6 +9,7 @@ import { runInAction } from "mobx";
 import { useClipboard } from "@mantine/hooks";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { Observer } from "mobx-react-lite";
+import { UserPopover } from "./UserPopover";
 
 export const ServerPanel: React.FC<{
   server: IUserServer;
@@ -179,35 +180,46 @@ export const ServerPanel: React.FC<{
                 {users
                   .filter((it) => it.online && it.roomId === room.id)
                   .map((user) => (
-                    <div
-                      key={user.id}
-                      className={`my-1 flex cursor-pointer items-center rounded-md py-2 px-3 text-sm leading-none text-zinc-300 hover:bg-zinc-700 
+                    <UserPopover key={user.id} userId={user.userId}>
+                      <div
+                        className={`my-1 flex cursor-pointer items-center rounded-md py-2 px-3 text-sm leading-none text-zinc-300 hover:bg-zinc-700 
                     ${speakingSessions.includes(user.sessionId) ? "bg-orange-500/25" : ""}`}
-                    >
-                      <IconUser size={18} />
-                      <span className="ml-1">{user.userNickname}</span>
-                    </div>
+                      >
+                        <IconUser size={18} />
+                        <span className="ml-1">{user.userNickname}</span>
+                      </div>
+                    </UserPopover>
                   ))}
               </div>
             </div>
           ))}
         </div>
       </div>
-      <div className="w-60 p-3 text-zinc-300">
+      <div className="w-60 py-3 px-2 text-zinc-300">
         {onlineUsers.length > 0 && (
-          <div className="mb-2">
-            <div className="text-sm">在线 - {onlineUsers.length}</div>
+          <div className="mb-3">
+            <div className="px-2 text-xs font-bold">在线 - {onlineUsers.length}</div>
             {onlineUsers.map((user) => (
-              <div key={user.id}>{user.userNickname}</div>
+              <UserPopover key={user.id} userId={user.userId}>
+                <div className="my-1 flex cursor-pointer items-center rounded-md py-2 px-2 text-sm leading-none text-zinc-300 hover:bg-zinc-700">
+                  <IconUser size={18} />
+                  <span className="ml-1">{user.userNickname}</span>
+                </div>
+              </UserPopover>
             ))}
           </div>
         )}
 
         {offlineUsers.length > 0 && (
           <>
-            <div className="text-sm">离线 - {offlineUsers.length}</div>
+            <div className="px-2 text-xs font-bold">离线 - {offlineUsers.length}</div>
             {offlineUsers.map((user) => (
-              <div key={user.id}>{user.userNickname}</div>
+              <UserPopover key={user.id} userId={user.userId}>
+                <div className="my-1 flex cursor-pointer items-center rounded-md py-2 px-2 text-sm leading-none text-zinc-300 opacity-50 hover:bg-zinc-700">
+                  <IconUser size={18} />
+                  <span className="ml-1">{user.userNickname}</span>
+                </div>
+              </UserPopover>
             ))}
           </>
         )}

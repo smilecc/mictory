@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, Menu, Tray } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
@@ -35,8 +35,40 @@ function createWindow(): void {
   //   });
   // });
 
-  ipcMain.on("app:close", () => {
+  let isQuit = false;
+  const tray = new Tray(icon);
+  tray.setIgnoreDoubleClickEvents(true);
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "退出",
+        click: () => {
+          console.log(123);
+          isQuit = true;
+          app.quit();
+        },
+      },
+    ])
+  );
+
+  tray.on("click", () => {
+    mainWindow.show();
+  });
+
+  ipcMain.on("app:hide", () => {
+    mainWindow.hide();
+  });
+
+  ipcMain.on("app:quit", () => {
+    isQuit = true;
     app.quit();
+  });
+
+  mainWindow.on("close", (event) => {
+    if (!isQuit) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
   });
 
   mainWindow.on("ready-to-show", () => {
@@ -62,7 +94,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId("com.electron");
+  electronApp.setAppUserModelId("cc.smilec.mictory");
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

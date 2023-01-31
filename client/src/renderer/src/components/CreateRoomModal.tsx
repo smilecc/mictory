@@ -29,7 +29,7 @@ export const CreateRoomModal: React.FC<
   }, [props.opened]);
 
   return (
-    <Modal {...props} title="创建房间">
+    <Modal {...props} title="创建房间" centered>
       <form
         onSubmit={form.onSubmit((value) => {
           state.loading = true;

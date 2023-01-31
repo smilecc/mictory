@@ -28,7 +28,7 @@ export const JoinServerModal: React.FC<
   }, [props.opened]);
 
   return (
-    <Modal {...props} title="加入频道">
+    <Modal {...props} title="加入频道" centered>
       <form
         onSubmit={form.onSubmit((value) => {
           state.loading = true;

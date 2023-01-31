@@ -24,7 +24,7 @@ export const BaseLayout: React.FC<{
             radius="xs"
             className="hover:bg-red-500"
             onClick={() => {
-              window.electron.ipcRenderer.send("app:close");
+              window.electron.ipcRenderer.send("app:hide");
             }}
           >
             <IconX size={18} />

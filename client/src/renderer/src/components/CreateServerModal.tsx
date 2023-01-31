@@ -28,7 +28,7 @@ export const CreateServerModal: React.FC<
   }, [props.opened]);
 
   return (
-    <Modal {...props} title="创建频道">
+    <Modal {...props} title="创建频道" centered>
       <form
         onSubmit={form.onSubmit((value) => {
           state.loading = true;
