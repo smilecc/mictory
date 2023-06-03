@@ -2,7 +2,7 @@ import { LoadingOverlay, Title, Button, ActionIcon, Badge } from "@mantine/core"
 import { IServerRoom, IServerUser, IUserServer, ServerApi } from "@renderer/api";
 import { useCommonStore } from "@renderer/stores";
 import { IconPlus, IconUser } from "@tabler/icons-react";
-import { useEventListener, useInterval, useReactive, useThrottleFn } from "ahooks";
+import { useDebounceFn, useEventListener, useInterval, useReactive } from "ahooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { runInAction } from "mobx";
@@ -37,7 +37,7 @@ export const ServerPanel: React.FC<{
   const onlineUsers = useMemo(() => distinctUsers.filter((it) => it.sessionOnline), [distinctUsers]);
   const offlineUsers = useMemo(() => distinctUsers.filter((it) => !it.sessionOnline), [distinctUsers]);
 
-  const { run: queryServerInfo } = useThrottleFn(
+  const { run: queryServerInfo } = useDebounceFn(
     (serverId: number) => {
       Promise.all([ServerApi.listServerRooms(serverId), ServerApi.listServerUsers(serverId)])
         .then(
@@ -58,8 +58,7 @@ export const ServerPanel: React.FC<{
         });
     },
     {
-      wait: 1000,
-      trailing: false,
+      wait: 500,
     }
   );
 
