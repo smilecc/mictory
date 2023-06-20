@@ -9,7 +9,7 @@ import (
 )
 
 type SocketServer struct {
-	server *socket.Server
+	Server *socket.Server
 }
 
 type SocketData struct {
@@ -18,13 +18,13 @@ type SocketData struct {
 
 func NewSocketServer() *SocketServer {
 	return &SocketServer{
-		server: socket.NewServer(nil, nil),
+		Server: socket.NewServer(nil, nil),
 	}
 }
 
 func (s *SocketServer) Start() {
 	s.startHandleEvent()
-	s.server.Use(func(s *socket.Socket, next func(*socket.ExtendedError)) {
+	s.Server.Use(func(s *socket.Socket, next func(*socket.ExtendedError)) {
 		// 初始化回话数据
 		if s.Data() == nil {
 			s.SetData(SocketData{})
@@ -35,7 +35,7 @@ func (s *SocketServer) Start() {
 
 	// 启动服务
 	mux := http.NewServeMux()
-	mux.Handle("/socket.io/", s.server.ServeHandler(nil))
+	mux.Handle("/socket.io/", s.Server.ServeHandler(nil))
 
 	go func() {
 		_ = http.ListenAndServe(":8025", httpCors.Default().Handler(mux))
@@ -43,15 +43,26 @@ func (s *SocketServer) Start() {
 }
 
 func (s *SocketServer) startHandleEvent() {
-	_ = s.server.On("connection", func(args ...any) {
+	_ = s.Server.On("connection", func(args ...any) {
 		client := args[0].(*socket.Socket)
 		_ = client.On("event", func(args ...any) {
 			data := args[0].(map[string]interface{})
 			j, _ := json.Marshal(data)
 			fmt.Println(string(j))
+
+			//global.SocketServer.GetRemoteSocket().Rooms()
 		})
 
 		_ = client.On("disconnect", func(...any) {
 		})
 	})
+}
+
+func (s *SocketServer) GetRemoteSocket(sessionId string) *socket.RemoteSocket {
+	sockets := s.Server.To(socket.Room(sessionId)).FetchSockets()
+	if len(sockets) == 0 {
+		return nil
+	}
+
+	return sockets[0]
 }
