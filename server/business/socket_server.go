@@ -13,7 +13,8 @@ type SocketServer struct {
 }
 
 type SocketData struct {
-	UserId int64
+	UserId     int64
+	RTCSession *WebRTCSession
 }
 
 func NewSocketServer() *SocketServer {
@@ -52,6 +53,20 @@ func (s *SocketServer) startHandleEvent() {
 
 			//global.SocketServer.GetRemoteSocket().Rooms()
 		})
+
+		// 加入房间
+		_ = client.On("room:join", func(args ...any) {
+			data := client.Data().(*SocketData)
+			data.RTCSession = NewWebRTCSession(string(client.Id()))
+		})
+
+		// 退出房间
+		_ = client.On("room:exit", func(args ...any) {
+
+		})
+
+		_ = client.On("rtc:candidate")
+		_ = client.On("rtc:answer")
 
 		_ = client.On("disconnect", func(...any) {
 		})
