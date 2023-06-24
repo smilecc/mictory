@@ -56,8 +56,11 @@ func (s *SocketServer) startHandleEvent() {
 
 		// 加入房间
 		_ = client.On("room:join", func(args ...any) {
+			eventData := args[0].(map[string]interface{})
+
 			data := client.Data().(*SocketData)
 			data.RTCSession = NewWebRTCSession(string(client.Id()))
+			data.RTCSession.HandleRemoteSDPOffer(eventData["sdp"].(string))
 		})
 
 		// 退出房间
@@ -65,7 +68,27 @@ func (s *SocketServer) startHandleEvent() {
 
 		})
 
-		_ = client.On("rtc:candidate")
+		// 处理RTC协商
+		//_ = client.On("rtc:candidate", func(args ...any) {
+		//	data := client.Data().(*SocketData)
+		//	eventData := args[0].(map[string]interface{})
+		//
+		//	if data.RTCSession == nil {
+		//		return
+		//	}
+		//
+		//	candidate := webrtc.ICECandidateInit{}
+		//	if err := json.Unmarshal([]byte(message.Data), &candidate); err != nil {
+		//		log.Println(err)
+		//		return
+		//	}
+		//
+		//	if err := data.RTCSession.PeerConnection.AddICECandidate(candidate); err != nil {
+		//		log.Println(err)
+		//		return
+		//	}
+		//})
+
 		_ = client.On("rtc:answer")
 
 		_ = client.On("disconnect", func(...any) {

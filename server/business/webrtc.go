@@ -1,11 +1,15 @@
 package business
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/pion/interceptor"
 	"github.com/pion/rtcp"
+	"github.com/pion/sdp/v3"
 	"github.com/pion/webrtc/v3"
 	"github.com/sirupsen/logrus"
+	"github.com/zishang520/socket.io/socket"
 	"time"
 )
 
@@ -119,4 +123,65 @@ func (s *WebRTCSession) StartHandleEvent() {
 			}
 		}()
 	})
+}
+
+// HandleRemoteSDPOffer 当接收到远程SDP Offer时，创建应答
+func (s *WebRTCSession) HandleRemoteSDPOffer(sdpOffer string) {
+	var offer webrtc.SessionDescription
+	_ = json.Unmarshal([]byte(sdpOffer), &offer)
+
+	parser := sdp.SessionDescription{}
+	_ = parser.Unmarshal([]byte(offer.SDP))
+
+	err := s.PeerConnection.SetRemoteDescription(offer)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	_, err = s.CreateSDPAndSend(webrtc.SDPTypeAnswer)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
+
+func (s *WebRTCSession) CreateSDPAndSend(sdpType webrtc.SDPType) (*webrtc.SessionDescription, error) {
+	var sessionDescription webrtc.SessionDescription
+	var emitEvent string
+	var err error
+
+	switch sdpType {
+	case webrtc.SDPTypeOffer:
+		offer, createErr := s.PeerConnection.CreateOffer(nil)
+		sessionDescription = offer
+		err = createErr
+		emitEvent = "rtc:offer"
+	case webrtc.SDPTypeAnswer:
+		answer, createErr := s.PeerConnection.CreateAnswer(nil)
+		sessionDescription = answer
+		err = createErr
+		emitEvent = "rtc:answer"
+	default:
+		err = errors.New("CreateSDPAndSend失败，未知SDP类型")
+	}
+
+	if err != nil {
+		return &webrtc.SessionDescription{}, err
+	}
+	err = s.PeerConnection.SetLocalDescription(sessionDescription)
+	if err != nil {
+		return nil, err
+	}
+
+	gatherComplete := webrtc.GatheringCompletePromise(s.PeerConnection)
+	<-gatherComplete
+
+	// 将Offer发送给客户端
+	offer := s.PeerConnection.LocalDescription()
+	jsonSDP, _ := json.Marshal(offer)
+	jsonData, _ := json.Marshal(RTCAnswer{SDP: string(jsonSDP)})
+	_ = GlobalSocketServer.Server.To(socket.Room(s.SessionId)).Emit(emitEvent, jsonData)
+
+	logrus.WithField("type", sdpType).Infof("将SDP发送给客户端")
+
+	return offer, err
 }
