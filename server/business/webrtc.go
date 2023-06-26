@@ -1,9 +1,7 @@
 package business
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/pion/interceptor"
 	"github.com/pion/rtcp"
 	"github.com/pion/sdp/v3"
@@ -90,7 +88,7 @@ func (s *WebRTCSession) StartHandleEvent() {
 		// 根据远端的轨道编码创建一个本地轨道
 		localTrack, err := webrtc.NewTrackLocalStaticRTP(remote.Codec().RTPCodecCapability, s.SessionId, s.SessionId)
 		if err != nil {
-			logrus.WithField("SessionId", s.SessionId).Error("创建本地Track失败", err)
+			logrus.WithField("sessionId", s.SessionId).Error("创建本地Track失败", err)
 			return
 		}
 
@@ -100,7 +98,10 @@ func (s *WebRTCSession) StartHandleEvent() {
 			for range ticker.C {
 				errSend := s.PeerConnection.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: uint32(remote.SSRC())}})
 				if errSend != nil {
-					fmt.Println(errSend)
+					logrus.WithField("error", errSend).Warning("轨道RTCP异常")
+				}
+				if s.PeerConnection.ConnectionState() == webrtc.PeerConnectionStateClosed {
+					break
 				}
 			}
 		}()
@@ -112,7 +113,7 @@ func (s *WebRTCSession) StartHandleEvent() {
 			for {
 				packet, _, err := remote.ReadRTP()
 				if err != nil {
-					logrus.WithField("SessionId", s.SessionId).Warning("媒体轨道终止", err)
+					logrus.WithField("sessionId", s.SessionId).Warning("媒体轨道终止", err)
 					return
 				}
 
@@ -123,13 +124,21 @@ func (s *WebRTCSession) StartHandleEvent() {
 			}
 		}()
 	})
+
+	s.PeerConnection.OnNegotiationNeeded(func() {
+		_, _ = s.CreateSDPAndSend(webrtc.SDPTypeOffer)
+	})
+
+	s.PeerConnection.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+		logrus.WithField("sessionId", s.SessionId).WithField("state", state).Info("WebRTC连接状态变化")
+		if state == webrtc.PeerConnectionStateDisconnected {
+			GlobalSocketServer.LeaveAllRooms(s.SessionId)
+		}
+	})
 }
 
 // HandleRemoteSDPOffer 当接收到远程SDP Offer时，创建应答
-func (s *WebRTCSession) HandleRemoteSDPOffer(sdpOffer string) {
-	var offer webrtc.SessionDescription
-	_ = json.Unmarshal([]byte(sdpOffer), &offer)
-
+func (s *WebRTCSession) HandleRemoteSDPOffer(offer webrtc.SessionDescription) {
 	parser := sdp.SessionDescription{}
 	_ = parser.Unmarshal([]byte(offer.SDP))
 
@@ -177,11 +186,13 @@ func (s *WebRTCSession) CreateSDPAndSend(sdpType webrtc.SDPType) (*webrtc.Sessio
 
 	// 将Offer发送给客户端
 	offer := s.PeerConnection.LocalDescription()
-	jsonSDP, _ := json.Marshal(offer)
-	jsonData, _ := json.Marshal(RTCAnswer{SDP: string(jsonSDP)})
-	_ = GlobalSocketServer.Server.To(socket.Room(s.SessionId)).Emit(emitEvent, jsonData)
+	//jsonSDP, _ := json.Marshal(offer)
+	_ = GlobalSocketServer.Server.To(socket.Room(s.SessionId)).Emit(emitEvent, RTCAnswer{SDP: offer})
 
-	logrus.WithField("type", sdpType).Infof("将SDP发送给客户端")
+	logrus.
+		WithField("type", sdpType).
+		WithField("sessionId", s.SessionId).
+		Infof("将SDP发送给客户端")
 
 	return offer, err
 }
