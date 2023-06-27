@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"server/ent/channel"
 	"server/ent/room"
+	"server/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -104,6 +105,17 @@ func (cc *ChannelCreate) AddRooms(r ...*Room) *ChannelCreate {
 	return cc.AddRoomIDs(ids...)
 }
 
+// SetOwnerUserID sets the "owner_user" edge to the User entity by ID.
+func (cc *ChannelCreate) SetOwnerUserID(id int64) *ChannelCreate {
+	cc.mutation.SetOwnerUserID(id)
+	return cc
+}
+
+// SetOwnerUser sets the "owner_user" edge to the User entity.
+func (cc *ChannelCreate) SetOwnerUser(u *User) *ChannelCreate {
+	return cc.SetOwnerUserID(u.ID)
+}
+
 // Mutation returns the ChannelMutation object of the builder.
 func (cc *ChannelCreate) Mutation() *ChannelMutation {
 	return cc.mutation
@@ -179,6 +191,9 @@ func (cc *ChannelCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Channel.name": %w`, err)}
 		}
 	}
+	if _, ok := cc.mutation.OwnerUserID(); !ok {
+		return &ValidationError{Name: "owner_user", err: errors.New(`ent: missing required edge "Channel.owner_user"`)}
+	}
 	return nil
 }
 
@@ -245,6 +260,23 @@ func (cc *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.OwnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.OwnerUserTable,
+			Columns: []string{channel.OwnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_owner = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

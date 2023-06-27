@@ -10,6 +10,7 @@ import (
 	"server/ent/channel"
 	"server/ent/predicate"
 	"server/ent/room"
+	"server/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -19,11 +20,13 @@ import (
 // ChannelQuery is the builder for querying Channel entities.
 type ChannelQuery struct {
 	config
-	ctx        *QueryContext
-	order      []channel.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Channel
-	withRooms  *RoomQuery
+	ctx           *QueryContext
+	order         []channel.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Channel
+	withRooms     *RoomQuery
+	withOwnerUser *UserQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +78,28 @@ func (cq *ChannelQuery) QueryRooms() *RoomQuery {
 			sqlgraph.From(channel.Table, channel.FieldID, selector),
 			sqlgraph.To(room.Table, room.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, channel.RoomsTable, channel.RoomsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOwnerUser chains the current query on the "owner_user" edge.
+func (cq *ChannelQuery) QueryOwnerUser() *UserQuery {
+	query := (&UserClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channel.Table, channel.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, channel.OwnerUserTable, channel.OwnerUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,12 +294,13 @@ func (cq *ChannelQuery) Clone() *ChannelQuery {
 		return nil
 	}
 	return &ChannelQuery{
-		config:     cq.config,
-		ctx:        cq.ctx.Clone(),
-		order:      append([]channel.OrderOption{}, cq.order...),
-		inters:     append([]Interceptor{}, cq.inters...),
-		predicates: append([]predicate.Channel{}, cq.predicates...),
-		withRooms:  cq.withRooms.Clone(),
+		config:        cq.config,
+		ctx:           cq.ctx.Clone(),
+		order:         append([]channel.OrderOption{}, cq.order...),
+		inters:        append([]Interceptor{}, cq.inters...),
+		predicates:    append([]predicate.Channel{}, cq.predicates...),
+		withRooms:     cq.withRooms.Clone(),
+		withOwnerUser: cq.withOwnerUser.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -289,6 +315,17 @@ func (cq *ChannelQuery) WithRooms(opts ...func(*RoomQuery)) *ChannelQuery {
 		opt(query)
 	}
 	cq.withRooms = query
+	return cq
+}
+
+// WithOwnerUser tells the query-builder to eager-load the nodes that are connected to
+// the "owner_user" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ChannelQuery) WithOwnerUser(opts ...func(*UserQuery)) *ChannelQuery {
+	query := (&UserClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withOwnerUser = query
 	return cq
 }
 
@@ -369,11 +406,19 @@ func (cq *ChannelQuery) prepareQuery(ctx context.Context) error {
 func (cq *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Channel, error) {
 	var (
 		nodes       = []*Channel{}
+		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			cq.withRooms != nil,
+			cq.withOwnerUser != nil,
 		}
 	)
+	if cq.withOwnerUser != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, channel.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Channel).scanValues(nil, columns)
 	}
@@ -396,6 +441,12 @@ func (cq *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 		if err := cq.loadRooms(ctx, query, nodes,
 			func(n *Channel) { n.Edges.Rooms = []*Room{} },
 			func(n *Channel, e *Room) { n.Edges.Rooms = append(n.Edges.Rooms, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := cq.withOwnerUser; query != nil {
+		if err := cq.loadOwnerUser(ctx, query, nodes, nil,
+			func(n *Channel, e *User) { n.Edges.OwnerUser = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -430,6 +481,38 @@ func (cq *ChannelQuery) loadRooms(ctx context.Context, query *RoomQuery, nodes [
 			return fmt.Errorf(`unexpected referenced foreign-key "channel_rooms" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (cq *ChannelQuery) loadOwnerUser(ctx context.Context, query *UserQuery, nodes []*Channel, init func(*Channel), assign func(*Channel, *User)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*Channel)
+	for i := range nodes {
+		if nodes[i].user_owner == nil {
+			continue
+		}
+		fk := *nodes[i].user_owner
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_owner" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

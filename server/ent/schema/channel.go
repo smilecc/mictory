@@ -32,6 +32,11 @@ func (Channel) Fields() []ent.Field {
 func (Channel) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("rooms", Room.Type),
+		edge.From("owner_user", User.Type).
+			Ref("owner").
+			Unique().
+			Required().
+			Comment("所有人ID"),
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"server/ent/channel"
 	"server/ent/predicate"
 	"server/ent/room"
+	"server/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -96,6 +97,17 @@ func (cu *ChannelUpdate) AddRooms(r ...*Room) *ChannelUpdate {
 	return cu.AddRoomIDs(ids...)
 }
 
+// SetOwnerUserID sets the "owner_user" edge to the User entity by ID.
+func (cu *ChannelUpdate) SetOwnerUserID(id int64) *ChannelUpdate {
+	cu.mutation.SetOwnerUserID(id)
+	return cu
+}
+
+// SetOwnerUser sets the "owner_user" edge to the User entity.
+func (cu *ChannelUpdate) SetOwnerUser(u *User) *ChannelUpdate {
+	return cu.SetOwnerUserID(u.ID)
+}
+
 // Mutation returns the ChannelMutation object of the builder.
 func (cu *ChannelUpdate) Mutation() *ChannelMutation {
 	return cu.mutation
@@ -120,6 +132,12 @@ func (cu *ChannelUpdate) RemoveRooms(r ...*Room) *ChannelUpdate {
 		ids[i] = r[i].ID
 	}
 	return cu.RemoveRoomIDs(ids...)
+}
+
+// ClearOwnerUser clears the "owner_user" edge to the User entity.
+func (cu *ChannelUpdate) ClearOwnerUser() *ChannelUpdate {
+	cu.mutation.ClearOwnerUser()
+	return cu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -175,6 +193,9 @@ func (cu *ChannelUpdate) check() error {
 		if err := channel.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Channel.name": %w`, err)}
 		}
+	}
+	if _, ok := cu.mutation.OwnerUserID(); cu.mutation.OwnerUserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Channel.owner_user"`)
 	}
 	return nil
 }
@@ -247,6 +268,35 @@ func (cu *ChannelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.OwnerUserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.OwnerUserTable,
+			Columns: []string{channel.OwnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.OwnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.OwnerUserTable,
+			Columns: []string{channel.OwnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -341,6 +391,17 @@ func (cuo *ChannelUpdateOne) AddRooms(r ...*Room) *ChannelUpdateOne {
 	return cuo.AddRoomIDs(ids...)
 }
 
+// SetOwnerUserID sets the "owner_user" edge to the User entity by ID.
+func (cuo *ChannelUpdateOne) SetOwnerUserID(id int64) *ChannelUpdateOne {
+	cuo.mutation.SetOwnerUserID(id)
+	return cuo
+}
+
+// SetOwnerUser sets the "owner_user" edge to the User entity.
+func (cuo *ChannelUpdateOne) SetOwnerUser(u *User) *ChannelUpdateOne {
+	return cuo.SetOwnerUserID(u.ID)
+}
+
 // Mutation returns the ChannelMutation object of the builder.
 func (cuo *ChannelUpdateOne) Mutation() *ChannelMutation {
 	return cuo.mutation
@@ -365,6 +426,12 @@ func (cuo *ChannelUpdateOne) RemoveRooms(r ...*Room) *ChannelUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return cuo.RemoveRoomIDs(ids...)
+}
+
+// ClearOwnerUser clears the "owner_user" edge to the User entity.
+func (cuo *ChannelUpdateOne) ClearOwnerUser() *ChannelUpdateOne {
+	cuo.mutation.ClearOwnerUser()
+	return cuo
 }
 
 // Where appends a list predicates to the ChannelUpdate builder.
@@ -433,6 +500,9 @@ func (cuo *ChannelUpdateOne) check() error {
 		if err := channel.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Channel.name": %w`, err)}
 		}
+	}
+	if _, ok := cuo.mutation.OwnerUserID(); cuo.mutation.OwnerUserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Channel.owner_user"`)
 	}
 	return nil
 }
@@ -522,6 +592,35 @@ func (cuo *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.OwnerUserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.OwnerUserTable,
+			Columns: []string{channel.OwnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.OwnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.OwnerUserTable,
+			Columns: []string{channel.OwnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

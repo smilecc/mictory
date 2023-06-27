@@ -1,0 +1,5 @@
+package storage
+
+func Get() {
+
+}

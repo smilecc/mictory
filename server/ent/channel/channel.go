@@ -27,6 +27,8 @@ const (
 	FieldName = "name"
 	// EdgeRooms holds the string denoting the rooms edge name in mutations.
 	EdgeRooms = "rooms"
+	// EdgeOwnerUser holds the string denoting the owner_user edge name in mutations.
+	EdgeOwnerUser = "owner_user"
 	// Table holds the table name of the channel in the database.
 	Table = "channels"
 	// RoomsTable is the table that holds the rooms relation/edge.
@@ -36,6 +38,13 @@ const (
 	RoomsInverseTable = "rooms"
 	// RoomsColumn is the table column denoting the rooms relation/edge.
 	RoomsColumn = "channel_rooms"
+	// OwnerUserTable is the table that holds the owner_user relation/edge.
+	OwnerUserTable = "channels"
+	// OwnerUserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	OwnerUserInverseTable = "users"
+	// OwnerUserColumn is the table column denoting the owner_user relation/edge.
+	OwnerUserColumn = "user_owner"
 )
 
 // Columns holds all SQL columns for channel fields.
@@ -48,10 +57,21 @@ var Columns = []string{
 	FieldName,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "channels"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_owner",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -124,10 +144,24 @@ func ByRooms(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRoomsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOwnerUserField orders the results by owner_user field.
+func ByOwnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOwnerUserStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newRoomsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RoomsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RoomsTable, RoomsColumn),
+	)
+}
+func newOwnerUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OwnerUserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, OwnerUserTable, OwnerUserColumn),
 	)
 }

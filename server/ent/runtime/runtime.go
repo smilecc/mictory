@@ -6,6 +6,7 @@ import (
 	"server/ent/channel"
 	"server/ent/room"
 	"server/ent/schema"
+	"server/ent/user"
 	"time"
 )
 
@@ -71,6 +72,37 @@ func init() {
 	roomDescSort := roomFields[3].Descriptor()
 	// room.DefaultSort holds the default value on creation for the sort field.
 	room.DefaultSort = roomDescSort.Default.(int)
+	userMixin := schema.User{}.Mixin()
+	userMixinHooks1 := userMixin[1].Hooks()
+	user.Hooks[0] = userMixinHooks1[0]
+	userMixinInters1 := userMixin[1].Interceptors()
+	user.Interceptors[0] = userMixinInters1[0]
+	userMixinFields0 := userMixin[0].Fields()
+	_ = userMixinFields0
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescCreateTime is the schema descriptor for create_time field.
+	userDescCreateTime := userMixinFields0[0].Descriptor()
+	// user.DefaultCreateTime holds the default value on creation for the create_time field.
+	user.DefaultCreateTime = userDescCreateTime.Default.(func() time.Time)
+	// userDescUpdateTime is the schema descriptor for update_time field.
+	userDescUpdateTime := userMixinFields0[1].Descriptor()
+	// user.DefaultUpdateTime holds the default value on creation for the update_time field.
+	user.DefaultUpdateTime = userDescUpdateTime.Default.(func() time.Time)
+	// user.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[1].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
+	// userDescNickname is the schema descriptor for nickname field.
+	userDescNickname := userFields[2].Descriptor()
+	// user.NicknameValidator is a validator for the "nickname" field. It is called by the builders before save.
+	user.NicknameValidator = userDescNickname.Validators[0].(func(string) error)
+	// userDescAvatar is the schema descriptor for avatar field.
+	userDescAvatar := userFields[4].Descriptor()
+	// user.AvatarValidator is a validator for the "avatar" field. It is called by the builders before save.
+	user.AvatarValidator = userDescAvatar.Validators[0].(func(string) error)
 }
 
 const (

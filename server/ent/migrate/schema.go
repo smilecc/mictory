@@ -16,12 +16,21 @@ var (
 		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
 		{Name: "code", Type: field.TypeString, Unique: true, Nullable: true, Size: 32},
 		{Name: "name", Type: field.TypeString, Size: 32},
+		{Name: "user_owner", Type: field.TypeInt64},
 	}
 	// ChannelsTable holds the schema information for the "channels" table.
 	ChannelsTable = &schema.Table{
 		Name:       "channels",
 		Columns:    ChannelsColumns,
 		PrimaryKey: []*schema.Column{ChannelsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "channels_users_owner",
+				Columns:    []*schema.Column{ChannelsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// RoomsColumns holds the columns for the "rooms" table.
 	RoomsColumns = []*schema.Column{
@@ -48,13 +57,35 @@ var (
 			},
 		},
 	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "username", Type: field.TypeString},
+		{Name: "nickname", Type: field.TypeString, Size: 32},
+		{Name: "nickname_no", Type: field.TypeInt},
+		{Name: "avatar", Type: field.TypeString, Nullable: true, Size: 512},
+		{Name: "session_state", Type: field.TypeEnum, Enums: []string{"online", "offline"}, Default: "offline"},
+		{Name: "password", Type: field.TypeString},
+		{Name: "password_salt", Type: field.TypeString},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ChannelsTable,
 		RoomsTable,
+		UsersTable,
 	}
 )
 
 func init() {
+	ChannelsTable.ForeignKeys[0].RefTable = UsersTable
 	RoomsTable.ForeignKeys[0].RefTable = ChannelsTable
 }

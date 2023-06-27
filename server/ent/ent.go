@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"server/ent/channel"
 	"server/ent/room"
+	"server/ent/user"
 	"sync"
 
 	"entgo.io/ent"
@@ -76,6 +77,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			channel.Table: channel.ValidColumn,
 			room.Table:    room.ValidColumn,
+			user.Table:    user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"server/ent/channel"
+	"server/ent/user"
 	"strings"
 	"time"
 
@@ -30,6 +31,7 @@ type Channel struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelQuery when eager-loading is set.
 	Edges        ChannelEdges `json:"edges"`
+	user_owner   *int64
 	selectValues sql.SelectValues
 }
 
@@ -37,9 +39,11 @@ type Channel struct {
 type ChannelEdges struct {
 	// Rooms holds the value of the rooms edge.
 	Rooms []*Room `json:"rooms,omitempty"`
+	// 所有人ID
+	OwnerUser *User `json:"owner_user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // RoomsOrErr returns the Rooms value or an error if the edge
@@ -49,6 +53,19 @@ func (e ChannelEdges) RoomsOrErr() ([]*Room, error) {
 		return e.Rooms, nil
 	}
 	return nil, &NotLoadedError{edge: "rooms"}
+}
+
+// OwnerUserOrErr returns the OwnerUser value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ChannelEdges) OwnerUserOrErr() (*User, error) {
+	if e.loadedTypes[1] {
+		if e.OwnerUser == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.OwnerUser, nil
+	}
+	return nil, &NotLoadedError{edge: "owner_user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -62,6 +79,8 @@ func (*Channel) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case channel.FieldCreateTime, channel.FieldUpdateTime, channel.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
+		case channel.ForeignKeys[0]: // user_owner
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -113,6 +132,13 @@ func (c *Channel) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				c.Name = value.String
 			}
+		case channel.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_owner", value)
+			} else if value.Valid {
+				c.user_owner = new(int64)
+				*c.user_owner = int64(value.Int64)
+			}
 		default:
 			c.selectValues.Set(columns[i], values[i])
 		}
@@ -129,6 +155,11 @@ func (c *Channel) Value(name string) (ent.Value, error) {
 // QueryRooms queries the "rooms" edge of the Channel entity.
 func (c *Channel) QueryRooms() *RoomQuery {
 	return NewChannelClient(c.config).QueryRooms(c)
+}
+
+// QueryOwnerUser queries the "owner_user" edge of the Channel entity.
+func (c *Channel) QueryOwnerUser() *UserQuery {
+	return NewChannelClient(c.config).QueryOwnerUser(c)
 }
 
 // Update returns a builder for updating this Channel.
