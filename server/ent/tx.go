@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// Chat is the client for interacting with the Chat builders.
+	Chat *ChatClient
 	// Room is the client for interacting with the Room builders.
 	Room *RoomClient
 	// User is the client for interacting with the User builders.
@@ -150,6 +152,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Channel = NewChannelClient(tx.config)
+	tx.Chat = NewChatClient(tx.config)
 	tx.Room = NewRoomClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

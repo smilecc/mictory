@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"server/ent/channel"
+	"server/ent/chat"
 	"server/ent/room"
 	"server/ent/schema"
 	"server/ent/user"
@@ -41,6 +42,33 @@ func init() {
 	channelDescName := channelFields[2].Descriptor()
 	// channel.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	channel.NameValidator = channelDescName.Validators[0].(func(string) error)
+	chatMixin := schema.Chat{}.Mixin()
+	chatMixinHooks1 := chatMixin[1].Hooks()
+	chat.Hooks[0] = chatMixinHooks1[0]
+	chatMixinInters1 := chatMixin[1].Interceptors()
+	chat.Interceptors[0] = chatMixinInters1[0]
+	chatMixinFields0 := chatMixin[0].Fields()
+	_ = chatMixinFields0
+	chatFields := schema.Chat{}.Fields()
+	_ = chatFields
+	// chatDescCreateTime is the schema descriptor for create_time field.
+	chatDescCreateTime := chatMixinFields0[0].Descriptor()
+	// chat.DefaultCreateTime holds the default value on creation for the create_time field.
+	chat.DefaultCreateTime = chatDescCreateTime.Default.(func() time.Time)
+	// chatDescUpdateTime is the schema descriptor for update_time field.
+	chatDescUpdateTime := chatMixinFields0[1].Descriptor()
+	// chat.DefaultUpdateTime holds the default value on creation for the update_time field.
+	chat.DefaultUpdateTime = chatDescUpdateTime.Default.(func() time.Time)
+	// chat.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	chat.UpdateDefaultUpdateTime = chatDescUpdateTime.UpdateDefault.(func() time.Time)
+	// chatDescBusinessID is the schema descriptor for business_id field.
+	chatDescBusinessID := chatFields[2].Descriptor()
+	// chat.BusinessIDValidator is a validator for the "business_id" field. It is called by the builders before save.
+	chat.BusinessIDValidator = chatDescBusinessID.Validators[0].(func(string) error)
+	// chatDescFromUserID is the schema descriptor for from_user_id field.
+	chatDescFromUserID := chatFields[3].Descriptor()
+	// chat.FromUserIDValidator is a validator for the "from_user_id" field. It is called by the builders before save.
+	chat.FromUserIDValidator = chatDescFromUserID.Validators[0].(func(string) error)
 	roomMixin := schema.Room{}.Mixin()
 	roomMixinHooks1 := roomMixin[1].Hooks()
 	room.Hooks[0] = roomMixinHooks1[0]

@@ -2,7 +2,6 @@ package business
 
 import (
 	"encoding/json"
-	httpCors "github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/zishang520/socket.io/socket"
 	"log"
@@ -26,7 +25,7 @@ func NewSocketServer() *SocketServer {
 	}
 }
 
-func (s *SocketServer) Start() {
+func (s *SocketServer) Handle(mux *http.ServeMux) {
 	s.startHandleEvent()
 	s.Server.Use(func(s *socket.Socket, next func(*socket.ExtendedError)) {
 		// 初始化回话数据
@@ -38,12 +37,7 @@ func (s *SocketServer) Start() {
 	})
 
 	// 启动服务
-	mux := http.NewServeMux()
 	mux.Handle("/socket.io/", s.Server.ServeHandler(nil))
-
-	go func() {
-		_ = http.ListenAndServe(":8025", httpCors.Default().Handler(mux))
-	}()
 }
 
 func (s *SocketServer) startHandleEvent() {

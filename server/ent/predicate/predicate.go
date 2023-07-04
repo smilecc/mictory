@@ -9,6 +9,9 @@ import (
 // Channel is the predicate function for channel builders.
 type Channel func(*sql.Selector)
 
+// Chat is the predicate function for chat builders.
+type Chat func(*sql.Selector)
+
 // Room is the predicate function for room builders.
 type Room func(*sql.Selector)
 

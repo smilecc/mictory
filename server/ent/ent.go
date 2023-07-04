@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 	"server/ent/channel"
+	"server/ent/chat"
 	"server/ent/room"
 	"server/ent/user"
 	"sync"
@@ -76,6 +77,7 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			channel.Table: channel.ValidColumn,
+			chat.Table:    chat.ValidColumn,
 			room.Table:    room.ValidColumn,
 			user.Table:    user.ValidColumn,
 		})

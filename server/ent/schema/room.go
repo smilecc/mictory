@@ -4,7 +4,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/mixin"
 	"server/ent/mixins"
 )
 
@@ -36,7 +35,7 @@ func (Room) Edges() []ent.Edge {
 
 func (Room) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mixin.Time{},
+		mixins.DateTime{},
 		mixins.SoftDeleteMixin{},
 	}
 }

@@ -3,6 +3,7 @@ package mixins
 import (
 	"context"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
@@ -22,6 +23,9 @@ type SoftDeleteMixin struct {
 func (SoftDeleteMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("delete_time").
+			SchemaType(map[string]string{
+				dialect.MySQL: "datetime",
+			}).
 			Optional(),
 	}
 }

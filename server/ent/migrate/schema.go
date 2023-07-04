@@ -11,9 +11,9 @@ var (
 	// ChannelsColumns holds the columns for the "channels" table.
 	ChannelsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "create_time", Type: field.TypeTime},
-		{Name: "update_time", Type: field.TypeTime},
-		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "create_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "code", Type: field.TypeString, Unique: true, Nullable: true, Size: 32},
 		{Name: "name", Type: field.TypeString, Size: 32},
 		{Name: "user_owner", Type: field.TypeInt64},
@@ -32,12 +32,31 @@ var (
 			},
 		},
 	}
+	// ChatsColumns holds the columns for the "chats" table.
+	ChatsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "business_type", Type: field.TypeEnum, Enums: []string{"room", "user"}},
+		{Name: "business_id", Type: field.TypeString, Size: 128},
+		{Name: "from_user_id", Type: field.TypeString, Size: 64},
+		{Name: "source_type", Type: field.TypeEnum, Enums: []string{"system", "admin", "user"}},
+		{Name: "content_type", Type: field.TypeEnum, Enums: []string{"text", "image"}},
+		{Name: "content", Type: field.TypeString, Size: 2147483647},
+	}
+	// ChatsTable holds the schema information for the "chats" table.
+	ChatsTable = &schema.Table{
+		Name:       "chats",
+		Columns:    ChatsColumns,
+		PrimaryKey: []*schema.Column{ChatsColumns[0]},
+	}
 	// RoomsColumns holds the columns for the "rooms" table.
 	RoomsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "create_time", Type: field.TypeTime},
-		{Name: "update_time", Type: field.TypeTime},
-		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "create_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "name", Type: field.TypeString, Size: 64},
 		{Name: "max_member", Type: field.TypeInt, Default: 50},
 		{Name: "sort", Type: field.TypeInt, Default: 0},
@@ -60,9 +79,9 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "create_time", Type: field.TypeTime},
-		{Name: "update_time", Type: field.TypeTime},
-		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "create_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "username", Type: field.TypeString},
 		{Name: "nickname", Type: field.TypeString, Size: 32},
 		{Name: "nickname_no", Type: field.TypeInt},
@@ -80,6 +99,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ChannelsTable,
+		ChatsTable,
 		RoomsTable,
 		UsersTable,
 	}
