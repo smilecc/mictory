@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"reflect"
 	"server/ent/channel"
+	"server/ent/channelrole"
 	"server/ent/chat"
 	"server/ent/room"
 	"server/ent/user"
+	"server/ent/usernickname"
 	"sync"
 
 	"entgo.io/ent"
@@ -76,10 +78,12 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			channel.Table: channel.ValidColumn,
-			chat.Table:    chat.ValidColumn,
-			room.Table:    room.ValidColumn,
-			user.Table:    user.ValidColumn,
+			channel.Table:      channel.ValidColumn,
+			channelrole.Table:  channelrole.ValidColumn,
+			chat.Table:         chat.ValidColumn,
+			room.Table:         room.ValidColumn,
+			user.Table:         user.ValidColumn,
+			usernickname.Table: usernickname.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

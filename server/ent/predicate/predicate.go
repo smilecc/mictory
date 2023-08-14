@@ -9,6 +9,9 @@ import (
 // Channel is the predicate function for channel builders.
 type Channel func(*sql.Selector)
 
+// ChannelRole is the predicate function for channelrole builders.
+type ChannelRole func(*sql.Selector)
+
 // Chat is the predicate function for chat builders.
 type Chat func(*sql.Selector)
 
@@ -17,3 +20,6 @@ type Room func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// UserNickname is the predicate function for usernickname builders.
+type UserNickname func(*sql.Selector)

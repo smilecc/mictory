@@ -231,6 +231,16 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "session_state", err: fmt.Errorf(`ent: validator failed for field "User.session_state": %w`, err)}
 		}
 	}
+	if v, ok := uu.mutation.Password(); ok {
+		if err := user.PasswordValidator(v); err != nil {
+			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+		}
+	}
+	if v, ok := uu.mutation.PasswordSalt(); ok {
+		if err := user.PasswordSaltValidator(v); err != nil {
+			return &ValidationError{Name: "password_salt", err: fmt.Errorf(`ent: validator failed for field "User.password_salt": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -560,6 +570,16 @@ func (uuo *UserUpdateOne) check() error {
 	if v, ok := uuo.mutation.SessionState(); ok {
 		if err := user.SessionStateValidator(v); err != nil {
 			return &ValidationError{Name: "session_state", err: fmt.Errorf(`ent: validator failed for field "User.session_state": %w`, err)}
+		}
+	}
+	if v, ok := uuo.mutation.Password(); ok {
+		if err := user.PasswordValidator(v); err != nil {
+			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+		}
+	}
+	if v, ok := uuo.mutation.PasswordSalt(); ok {
+		if err := user.PasswordSaltValidator(v); err != nil {
+			return &ValidationError{Name: "password_salt", err: fmt.Errorf(`ent: validator failed for field "User.password_salt": %w`, err)}
 		}
 	}
 	return nil

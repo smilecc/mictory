@@ -32,6 +32,16 @@ var (
 			},
 		},
 	}
+	// ChannelRolesColumns holds the columns for the "channel_roles" table.
+	ChannelRolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+	}
+	// ChannelRolesTable holds the schema information for the "channel_roles" table.
+	ChannelRolesTable = &schema.Table{
+		Name:       "channel_roles",
+		Columns:    ChannelRolesColumns,
+		PrimaryKey: []*schema.Column{ChannelRolesColumns[0]},
+	}
 	// ChatsColumns holds the columns for the "chats" table.
 	ChatsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -82,13 +92,13 @@ var (
 		{Name: "create_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
-		{Name: "username", Type: field.TypeString},
+		{Name: "username", Type: field.TypeString, Size: 32},
 		{Name: "nickname", Type: field.TypeString, Size: 32},
 		{Name: "nickname_no", Type: field.TypeInt},
 		{Name: "avatar", Type: field.TypeString, Nullable: true, Size: 512},
 		{Name: "session_state", Type: field.TypeEnum, Enums: []string{"online", "offline"}, Default: "offline"},
-		{Name: "password", Type: field.TypeString},
-		{Name: "password_salt", Type: field.TypeString},
+		{Name: "password", Type: field.TypeString, Size: 64},
+		{Name: "password_salt", Type: field.TypeString, Size: 128},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -96,12 +106,29 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// UserNicknamesColumns holds the columns for the "user_nicknames" table.
+	UserNicknamesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "nickname", Type: field.TypeString, Size: 32},
+		{Name: "no", Type: field.TypeInt},
+	}
+	// UserNicknamesTable holds the schema information for the "user_nicknames" table.
+	UserNicknamesTable = &schema.Table{
+		Name:       "user_nicknames",
+		Columns:    UserNicknamesColumns,
+		PrimaryKey: []*schema.Column{UserNicknamesColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ChannelsTable,
+		ChannelRolesTable,
 		ChatsTable,
 		RoomsTable,
 		UsersTable,
+		UserNicknamesTable,
 	}
 )
 

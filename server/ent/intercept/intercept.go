@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"server/ent"
 	"server/ent/channel"
+	"server/ent/channelrole"
 	"server/ent/chat"
 	"server/ent/predicate"
 	"server/ent/room"
 	"server/ent/user"
+	"server/ent/usernickname"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -98,6 +100,33 @@ func (f TraverseChannel) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.ChannelQuery", q)
 }
 
+// The ChannelRoleFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ChannelRoleFunc func(context.Context, *ent.ChannelRoleQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ChannelRoleFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ChannelRoleQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ChannelRoleQuery", q)
+}
+
+// The TraverseChannelRole type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseChannelRole func(context.Context, *ent.ChannelRoleQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseChannelRole) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseChannelRole) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ChannelRoleQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ChannelRoleQuery", q)
+}
+
 // The ChatFunc type is an adapter to allow the use of ordinary function as a Querier.
 type ChatFunc func(context.Context, *ent.ChatQuery) (ent.Value, error)
 
@@ -179,17 +208,48 @@ func (f TraverseUser) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.UserQuery", q)
 }
 
+// The UserNicknameFunc type is an adapter to allow the use of ordinary function as a Querier.
+type UserNicknameFunc func(context.Context, *ent.UserNicknameQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f UserNicknameFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.UserNicknameQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.UserNicknameQuery", q)
+}
+
+// The TraverseUserNickname type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseUserNickname func(context.Context, *ent.UserNicknameQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseUserNickname) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseUserNickname) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.UserNicknameQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.UserNicknameQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.ChannelQuery:
 		return &query[*ent.ChannelQuery, predicate.Channel, channel.OrderOption]{typ: ent.TypeChannel, tq: q}, nil
+	case *ent.ChannelRoleQuery:
+		return &query[*ent.ChannelRoleQuery, predicate.ChannelRole, channelrole.OrderOption]{typ: ent.TypeChannelRole, tq: q}, nil
 	case *ent.ChatQuery:
 		return &query[*ent.ChatQuery, predicate.Chat, chat.OrderOption]{typ: ent.TypeChat, tq: q}, nil
 	case *ent.RoomQuery:
 		return &query[*ent.RoomQuery, predicate.Room, room.OrderOption]{typ: ent.TypeRoom, tq: q}, nil
 	case *ent.UserQuery:
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
+	case *ent.UserNicknameQuery:
+		return &query[*ent.UserNicknameQuery, predicate.UserNickname, usernickname.OrderOption]{typ: ent.TypeUserNickname, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

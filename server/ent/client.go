@@ -11,9 +11,11 @@ import (
 	"server/ent/migrate"
 
 	"server/ent/channel"
+	"server/ent/channelrole"
 	"server/ent/chat"
 	"server/ent/room"
 	"server/ent/user"
+	"server/ent/usernickname"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -28,12 +30,16 @@ type Client struct {
 	Schema *migrate.Schema
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// ChannelRole is the client for interacting with the ChannelRole builders.
+	ChannelRole *ChannelRoleClient
 	// Chat is the client for interacting with the Chat builders.
 	Chat *ChatClient
 	// Room is the client for interacting with the Room builders.
 	Room *RoomClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserNickname is the client for interacting with the UserNickname builders.
+	UserNickname *UserNicknameClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -48,9 +54,11 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Channel = NewChannelClient(c.config)
+	c.ChannelRole = NewChannelRoleClient(c.config)
 	c.Chat = NewChatClient(c.config)
 	c.Room = NewRoomClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserNickname = NewUserNicknameClient(c.config)
 }
 
 type (
@@ -131,12 +139,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Channel: NewChannelClient(cfg),
-		Chat:    NewChatClient(cfg),
-		Room:    NewRoomClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:          ctx,
+		config:       cfg,
+		Channel:      NewChannelClient(cfg),
+		ChannelRole:  NewChannelRoleClient(cfg),
+		Chat:         NewChatClient(cfg),
+		Room:         NewRoomClient(cfg),
+		User:         NewUserClient(cfg),
+		UserNickname: NewUserNicknameClient(cfg),
 	}, nil
 }
 
@@ -154,12 +164,14 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Channel: NewChannelClient(cfg),
-		Chat:    NewChatClient(cfg),
-		Room:    NewRoomClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:          ctx,
+		config:       cfg,
+		Channel:      NewChannelClient(cfg),
+		ChannelRole:  NewChannelRoleClient(cfg),
+		Chat:         NewChatClient(cfg),
+		Room:         NewRoomClient(cfg),
+		User:         NewUserClient(cfg),
+		UserNickname: NewUserNicknameClient(cfg),
 	}, nil
 }
 
@@ -188,19 +200,21 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Channel.Use(hooks...)
-	c.Chat.Use(hooks...)
-	c.Room.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Channel, c.ChannelRole, c.Chat, c.Room, c.User, c.UserNickname,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Channel.Intercept(interceptors...)
-	c.Chat.Intercept(interceptors...)
-	c.Room.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Channel, c.ChannelRole, c.Chat, c.Room, c.User, c.UserNickname,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -208,12 +222,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ChannelMutation:
 		return c.Channel.mutate(ctx, m)
+	case *ChannelRoleMutation:
+		return c.ChannelRole.mutate(ctx, m)
 	case *ChatMutation:
 		return c.Chat.mutate(ctx, m)
 	case *RoomMutation:
 		return c.Room.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserNicknameMutation:
+		return c.UserNickname.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -368,6 +386,124 @@ func (c *ChannelClient) mutate(ctx context.Context, m *ChannelMutation) (Value, 
 		return (&ChannelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Channel mutation op: %q", m.Op())
+	}
+}
+
+// ChannelRoleClient is a client for the ChannelRole schema.
+type ChannelRoleClient struct {
+	config
+}
+
+// NewChannelRoleClient returns a client for the ChannelRole from the given config.
+func NewChannelRoleClient(c config) *ChannelRoleClient {
+	return &ChannelRoleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channelrole.Hooks(f(g(h())))`.
+func (c *ChannelRoleClient) Use(hooks ...Hook) {
+	c.hooks.ChannelRole = append(c.hooks.ChannelRole, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channelrole.Intercept(f(g(h())))`.
+func (c *ChannelRoleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelRole = append(c.inters.ChannelRole, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelRole entity.
+func (c *ChannelRoleClient) Create() *ChannelRoleCreate {
+	mutation := newChannelRoleMutation(c.config, OpCreate)
+	return &ChannelRoleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelRole entities.
+func (c *ChannelRoleClient) CreateBulk(builders ...*ChannelRoleCreate) *ChannelRoleCreateBulk {
+	return &ChannelRoleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelRole.
+func (c *ChannelRoleClient) Update() *ChannelRoleUpdate {
+	mutation := newChannelRoleMutation(c.config, OpUpdate)
+	return &ChannelRoleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelRoleClient) UpdateOne(cr *ChannelRole) *ChannelRoleUpdateOne {
+	mutation := newChannelRoleMutation(c.config, OpUpdateOne, withChannelRole(cr))
+	return &ChannelRoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelRoleClient) UpdateOneID(id int) *ChannelRoleUpdateOne {
+	mutation := newChannelRoleMutation(c.config, OpUpdateOne, withChannelRoleID(id))
+	return &ChannelRoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelRole.
+func (c *ChannelRoleClient) Delete() *ChannelRoleDelete {
+	mutation := newChannelRoleMutation(c.config, OpDelete)
+	return &ChannelRoleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelRoleClient) DeleteOne(cr *ChannelRole) *ChannelRoleDeleteOne {
+	return c.DeleteOneID(cr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelRoleClient) DeleteOneID(id int) *ChannelRoleDeleteOne {
+	builder := c.Delete().Where(channelrole.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelRoleDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelRole.
+func (c *ChannelRoleClient) Query() *ChannelRoleQuery {
+	return &ChannelRoleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelRole},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelRole entity by its id.
+func (c *ChannelRoleClient) Get(ctx context.Context, id int) (*ChannelRole, error) {
+	return c.Query().Where(channelrole.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelRoleClient) GetX(ctx context.Context, id int) *ChannelRole {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelRoleClient) Hooks() []Hook {
+	return c.hooks.ChannelRole
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelRoleClient) Interceptors() []Interceptor {
+	return c.inters.ChannelRole
+}
+
+func (c *ChannelRoleClient) mutate(ctx context.Context, m *ChannelRoleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelRoleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelRoleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelRoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelRoleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelRole mutation op: %q", m.Op())
 	}
 }
 
@@ -763,12 +899,132 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// UserNicknameClient is a client for the UserNickname schema.
+type UserNicknameClient struct {
+	config
+}
+
+// NewUserNicknameClient returns a client for the UserNickname from the given config.
+func NewUserNicknameClient(c config) *UserNicknameClient {
+	return &UserNicknameClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usernickname.Hooks(f(g(h())))`.
+func (c *UserNicknameClient) Use(hooks ...Hook) {
+	c.hooks.UserNickname = append(c.hooks.UserNickname, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usernickname.Intercept(f(g(h())))`.
+func (c *UserNicknameClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserNickname = append(c.inters.UserNickname, interceptors...)
+}
+
+// Create returns a builder for creating a UserNickname entity.
+func (c *UserNicknameClient) Create() *UserNicknameCreate {
+	mutation := newUserNicknameMutation(c.config, OpCreate)
+	return &UserNicknameCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserNickname entities.
+func (c *UserNicknameClient) CreateBulk(builders ...*UserNicknameCreate) *UserNicknameCreateBulk {
+	return &UserNicknameCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserNickname.
+func (c *UserNicknameClient) Update() *UserNicknameUpdate {
+	mutation := newUserNicknameMutation(c.config, OpUpdate)
+	return &UserNicknameUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserNicknameClient) UpdateOne(un *UserNickname) *UserNicknameUpdateOne {
+	mutation := newUserNicknameMutation(c.config, OpUpdateOne, withUserNickname(un))
+	return &UserNicknameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserNicknameClient) UpdateOneID(id int64) *UserNicknameUpdateOne {
+	mutation := newUserNicknameMutation(c.config, OpUpdateOne, withUserNicknameID(id))
+	return &UserNicknameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserNickname.
+func (c *UserNicknameClient) Delete() *UserNicknameDelete {
+	mutation := newUserNicknameMutation(c.config, OpDelete)
+	return &UserNicknameDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserNicknameClient) DeleteOne(un *UserNickname) *UserNicknameDeleteOne {
+	return c.DeleteOneID(un.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserNicknameClient) DeleteOneID(id int64) *UserNicknameDeleteOne {
+	builder := c.Delete().Where(usernickname.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserNicknameDeleteOne{builder}
+}
+
+// Query returns a query builder for UserNickname.
+func (c *UserNicknameClient) Query() *UserNicknameQuery {
+	return &UserNicknameQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserNickname},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserNickname entity by its id.
+func (c *UserNicknameClient) Get(ctx context.Context, id int64) (*UserNickname, error) {
+	return c.Query().Where(usernickname.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserNicknameClient) GetX(ctx context.Context, id int64) *UserNickname {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *UserNicknameClient) Hooks() []Hook {
+	hooks := c.hooks.UserNickname
+	return append(hooks[:len(hooks):len(hooks)], usernickname.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserNicknameClient) Interceptors() []Interceptor {
+	inters := c.inters.UserNickname
+	return append(inters[:len(inters):len(inters)], usernickname.Interceptors[:]...)
+}
+
+func (c *UserNicknameClient) mutate(ctx context.Context, m *UserNicknameMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserNicknameCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserNicknameUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserNicknameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserNicknameDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserNickname mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Channel, Chat, Room, User []ent.Hook
+		Channel, ChannelRole, Chat, Room, User, UserNickname []ent.Hook
 	}
 	inters struct {
-		Channel, Chat, Room, User []ent.Interceptor
+		Channel, ChannelRole, Chat, Room, User, UserNickname []ent.Interceptor
 	}
 )

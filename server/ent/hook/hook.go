@@ -20,6 +20,18 @@ func (f ChannelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelMutation", m)
 }
 
+// The ChannelRoleFunc type is an adapter to allow the use of ordinary
+// function as ChannelRole mutator.
+type ChannelRoleFunc func(context.Context, *ent.ChannelRoleMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChannelRoleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChannelRoleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelRoleMutation", m)
+}
+
 // The ChatFunc type is an adapter to allow the use of ordinary
 // function as Chat mutator.
 type ChatFunc func(context.Context, *ent.ChatMutation) (ent.Value, error)
@@ -54,6 +66,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
+}
+
+// The UserNicknameFunc type is an adapter to allow the use of ordinary
+// function as UserNickname mutator.
+type UserNicknameFunc func(context.Context, *ent.UserNicknameMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserNicknameFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserNicknameMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserNicknameMutation", m)
 }
 
 // Condition is a hook condition function.

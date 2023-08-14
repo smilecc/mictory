@@ -94,6 +94,10 @@ var (
 	NicknameValidator func(string) error
 	// AvatarValidator is a validator for the "avatar" field. It is called by the builders before save.
 	AvatarValidator func(string) error
+	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
+	PasswordValidator func(string) error
+	// PasswordSaltValidator is a validator for the "password_salt" field. It is called by the builders before save.
+	PasswordSaltValidator func(string) error
 )
 
 // SessionState defines the type for the "session_state" enum field.

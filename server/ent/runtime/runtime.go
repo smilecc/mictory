@@ -8,6 +8,7 @@ import (
 	"server/ent/room"
 	"server/ent/schema"
 	"server/ent/user"
+	"server/ent/usernickname"
 	"time"
 )
 
@@ -131,6 +132,37 @@ func init() {
 	userDescAvatar := userFields[4].Descriptor()
 	// user.AvatarValidator is a validator for the "avatar" field. It is called by the builders before save.
 	user.AvatarValidator = userDescAvatar.Validators[0].(func(string) error)
+	// userDescPassword is the schema descriptor for password field.
+	userDescPassword := userFields[6].Descriptor()
+	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
+	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
+	// userDescPasswordSalt is the schema descriptor for password_salt field.
+	userDescPasswordSalt := userFields[7].Descriptor()
+	// user.PasswordSaltValidator is a validator for the "password_salt" field. It is called by the builders before save.
+	user.PasswordSaltValidator = userDescPasswordSalt.Validators[0].(func(string) error)
+	usernicknameMixin := schema.UserNickname{}.Mixin()
+	usernicknameMixinHooks1 := usernicknameMixin[1].Hooks()
+	usernickname.Hooks[0] = usernicknameMixinHooks1[0]
+	usernicknameMixinInters1 := usernicknameMixin[1].Interceptors()
+	usernickname.Interceptors[0] = usernicknameMixinInters1[0]
+	usernicknameMixinFields0 := usernicknameMixin[0].Fields()
+	_ = usernicknameMixinFields0
+	usernicknameFields := schema.UserNickname{}.Fields()
+	_ = usernicknameFields
+	// usernicknameDescCreateTime is the schema descriptor for create_time field.
+	usernicknameDescCreateTime := usernicknameMixinFields0[0].Descriptor()
+	// usernickname.DefaultCreateTime holds the default value on creation for the create_time field.
+	usernickname.DefaultCreateTime = usernicknameDescCreateTime.Default.(func() time.Time)
+	// usernicknameDescUpdateTime is the schema descriptor for update_time field.
+	usernicknameDescUpdateTime := usernicknameMixinFields0[1].Descriptor()
+	// usernickname.DefaultUpdateTime holds the default value on creation for the update_time field.
+	usernickname.DefaultUpdateTime = usernicknameDescUpdateTime.Default.(func() time.Time)
+	// usernickname.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	usernickname.UpdateDefaultUpdateTime = usernicknameDescUpdateTime.UpdateDefault.(func() time.Time)
+	// usernicknameDescNickname is the schema descriptor for nickname field.
+	usernicknameDescNickname := usernicknameFields[1].Descriptor()
+	// usernickname.NicknameValidator is a validator for the "nickname" field. It is called by the builders before save.
+	usernickname.NicknameValidator = usernicknameDescNickname.Validators[0].(func(string) error)
 }
 
 const (

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8b141bf2-36f1-495a-bb9e-3ad729dfb368" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/storage/user_nickname_db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/entity/user_query.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/entity/user_query.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/user_api.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/user_api.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel/channel.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel/channel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel/where.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel/where.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel_create.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel_create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel_delete.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel_delete.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel_query.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel_query.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/channel_update.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/channel_update.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat/chat.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat/chat.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat/where.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat/where.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat_create.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat_create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat_delete.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat_delete.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat_query.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat_query.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/chat_update.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/chat_update.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/client.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/ent.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/ent.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/enttest/enttest.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/enttest/enttest.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/hook/hook.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/hook/hook.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/intercept/intercept.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/intercept/intercept.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/migrate/migrate.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/migrate/migrate.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/migrate/schema.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/migrate/schema.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/mutation.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/mutation.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/predicate/predicate.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/predicate/predicate.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room/room.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room/room.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room/where.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room/where.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room_create.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room_create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room_delete.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room_delete.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room_query.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room_query.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/room_update.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/room_update.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/runtime.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/runtime.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/runtime/runtime.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/runtime/runtime.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/schema/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/schema/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/tx.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/tx.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user/where.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user/where.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user_create.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user_create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user_delete.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user_delete.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user_query.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user_query.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ent/user_update.go" beforeDir="false" afterPath="$PROJECT_DIR$/ent/user_update.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file://$USER_HOME$/sdk/go1.20.4" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="2TxVKQqtbWUcnc0bMpK0lxzCPXU" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "dev",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "D:/temp/mictory/server",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="go build server" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="server" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="server" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build server" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>

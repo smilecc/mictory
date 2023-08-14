@@ -14,12 +14,16 @@ type Tx struct {
 	config
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// ChannelRole is the client for interacting with the ChannelRole builders.
+	ChannelRole *ChannelRoleClient
 	// Chat is the client for interacting with the Chat builders.
 	Chat *ChatClient
 	// Room is the client for interacting with the Room builders.
 	Room *RoomClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserNickname is the client for interacting with the UserNickname builders.
+	UserNickname *UserNicknameClient
 
 	// lazily loaded.
 	client     *Client
@@ -152,9 +156,11 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Channel = NewChannelClient(tx.config)
+	tx.ChannelRole = NewChannelRoleClient(tx.config)
 	tx.Chat = NewChatClient(tx.config)
 	tx.Room = NewRoomClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserNickname = NewUserNicknameClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
