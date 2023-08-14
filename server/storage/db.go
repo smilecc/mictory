@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
@@ -38,4 +39,11 @@ func GetEnv(k string, defaultValue string) string {
 	}
 
 	return v
+}
+
+func RollbackTx(tx *ent2.Tx, err error) error {
+	if txErr := tx.Rollback(); txErr != nil {
+		err = fmt.Errorf("%w: %v", err, txErr)
+	}
+	return err
 }

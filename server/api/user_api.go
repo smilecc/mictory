@@ -30,16 +30,35 @@ func UserApiCreateUser(c *fiber.Ctx) error {
 
 	userNickname, err := storage.ApplyUserNickname(txCtx, tx.Client(), q.Nickname)
 	if err != nil {
-		return err
+		return storage.RollbackTx(tx, err)
 	}
 
-	tx.User.
+	user, err := tx.User.
 		Create().
 		SetUsername(q.Username).
 		SetNickname(q.Nickname).
 		SetNicknameNo(userNickname.No).
 		SetPassword(string(passwordHash[:])).
-		SetPasswordSalt(passwordSalt)
+		SetPasswordSalt(passwordSalt).
+		Save(txCtx)
+
+	if err != nil {
+		return storage.RollbackTx(tx, err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return storage.RollbackTx(tx, err)
+	}
+
+	_ = c.JSON(entity.Result[entity.CreateUserResult]{
+		Code:    0,
+		Message: "ok",
+		Data: entity.CreateUserResult{
+			UserId:       user.ID,
+			SessionToken: "",
+		},
+	})
 
 	return nil
 }
