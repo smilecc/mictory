@@ -6,7 +6,9 @@ require (
 	entgo.io/ent v0.12.3
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.47.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/gookit/goutil v0.6.12
+	github.com/gookit/validate v1.5.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.16
@@ -17,6 +19,7 @@ require (
 	github.com/rs/cors v1.9.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/zishang520/socket.io v1.2.0
+	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561
 )
 
 require (
@@ -26,12 +29,10 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/gookit/filter v1.2.0 // indirect
-	github.com/gookit/validate v1.5.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect

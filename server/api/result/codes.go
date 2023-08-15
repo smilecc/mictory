@@ -6,6 +6,9 @@ type ErrorCode int
 
 const (
 	Ok ErrorCode = iota
+	Unauthorized
+	AuthTokenExpired
+	SystemError
 	ValidateFail
 	UsernameExist
 	LoginFail

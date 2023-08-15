@@ -8,6 +8,15 @@ import (
 	"server/ent/user"
 )
 
+func GetUserById(ctx context.Context, dbClient *ent.Client, userId int64) *ent.User {
+	first, err := dbClient.User.Query().Where(user.ID(userId)).First(ctx)
+	if err != nil {
+		return nil
+	}
+
+	return first
+}
+
 func GetUserByUsername(ctx context.Context, dbClient *ent.Client, username string) *ent.User {
 	first, err := dbClient.User.Query().Where(user.Username(username)).First(ctx)
 	if err != nil {

@@ -9,14 +9,17 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Ok-0]
-	_ = x[ValidateFail-1]
-	_ = x[UsernameExist-2]
-	_ = x[LoginFail-3]
+	_ = x[Unauthorized-1]
+	_ = x[AuthTokenExpired-2]
+	_ = x[SystemError-3]
+	_ = x[ValidateFail-4]
+	_ = x[UsernameExist-5]
+	_ = x[LoginFail-6]
 }
 
-const _ErrorCode_name = "OkValidateFailUsernameExistLoginFail"
+const _ErrorCode_name = "OkUnauthorizedAuthTokenExpiredSystemErrorValidateFailUsernameExistLoginFail"
 
-var _ErrorCode_index = [...]uint8{0, 2, 14, 27, 36}
+var _ErrorCode_index = [...]uint8{0, 2, 14, 30, 41, 53, 66, 75}
 
 func (i ErrorCode) String() string {
 	if i < 0 || i >= ErrorCode(len(_ErrorCode_index)-1) {

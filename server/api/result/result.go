@@ -7,7 +7,7 @@ type Result[T interface{}] struct {
 	Data    T         `json:"data"`
 }
 
-func NewSuccessResult[T interface{}](data *T) Result[*T] {
+func NewOkResult[T interface{}](data *T) Result[*T] {
 	return Result[*T]{
 		Code:    Ok,
 		Error:   Ok.String(),
@@ -16,7 +16,7 @@ func NewSuccessResult[T interface{}](data *T) Result[*T] {
 	}
 }
 
-func NewErrorResult(code ErrorCode) Result[*interface{}] {
+func NewFailResult(code ErrorCode) Result[*interface{}] {
 	return Result[*interface{}]{
 		Code:  code,
 		Error: code.String(),
@@ -24,7 +24,15 @@ func NewErrorResult(code ErrorCode) Result[*interface{}] {
 	}
 }
 
-func NewErrorResultWithMessage(code ErrorCode, message string) Result[*interface{}] {
+func NewErrorResult(err error) Result[*interface{}] {
+	return Result[*interface{}]{
+		Code:  SystemError,
+		Error: err.Error(),
+		Data:  nil,
+	}
+}
+
+func NewFailResultWithMessage(code ErrorCode, message string) Result[*interface{}] {
 	return Result[*interface{}]{
 		Code:    code,
 		Error:   code.String(),
