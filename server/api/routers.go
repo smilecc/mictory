@@ -13,4 +13,5 @@ func HandleRouters(app *fiber.App) {
 
 	api.Get("/user", UserApiGetCurrentUser)
 	api.Post("/user", UserApiCreateUser)
+	api.Post("/user/login", UserApiUserLogin)
 }

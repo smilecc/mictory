@@ -3,8 +3,10 @@ package storage
 import (
 	"context"
 	"github.com/golang-jwt/jwt/v5"
+	"server/api/entity"
 	"server/ent"
 	"server/ent/usernickname"
+	"time"
 )
 
 // ApplyUserNickname 申请用户昵称
@@ -49,8 +51,9 @@ func ApplyUserNickname(ctx context.Context, dbClient *ent.Client, nickname strin
 
 // GenerateUserSessionToken 生成用户会话令牌
 func GenerateUserSessionToken(user *ent.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-		"userId": user.ID,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, entity.UserSessionClaims{
+		UserId:           user.ID,
+		RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(8760 * time.Hour))},
 	})
 	return token.SignedString([]byte(AppSecret))
 }

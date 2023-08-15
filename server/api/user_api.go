@@ -77,3 +77,38 @@ func UserApiCreateUser(c *fiber.Ctx) error {
 		SessionToken: sessionToken,
 	}))
 }
+
+func UserApiUserLogin(c *fiber.Ctx) error {
+	q := new(entity.UserLoginQuery)
+	if err := c.BodyParser(q); err != nil {
+		return err
+	}
+
+	v := validate.Struct(q)
+	if !v.Validate() {
+		return c.Status(400).JSON(result.NewErrorResultWithMessage(result.ValidateFail, v.Errors.One()))
+	}
+
+	dbCtx := context.Background()
+	user := storage.GetUserByUsername(dbCtx, storage.DbClient, q.Username)
+
+	if user == nil {
+		return c.Status(400).JSON(result.NewErrorResult(result.LoginFail))
+	}
+
+	loginPasswordHash := storage.GenerateUserPasswordHash(q.Password, user.PasswordSalt)
+
+	if loginPasswordHash != user.Password {
+		return c.Status(400).JSON(result.NewErrorResult(result.LoginFail))
+	}
+
+	sessionToken, err := storage.GenerateUserSessionToken(user)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(result.NewSuccessResult(&entity.UserLoginResult{
+		UserId:       user.ID,
+		SessionToken: sessionToken,
+	}))
+}

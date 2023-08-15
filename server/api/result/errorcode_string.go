@@ -11,11 +11,12 @@ func _() {
 	_ = x[Ok-0]
 	_ = x[ValidateFail-1]
 	_ = x[UsernameExist-2]
+	_ = x[LoginFail-3]
 }
 
-const _ErrorCode_name = "OkValidateFailUsernameExist"
+const _ErrorCode_name = "OkValidateFailUsernameExistLoginFail"
 
-var _ErrorCode_index = [...]uint8{0, 2, 14, 27}
+var _ErrorCode_index = [...]uint8{0, 2, 14, 27, 36}
 
 func (i ErrorCode) String() string {
 	if i < 0 || i >= ErrorCode(len(_ErrorCode_index)-1) {

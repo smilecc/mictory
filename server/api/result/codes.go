@@ -8,4 +8,5 @@ const (
 	Ok ErrorCode = iota
 	ValidateFail
 	UsernameExist
+	LoginFail
 )
