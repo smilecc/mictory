@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
-	"crypto/sha256"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/validate"
 	"server/api/entity"
+	"server/api/result"
 	"server/storage"
 )
 
@@ -19,8 +20,13 @@ func UserApiCreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	passwordSalt := strutil.RandomCharsV3(64)
-	passwordHash := sha256.Sum256([]byte(q.Password + passwordSalt))
+	v := validate.Struct(q)
+	if !v.Validate() {
+		return c.Status(400).JSON(result.NewErrorResultWithMessage(result.ValidateFail, v.Errors.One()))
+	}
+
+	passwordSalt, _ := strutil.RandomString(64)
+	passwordHash := storage.GenerateUserPasswordHash(q.Password, passwordSalt)
 
 	txCtx := context.Background()
 	tx, err := storage.DbClient.BeginTx(txCtx, nil)
@@ -28,20 +34,35 @@ func UserApiCreateUser(c *fiber.Ctx) error {
 		return err
 	}
 
+	// 查询用户名有没有被使用
+	existUsername := storage.GetUserByUsername(txCtx, tx.Client(), q.Username)
+
+	if existUsername != nil {
+		_ = storage.RollbackTx(tx, err)
+		return c.Status(fiber.StatusBadRequest).JSON(result.NewErrorResult(result.UsernameExist))
+	}
+
+	// 申请用户昵称
 	userNickname, err := storage.ApplyUserNickname(txCtx, tx.Client(), q.Nickname)
 	if err != nil {
 		return storage.RollbackTx(tx, err)
 	}
 
+	// 写入用户
 	user, err := tx.User.
 		Create().
 		SetUsername(q.Username).
 		SetNickname(q.Nickname).
 		SetNicknameNo(userNickname.No).
-		SetPassword(string(passwordHash[:])).
+		SetPassword(passwordHash).
 		SetPasswordSalt(passwordSalt).
 		Save(txCtx)
 
+	if err != nil {
+		return storage.RollbackTx(tx, err)
+	}
+
+	sessionToken, err := storage.GenerateUserSessionToken(user)
 	if err != nil {
 		return storage.RollbackTx(tx, err)
 	}
@@ -51,14 +72,8 @@ func UserApiCreateUser(c *fiber.Ctx) error {
 		return storage.RollbackTx(tx, err)
 	}
 
-	_ = c.JSON(entity.Result[entity.CreateUserResult]{
-		Code:    0,
-		Message: "ok",
-		Data: entity.CreateUserResult{
-			UserId:       user.ID,
-			SessionToken: "",
-		},
-	})
-
-	return nil
+	return c.JSON(result.NewSuccessResult(&entity.CreateUserResult{
+		UserId:       user.ID,
+		SessionToken: sessionToken,
+	}))
 }

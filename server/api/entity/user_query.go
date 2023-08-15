@@ -1,9 +1,9 @@
 package entity
 
 type CreateUserQuery struct {
-	Username string `json:"username"`
-	Nickname string `json:"nickname"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required|min_len:2"`
+	Nickname string `json:"nickname" validate:"required|min_len:2"`
+	Password string `json:"password" validate:"required|min_len:6"`
 }
 
 type CreateUserResult struct {

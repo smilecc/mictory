@@ -5,9 +5,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gookit/goutil/fsutil"
+	"github.com/gookit/goutil/strutil"
 	"github.com/joho/godotenv"
 	httpCors "github.com/rs/cors"
 	"net/http"
+	"os"
 	"server/api"
 	"server/business"
 	_ "server/ent/runtime"
@@ -15,6 +18,8 @@ import (
 )
 
 func main() {
+	GenerateAppSecret()
+
 	_ = godotenv.Load()
 	storage.InitStorage()
 	defer storage.DbClient.Close()
@@ -29,7 +34,26 @@ func main() {
 	api.HandleRouters(app)
 	mux.Handle("/", adaptor.FiberApp(app))
 
-	_ = http.ListenAndServe(":8025", httpCors.Default().Handler(mux))
+	_ = http.ListenAndServe(":"+storage.GetEnv("SERVER_PORT", "8025"), httpCors.Default().Handler(mux))
 	//app.Use(cors.New())
 	//_ = app.Listen(":8024")
+}
+
+// GenerateAppSecret 生成应用秘钥
+func GenerateAppSecret() {
+	path := "./.secret"
+	if fsutil.PathExist(path) {
+		storage.AppSecret = fsutil.ReadString(path)
+	} else {
+		randomString, err := strutil.RandomString(64)
+		if err != nil {
+			panic(err)
+		}
+
+		storage.AppSecret = randomString
+		err = fsutil.WriteFile(path, randomString, os.ModeDir)
+		if err != nil {
+			panic(err)
+		}
+	}
 }

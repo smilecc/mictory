@@ -12,6 +12,7 @@ import (
 )
 
 var DbClient *ent2.Client
+var AppSecret string
 
 // InitStorage 初始化存储
 func InitStorage() {

@@ -24,8 +24,8 @@ func (User) Fields() []ent.Field {
 			Values("online", "offline").
 			Default("offline").
 			Comment("会话状态"),
-		field.String("password").MaxLen(64).Comment("密码"),
-		field.String("password_salt").MaxLen(128).Comment("密码盐"),
+		field.String("password").MaxLen(512).Comment("密码"),
+		field.String("password_salt").MaxLen(512).Comment("密码盐"),
 	}
 }
 

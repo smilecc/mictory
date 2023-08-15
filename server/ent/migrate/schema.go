@@ -97,8 +97,8 @@ var (
 		{Name: "nickname_no", Type: field.TypeInt},
 		{Name: "avatar", Type: field.TypeString, Nullable: true, Size: 512},
 		{Name: "session_state", Type: field.TypeEnum, Enums: []string{"online", "offline"}, Default: "offline"},
-		{Name: "password", Type: field.TypeString, Size: 64},
-		{Name: "password_salt", Type: field.TypeString, Size: 128},
+		{Name: "password", Type: field.TypeString, Size: 512},
+		{Name: "password_salt", Type: field.TypeString, Size: 512},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
