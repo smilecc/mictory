@@ -18,12 +18,12 @@ type Channel struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
+	// CreateTime holds the value of the "createTime" field.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// UpdateTime holds the value of the "updateTime" field.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// DeleteTime holds the value of the "delete_time" field.
-	DeleteTime time.Time `json:"delete_time,omitempty"`
+	DeleteTime time.Time `json:"-"`
 	// 频道代号
 	Code string `json:"code,omitempty"`
 	// 频道名
@@ -39,11 +39,13 @@ type Channel struct {
 type ChannelEdges struct {
 	// Rooms holds the value of the rooms edge.
 	Rooms []*Room `json:"rooms,omitempty"`
+	// Users holds the value of the users edge.
+	Users []*User `json:"users,omitempty"`
 	// 所有人ID
 	OwnerUser *User `json:"owner_user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // RoomsOrErr returns the Rooms value or an error if the edge
@@ -55,10 +57,19 @@ func (e ChannelEdges) RoomsOrErr() ([]*Room, error) {
 	return nil, &NotLoadedError{edge: "rooms"}
 }
 
+// UsersOrErr returns the Users value or an error if the edge
+// was not loaded in eager-loading.
+func (e ChannelEdges) UsersOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Users, nil
+	}
+	return nil, &NotLoadedError{edge: "users"}
+}
+
 // OwnerUserOrErr returns the OwnerUser value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ChannelEdges) OwnerUserOrErr() (*User, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		if e.OwnerUser == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: user.Label}
@@ -104,13 +115,13 @@ func (c *Channel) assignValues(columns []string, values []any) error {
 			c.ID = int64(value.Int64)
 		case channel.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+				return fmt.Errorf("unexpected type %T for field createTime", values[i])
 			} else if value.Valid {
 				c.CreateTime = value.Time
 			}
 		case channel.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+				return fmt.Errorf("unexpected type %T for field updateTime", values[i])
 			} else if value.Valid {
 				c.UpdateTime = value.Time
 			}
@@ -157,6 +168,11 @@ func (c *Channel) QueryRooms() *RoomQuery {
 	return NewChannelClient(c.config).QueryRooms(c)
 }
 
+// QueryUsers queries the "users" edge of the Channel entity.
+func (c *Channel) QueryUsers() *UserQuery {
+	return NewChannelClient(c.config).QueryUsers(c)
+}
+
 // QueryOwnerUser queries the "owner_user" edge of the Channel entity.
 func (c *Channel) QueryOwnerUser() *UserQuery {
 	return NewChannelClient(c.config).QueryOwnerUser(c)
@@ -185,10 +201,10 @@ func (c *Channel) String() string {
 	var builder strings.Builder
 	builder.WriteString("Channel(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
-	builder.WriteString("create_time=")
+	builder.WriteString("createTime=")
 	builder.WriteString(c.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("update_time=")
+	builder.WriteString("updateTime=")
 	builder.WriteString(c.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("delete_time=")

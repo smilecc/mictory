@@ -17,12 +17,12 @@ type UserNickname struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
+	// CreateTime holds the value of the "createTime" field.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// UpdateTime holds the value of the "updateTime" field.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// DeleteTime holds the value of the "delete_time" field.
-	DeleteTime time.Time `json:"delete_time,omitempty"`
+	DeleteTime time.Time `json:"-"`
 	// 昵称
 	Nickname string `json:"nickname,omitempty"`
 	// 编号
@@ -64,13 +64,13 @@ func (un *UserNickname) assignValues(columns []string, values []any) error {
 			un.ID = int64(value.Int64)
 		case usernickname.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+				return fmt.Errorf("unexpected type %T for field createTime", values[i])
 			} else if value.Valid {
 				un.CreateTime = value.Time
 			}
 		case usernickname.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+				return fmt.Errorf("unexpected type %T for field updateTime", values[i])
 			} else if value.Valid {
 				un.UpdateTime = value.Time
 			}
@@ -128,10 +128,10 @@ func (un *UserNickname) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserNickname(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", un.ID))
-	builder.WriteString("create_time=")
+	builder.WriteString("createTime=")
 	builder.WriteString(un.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("update_time=")
+	builder.WriteString("updateTime=")
 	builder.WriteString(un.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("delete_time=")

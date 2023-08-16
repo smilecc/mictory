@@ -55,12 +55,12 @@ func IDLTE(id int64) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldID, id))
 }
 
-// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+// CreateTime applies equality check predicate on the "createTime" field. It's identical to CreateTimeEQ.
 func CreateTime(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+// UpdateTime applies equality check predicate on the "updateTime" field. It's identical to UpdateTimeEQ.
 func UpdateTime(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldUpdateTime, v))
 }
@@ -75,7 +75,7 @@ func Name(v string) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldName, v))
 }
 
-// MaxMember applies equality check predicate on the "max_member" field. It's identical to MaxMemberEQ.
+// MaxMember applies equality check predicate on the "maxMember" field. It's identical to MaxMemberEQ.
 func MaxMember(v int) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldMaxMember, v))
 }
@@ -85,82 +85,82 @@ func Sort(v int) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldSort, v))
 }
 
-// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+// CreateTimeEQ applies the EQ predicate on the "createTime" field.
 func CreateTimeEQ(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+// CreateTimeNEQ applies the NEQ predicate on the "createTime" field.
 func CreateTimeNEQ(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldNEQ(FieldCreateTime, v))
 }
 
-// CreateTimeIn applies the In predicate on the "create_time" field.
+// CreateTimeIn applies the In predicate on the "createTime" field.
 func CreateTimeIn(vs ...time.Time) predicate.Room {
 	return predicate.Room(sql.FieldIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+// CreateTimeNotIn applies the NotIn predicate on the "createTime" field.
 func CreateTimeNotIn(vs ...time.Time) predicate.Room {
 	return predicate.Room(sql.FieldNotIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeGT applies the GT predicate on the "create_time" field.
+// CreateTimeGT applies the GT predicate on the "createTime" field.
 func CreateTimeGT(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldGT(FieldCreateTime, v))
 }
 
-// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+// CreateTimeGTE applies the GTE predicate on the "createTime" field.
 func CreateTimeGTE(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldGTE(FieldCreateTime, v))
 }
 
-// CreateTimeLT applies the LT predicate on the "create_time" field.
+// CreateTimeLT applies the LT predicate on the "createTime" field.
 func CreateTimeLT(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldLT(FieldCreateTime, v))
 }
 
-// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+// CreateTimeLTE applies the LTE predicate on the "createTime" field.
 func CreateTimeLTE(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldCreateTime, v))
 }
 
-// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+// UpdateTimeEQ applies the EQ predicate on the "updateTime" field.
 func UpdateTimeEQ(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+// UpdateTimeNEQ applies the NEQ predicate on the "updateTime" field.
 func UpdateTimeNEQ(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldNEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeIn applies the In predicate on the "update_time" field.
+// UpdateTimeIn applies the In predicate on the "updateTime" field.
 func UpdateTimeIn(vs ...time.Time) predicate.Room {
 	return predicate.Room(sql.FieldIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+// UpdateTimeNotIn applies the NotIn predicate on the "updateTime" field.
 func UpdateTimeNotIn(vs ...time.Time) predicate.Room {
 	return predicate.Room(sql.FieldNotIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeGT applies the GT predicate on the "update_time" field.
+// UpdateTimeGT applies the GT predicate on the "updateTime" field.
 func UpdateTimeGT(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldGT(FieldUpdateTime, v))
 }
 
-// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+// UpdateTimeGTE applies the GTE predicate on the "updateTime" field.
 func UpdateTimeGTE(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldGTE(FieldUpdateTime, v))
 }
 
-// UpdateTimeLT applies the LT predicate on the "update_time" field.
+// UpdateTimeLT applies the LT predicate on the "updateTime" field.
 func UpdateTimeLT(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldLT(FieldUpdateTime, v))
 }
 
-// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+// UpdateTimeLTE applies the LTE predicate on the "updateTime" field.
 func UpdateTimeLTE(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldUpdateTime, v))
 }
@@ -280,42 +280,42 @@ func NameContainsFold(v string) predicate.Room {
 	return predicate.Room(sql.FieldContainsFold(FieldName, v))
 }
 
-// MaxMemberEQ applies the EQ predicate on the "max_member" field.
+// MaxMemberEQ applies the EQ predicate on the "maxMember" field.
 func MaxMemberEQ(v int) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldMaxMember, v))
 }
 
-// MaxMemberNEQ applies the NEQ predicate on the "max_member" field.
+// MaxMemberNEQ applies the NEQ predicate on the "maxMember" field.
 func MaxMemberNEQ(v int) predicate.Room {
 	return predicate.Room(sql.FieldNEQ(FieldMaxMember, v))
 }
 
-// MaxMemberIn applies the In predicate on the "max_member" field.
+// MaxMemberIn applies the In predicate on the "maxMember" field.
 func MaxMemberIn(vs ...int) predicate.Room {
 	return predicate.Room(sql.FieldIn(FieldMaxMember, vs...))
 }
 
-// MaxMemberNotIn applies the NotIn predicate on the "max_member" field.
+// MaxMemberNotIn applies the NotIn predicate on the "maxMember" field.
 func MaxMemberNotIn(vs ...int) predicate.Room {
 	return predicate.Room(sql.FieldNotIn(FieldMaxMember, vs...))
 }
 
-// MaxMemberGT applies the GT predicate on the "max_member" field.
+// MaxMemberGT applies the GT predicate on the "maxMember" field.
 func MaxMemberGT(v int) predicate.Room {
 	return predicate.Room(sql.FieldGT(FieldMaxMember, v))
 }
 
-// MaxMemberGTE applies the GTE predicate on the "max_member" field.
+// MaxMemberGTE applies the GTE predicate on the "maxMember" field.
 func MaxMemberGTE(v int) predicate.Room {
 	return predicate.Room(sql.FieldGTE(FieldMaxMember, v))
 }
 
-// MaxMemberLT applies the LT predicate on the "max_member" field.
+// MaxMemberLT applies the LT predicate on the "maxMember" field.
 func MaxMemberLT(v int) predicate.Room {
 	return predicate.Room(sql.FieldLT(FieldMaxMember, v))
 }
 
-// MaxMemberLTE applies the LTE predicate on the "max_member" field.
+// MaxMemberLTE applies the LTE predicate on the "maxMember" field.
 func MaxMemberLTE(v int) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldMaxMember, v))
 }

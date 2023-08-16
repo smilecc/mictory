@@ -15,20 +15,18 @@ func UserApiGetCurrentUser(c *fiber.Ctx) error {
 	dbCtx := context.Background()
 
 	user := storage.GetUserById(dbCtx, storage.DbClient, claims.UserId)
-	user.Password = ""
-	user.PasswordSalt = ""
 	return c.JSON(result.NewOkResult(user))
 }
 
 func UserApiCreateUser(c *fiber.Ctx) error {
 	q := new(entity.CreateUserQuery)
 	if err := c.BodyParser(q); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(result.NewErrorResult(err))
 	}
 
 	v := validate.Struct(q)
 	if !v.Validate() {
-		return c.Status(400).JSON(result.NewFailResultWithMessage(result.ValidateFail, v.Errors.One()))
+		return c.Status(fiber.StatusBadRequest).JSON(result.NewFailResultWithMessage(result.ValidateFail, v.Errors.One()))
 	}
 
 	passwordSalt, _ := strutil.RandomString(64)
@@ -92,7 +90,7 @@ func UserApiUserLogin(c *fiber.Ctx) error {
 
 	v := validate.Struct(q)
 	if !v.Validate() {
-		return c.Status(400).JSON(result.NewFailResultWithMessage(result.ValidateFail, v.Errors.One()))
+		return c.Status(fiber.StatusBadRequest).JSON(result.NewFailResultWithMessage(result.ValidateFail, v.Errors.One()))
 	}
 
 	dbCtx := context.Background()

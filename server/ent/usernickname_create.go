@@ -20,13 +20,13 @@ type UserNicknameCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
+// SetCreateTime sets the "createTime" field.
 func (unc *UserNicknameCreate) SetCreateTime(t time.Time) *UserNicknameCreate {
 	unc.mutation.SetCreateTime(t)
 	return unc
 }
 
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+// SetNillableCreateTime sets the "createTime" field if the given value is not nil.
 func (unc *UserNicknameCreate) SetNillableCreateTime(t *time.Time) *UserNicknameCreate {
 	if t != nil {
 		unc.SetCreateTime(*t)
@@ -34,13 +34,13 @@ func (unc *UserNicknameCreate) SetNillableCreateTime(t *time.Time) *UserNickname
 	return unc
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (unc *UserNicknameCreate) SetUpdateTime(t time.Time) *UserNicknameCreate {
 	unc.mutation.SetUpdateTime(t)
 	return unc
 }
 
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+// SetNillableUpdateTime sets the "updateTime" field if the given value is not nil.
 func (unc *UserNicknameCreate) SetNillableUpdateTime(t *time.Time) *UserNicknameCreate {
 	if t != nil {
 		unc.SetUpdateTime(*t)
@@ -137,10 +137,10 @@ func (unc *UserNicknameCreate) defaults() error {
 // check runs all checks and user-defined validators on the builder.
 func (unc *UserNicknameCreate) check() error {
 	if _, ok := unc.mutation.CreateTime(); !ok {
-		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "UserNickname.create_time"`)}
+		return &ValidationError{Name: "createTime", err: errors.New(`ent: missing required field "UserNickname.createTime"`)}
 	}
 	if _, ok := unc.mutation.UpdateTime(); !ok {
-		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "UserNickname.update_time"`)}
+		return &ValidationError{Name: "updateTime", err: errors.New(`ent: missing required field "UserNickname.updateTime"`)}
 	}
 	if _, ok := unc.mutation.Nickname(); !ok {
 		return &ValidationError{Name: "nickname", err: errors.New(`ent: missing required field "UserNickname.nickname"`)}

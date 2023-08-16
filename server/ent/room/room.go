@@ -15,15 +15,15 @@ const (
 	Label = "room"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldCreateTime holds the string denoting the create_time field in the database.
+	// FieldCreateTime holds the string denoting the createtime field in the database.
 	FieldCreateTime = "create_time"
-	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	// FieldUpdateTime holds the string denoting the updatetime field in the database.
 	FieldUpdateTime = "update_time"
 	// FieldDeleteTime holds the string denoting the delete_time field in the database.
 	FieldDeleteTime = "delete_time"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldMaxMember holds the string denoting the max_member field in the database.
+	// FieldMaxMember holds the string denoting the maxmember field in the database.
 	FieldMaxMember = "max_member"
 	// FieldSort holds the string denoting the sort field in the database.
 	FieldSort = "sort"
@@ -80,15 +80,15 @@ func ValidColumn(column string) bool {
 var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
-	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	// DefaultCreateTime holds the default value on creation for the "createTime" field.
 	DefaultCreateTime func() time.Time
-	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	// DefaultUpdateTime holds the default value on creation for the "updateTime" field.
 	DefaultUpdateTime func() time.Time
-	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	// UpdateDefaultUpdateTime holds the default value on update for the "updateTime" field.
 	UpdateDefaultUpdateTime func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
-	// DefaultMaxMember holds the default value on creation for the "max_member" field.
+	// DefaultMaxMember holds the default value on creation for the "maxMember" field.
 	DefaultMaxMember int
 	// DefaultSort holds the default value on creation for the "sort" field.
 	DefaultSort int
@@ -102,12 +102,12 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByCreateTime orders the results by the create_time field.
+// ByCreateTime orders the results by the createTime field.
 func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
 }
 
-// ByUpdateTime orders the results by the update_time field.
+// ByUpdateTime orders the results by the updateTime field.
 func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
 }
@@ -122,7 +122,7 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByMaxMember orders the results by the max_member field.
+// ByMaxMember orders the results by the maxMember field.
 func ByMaxMember(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMaxMember, opts...).ToFunc()
 }

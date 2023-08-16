@@ -55,12 +55,12 @@ func IDLTE(id int64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldID, id))
 }
 
-// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+// CreateTime applies equality check predicate on the "createTime" field. It's identical to CreateTimeEQ.
 func CreateTime(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+// UpdateTime applies equality check predicate on the "updateTime" field. It's identical to UpdateTimeEQ.
 func UpdateTime(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdateTime, v))
 }
@@ -80,7 +80,7 @@ func Nickname(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldNickname, v))
 }
 
-// NicknameNo applies equality check predicate on the "nickname_no" field. It's identical to NicknameNoEQ.
+// NicknameNo applies equality check predicate on the "nicknameNo" field. It's identical to NicknameNoEQ.
 func NicknameNo(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldNicknameNo, v))
 }
@@ -100,82 +100,82 @@ func PasswordSalt(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordSalt, v))
 }
 
-// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+// CreateTimeEQ applies the EQ predicate on the "createTime" field.
 func CreateTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+// CreateTimeNEQ applies the NEQ predicate on the "createTime" field.
 func CreateTimeNEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldCreateTime, v))
 }
 
-// CreateTimeIn applies the In predicate on the "create_time" field.
+// CreateTimeIn applies the In predicate on the "createTime" field.
 func CreateTimeIn(vs ...time.Time) predicate.User {
 	return predicate.User(sql.FieldIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+// CreateTimeNotIn applies the NotIn predicate on the "createTime" field.
 func CreateTimeNotIn(vs ...time.Time) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeGT applies the GT predicate on the "create_time" field.
+// CreateTimeGT applies the GT predicate on the "createTime" field.
 func CreateTimeGT(v time.Time) predicate.User {
 	return predicate.User(sql.FieldGT(FieldCreateTime, v))
 }
 
-// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+// CreateTimeGTE applies the GTE predicate on the "createTime" field.
 func CreateTimeGTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldCreateTime, v))
 }
 
-// CreateTimeLT applies the LT predicate on the "create_time" field.
+// CreateTimeLT applies the LT predicate on the "createTime" field.
 func CreateTimeLT(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLT(FieldCreateTime, v))
 }
 
-// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+// CreateTimeLTE applies the LTE predicate on the "createTime" field.
 func CreateTimeLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreateTime, v))
 }
 
-// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+// UpdateTimeEQ applies the EQ predicate on the "updateTime" field.
 func UpdateTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+// UpdateTimeNEQ applies the NEQ predicate on the "updateTime" field.
 func UpdateTimeNEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeIn applies the In predicate on the "update_time" field.
+// UpdateTimeIn applies the In predicate on the "updateTime" field.
 func UpdateTimeIn(vs ...time.Time) predicate.User {
 	return predicate.User(sql.FieldIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+// UpdateTimeNotIn applies the NotIn predicate on the "updateTime" field.
 func UpdateTimeNotIn(vs ...time.Time) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeGT applies the GT predicate on the "update_time" field.
+// UpdateTimeGT applies the GT predicate on the "updateTime" field.
 func UpdateTimeGT(v time.Time) predicate.User {
 	return predicate.User(sql.FieldGT(FieldUpdateTime, v))
 }
 
-// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+// UpdateTimeGTE applies the GTE predicate on the "updateTime" field.
 func UpdateTimeGTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldUpdateTime, v))
 }
 
-// UpdateTimeLT applies the LT predicate on the "update_time" field.
+// UpdateTimeLT applies the LT predicate on the "updateTime" field.
 func UpdateTimeLT(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLT(FieldUpdateTime, v))
 }
 
-// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+// UpdateTimeLTE applies the LTE predicate on the "updateTime" field.
 func UpdateTimeLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldUpdateTime, v))
 }
@@ -360,42 +360,42 @@ func NicknameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldNickname, v))
 }
 
-// NicknameNoEQ applies the EQ predicate on the "nickname_no" field.
+// NicknameNoEQ applies the EQ predicate on the "nicknameNo" field.
 func NicknameNoEQ(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldNicknameNo, v))
 }
 
-// NicknameNoNEQ applies the NEQ predicate on the "nickname_no" field.
+// NicknameNoNEQ applies the NEQ predicate on the "nicknameNo" field.
 func NicknameNoNEQ(v int) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldNicknameNo, v))
 }
 
-// NicknameNoIn applies the In predicate on the "nickname_no" field.
+// NicknameNoIn applies the In predicate on the "nicknameNo" field.
 func NicknameNoIn(vs ...int) predicate.User {
 	return predicate.User(sql.FieldIn(FieldNicknameNo, vs...))
 }
 
-// NicknameNoNotIn applies the NotIn predicate on the "nickname_no" field.
+// NicknameNoNotIn applies the NotIn predicate on the "nicknameNo" field.
 func NicknameNoNotIn(vs ...int) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldNicknameNo, vs...))
 }
 
-// NicknameNoGT applies the GT predicate on the "nickname_no" field.
+// NicknameNoGT applies the GT predicate on the "nicknameNo" field.
 func NicknameNoGT(v int) predicate.User {
 	return predicate.User(sql.FieldGT(FieldNicknameNo, v))
 }
 
-// NicknameNoGTE applies the GTE predicate on the "nickname_no" field.
+// NicknameNoGTE applies the GTE predicate on the "nicknameNo" field.
 func NicknameNoGTE(v int) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldNicknameNo, v))
 }
 
-// NicknameNoLT applies the LT predicate on the "nickname_no" field.
+// NicknameNoLT applies the LT predicate on the "nicknameNo" field.
 func NicknameNoLT(v int) predicate.User {
 	return predicate.User(sql.FieldLT(FieldNicknameNo, v))
 }
 
-// NicknameNoLTE applies the LTE predicate on the "nickname_no" field.
+// NicknameNoLTE applies the LTE predicate on the "nicknameNo" field.
 func NicknameNoLTE(v int) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldNicknameNo, v))
 }
@@ -475,22 +475,22 @@ func AvatarContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldAvatar, v))
 }
 
-// SessionStateEQ applies the EQ predicate on the "session_state" field.
+// SessionStateEQ applies the EQ predicate on the "sessionState" field.
 func SessionStateEQ(v SessionState) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSessionState, v))
 }
 
-// SessionStateNEQ applies the NEQ predicate on the "session_state" field.
+// SessionStateNEQ applies the NEQ predicate on the "sessionState" field.
 func SessionStateNEQ(v SessionState) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldSessionState, v))
 }
 
-// SessionStateIn applies the In predicate on the "session_state" field.
+// SessionStateIn applies the In predicate on the "sessionState" field.
 func SessionStateIn(vs ...SessionState) predicate.User {
 	return predicate.User(sql.FieldIn(FieldSessionState, vs...))
 }
 
-// SessionStateNotIn applies the NotIn predicate on the "session_state" field.
+// SessionStateNotIn applies the NotIn predicate on the "sessionState" field.
 func SessionStateNotIn(vs ...SessionState) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldSessionState, vs...))
 }
@@ -640,6 +640,29 @@ func HasOwner() predicate.User {
 func HasOwnerWith(preds ...predicate.Channel) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newOwnerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChannels applies the HasEdge predicate on the "channels" edge.
+func HasChannels() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ChannelsTable, ChannelsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChannelsWith applies the HasEdge predicate on the "channels" edge with a given conditions (other predicates).
+func HasChannelsWith(preds ...predicate.Channel) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newChannelsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

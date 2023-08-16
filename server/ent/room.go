@@ -18,16 +18,16 @@ type Room struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
+	// CreateTime holds the value of the "createTime" field.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// UpdateTime holds the value of the "updateTime" field.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// DeleteTime holds the value of the "delete_time" field.
-	DeleteTime time.Time `json:"delete_time,omitempty"`
+	DeleteTime time.Time `json:"-"`
 	// 房间名
 	Name string `json:"name,omitempty"`
 	// 房间最大人数
-	MaxMember int `json:"max_member,omitempty"`
+	MaxMember int `json:"maxMember,omitempty"`
 	// Sort holds the value of the "sort" field.
 	Sort int `json:"sort,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -95,13 +95,13 @@ func (r *Room) assignValues(columns []string, values []any) error {
 			r.ID = int64(value.Int64)
 		case room.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+				return fmt.Errorf("unexpected type %T for field createTime", values[i])
 			} else if value.Valid {
 				r.CreateTime = value.Time
 			}
 		case room.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+				return fmt.Errorf("unexpected type %T for field updateTime", values[i])
 			} else if value.Valid {
 				r.UpdateTime = value.Time
 			}
@@ -119,7 +119,7 @@ func (r *Room) assignValues(columns []string, values []any) error {
 			}
 		case room.FieldMaxMember:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field max_member", values[i])
+				return fmt.Errorf("unexpected type %T for field maxMember", values[i])
 			} else if value.Valid {
 				r.MaxMember = int(value.Int64)
 			}
@@ -177,10 +177,10 @@ func (r *Room) String() string {
 	var builder strings.Builder
 	builder.WriteString("Room(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
-	builder.WriteString("create_time=")
+	builder.WriteString("createTime=")
 	builder.WriteString(r.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("update_time=")
+	builder.WriteString("updateTime=")
 	builder.WriteString(r.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("delete_time=")
@@ -189,7 +189,7 @@ func (r *Room) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(r.Name)
 	builder.WriteString(", ")
-	builder.WriteString("max_member=")
+	builder.WriteString("maxMember=")
 	builder.WriteString(fmt.Sprintf("%v", r.MaxMember))
 	builder.WriteString(", ")
 	builder.WriteString("sort=")

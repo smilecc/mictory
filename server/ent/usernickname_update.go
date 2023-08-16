@@ -28,7 +28,7 @@ func (unu *UserNicknameUpdate) Where(ps ...predicate.UserNickname) *UserNickname
 	return unu
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (unu *UserNicknameUpdate) SetUpdateTime(t time.Time) *UserNicknameUpdate {
 	unu.mutation.SetUpdateTime(t)
 	return unu
@@ -180,7 +180,7 @@ type UserNicknameUpdateOne struct {
 	mutation *UserNicknameMutation
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (unuo *UserNicknameUpdateOne) SetUpdateTime(t time.Time) *UserNicknameUpdateOne {
 	unuo.mutation.SetUpdateTime(t)
 	return unuo

@@ -26,13 +26,16 @@ func (SoftDeleteMixin) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				dialect.MySQL: "datetime",
 			}).
-			Optional(),
+			Optional().
+			StructTag(`json:"-"`),
 	}
 }
 
 type softDeleteKey struct{}
 
 // SkipSoftDelete returns a new context that skips the soft-delete interceptor/mutators.
+//
+//goland:noinspection GoUnusedExportedFunction
 func SkipSoftDelete(parent context.Context) context.Context {
 	return context.WithValue(parent, softDeleteKey{}, true)
 }

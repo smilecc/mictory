@@ -16,9 +16,9 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldCreateTime holds the string denoting the create_time field in the database.
+	// FieldCreateTime holds the string denoting the createtime field in the database.
 	FieldCreateTime = "create_time"
-	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	// FieldUpdateTime holds the string denoting the updatetime field in the database.
 	FieldUpdateTime = "update_time"
 	// FieldDeleteTime holds the string denoting the delete_time field in the database.
 	FieldDeleteTime = "delete_time"
@@ -26,11 +26,11 @@ const (
 	FieldUsername = "username"
 	// FieldNickname holds the string denoting the nickname field in the database.
 	FieldNickname = "nickname"
-	// FieldNicknameNo holds the string denoting the nickname_no field in the database.
+	// FieldNicknameNo holds the string denoting the nicknameno field in the database.
 	FieldNicknameNo = "nickname_no"
 	// FieldAvatar holds the string denoting the avatar field in the database.
 	FieldAvatar = "avatar"
-	// FieldSessionState holds the string denoting the session_state field in the database.
+	// FieldSessionState holds the string denoting the sessionstate field in the database.
 	FieldSessionState = "session_state"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
@@ -38,6 +38,8 @@ const (
 	FieldPasswordSalt = "password_salt"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
+	// EdgeChannels holds the string denoting the channels edge name in mutations.
+	EdgeChannels = "channels"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// OwnerTable is the table that holds the owner relation/edge.
@@ -47,6 +49,11 @@ const (
 	OwnerInverseTable = "channels"
 	// OwnerColumn is the table column denoting the owner relation/edge.
 	OwnerColumn = "user_owner"
+	// ChannelsTable is the table that holds the channels relation/edge. The primary key declared below.
+	ChannelsTable = "channel_users"
+	// ChannelsInverseTable is the table name for the Channel entity.
+	// It exists in this package in order to avoid circular dependency with the "channel" package.
+	ChannelsInverseTable = "channels"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -63,6 +70,12 @@ var Columns = []string{
 	FieldPassword,
 	FieldPasswordSalt,
 }
+
+var (
+	// ChannelsPrimaryKey and ChannelsColumn2 are the table columns denoting the
+	// primary key for the channels relation (M2M).
+	ChannelsPrimaryKey = []string{"channel_id", "user_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -82,11 +95,11 @@ func ValidColumn(column string) bool {
 var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
-	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	// DefaultCreateTime holds the default value on creation for the "createTime" field.
 	DefaultCreateTime func() time.Time
-	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	// DefaultUpdateTime holds the default value on creation for the "updateTime" field.
 	DefaultUpdateTime func() time.Time
-	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	// UpdateDefaultUpdateTime holds the default value on update for the "updateTime" field.
 	UpdateDefaultUpdateTime func() time.Time
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
@@ -100,7 +113,7 @@ var (
 	PasswordSaltValidator func(string) error
 )
 
-// SessionState defines the type for the "session_state" enum field.
+// SessionState defines the type for the "sessionState" enum field.
 type SessionState string
 
 // SessionStateOffline is the default value of the SessionState enum.
@@ -116,13 +129,13 @@ func (ss SessionState) String() string {
 	return string(ss)
 }
 
-// SessionStateValidator is a validator for the "session_state" field enum values. It is called by the builders before save.
+// SessionStateValidator is a validator for the "sessionState" field enum values. It is called by the builders before save.
 func SessionStateValidator(ss SessionState) error {
 	switch ss {
 	case SessionStateOnline, SessionStateOffline:
 		return nil
 	default:
-		return fmt.Errorf("user: invalid enum value for session_state field: %q", ss)
+		return fmt.Errorf("user: invalid enum value for sessionState field: %q", ss)
 	}
 }
 
@@ -134,12 +147,12 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByCreateTime orders the results by the create_time field.
+// ByCreateTime orders the results by the createTime field.
 func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
 }
 
-// ByUpdateTime orders the results by the update_time field.
+// ByUpdateTime orders the results by the updateTime field.
 func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
 }
@@ -159,7 +172,7 @@ func ByNickname(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNickname, opts...).ToFunc()
 }
 
-// ByNicknameNo orders the results by the nickname_no field.
+// ByNicknameNo orders the results by the nicknameNo field.
 func ByNicknameNo(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNicknameNo, opts...).ToFunc()
 }
@@ -169,7 +182,7 @@ func ByAvatar(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvatar, opts...).ToFunc()
 }
 
-// BySessionState orders the results by the session_state field.
+// BySessionState orders the results by the sessionState field.
 func BySessionState(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSessionState, opts...).ToFunc()
 }
@@ -197,10 +210,31 @@ func ByOwner(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newOwnerStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByChannelsCount orders the results by channels count.
+func ByChannelsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newChannelsStep(), opts...)
+	}
+}
+
+// ByChannels orders the results by channels terms.
+func ByChannels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChannelsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwnerInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, OwnerTable, OwnerColumn),
+	)
+}
+func newChannelsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ChannelsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ChannelsTable, ChannelsPrimaryKey...),
 	)
 }

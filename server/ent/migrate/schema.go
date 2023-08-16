@@ -121,6 +121,31 @@ var (
 		Columns:    UserNicknamesColumns,
 		PrimaryKey: []*schema.Column{UserNicknamesColumns[0]},
 	}
+	// ChannelUsersColumns holds the columns for the "channel_users" table.
+	ChannelUsersColumns = []*schema.Column{
+		{Name: "channel_id", Type: field.TypeInt64},
+		{Name: "user_id", Type: field.TypeInt64},
+	}
+	// ChannelUsersTable holds the schema information for the "channel_users" table.
+	ChannelUsersTable = &schema.Table{
+		Name:       "channel_users",
+		Columns:    ChannelUsersColumns,
+		PrimaryKey: []*schema.Column{ChannelUsersColumns[0], ChannelUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "channel_users_channel_id",
+				Columns:    []*schema.Column{ChannelUsersColumns[0]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "channel_users_user_id",
+				Columns:    []*schema.Column{ChannelUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ChannelsTable,
@@ -129,10 +154,13 @@ var (
 		RoomsTable,
 		UsersTable,
 		UserNicknamesTable,
+		ChannelUsersTable,
 	}
 )
 
 func init() {
 	ChannelsTable.ForeignKeys[0].RefTable = UsersTable
 	RoomsTable.ForeignKeys[0].RefTable = ChannelsTable
+	ChannelUsersTable.ForeignKeys[0].RefTable = ChannelsTable
+	ChannelUsersTable.ForeignKeys[1].RefTable = UsersTable
 }

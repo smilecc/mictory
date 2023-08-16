@@ -261,7 +261,7 @@ func (unq *UserNicknameQuery) Clone() *UserNicknameQuery {
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		CreateTime time.Time `json:"createTime,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -284,7 +284,7 @@ func (unq *UserNicknameQuery) GroupBy(field string, fields ...string) *UserNickn
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		CreateTime time.Time `json:"createTime,omitempty"`
 //	}
 //
 //	client.UserNickname.Query().

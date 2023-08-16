@@ -17,26 +17,26 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
+	// CreateTime holds the value of the "createTime" field.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// UpdateTime holds the value of the "updateTime" field.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// DeleteTime holds the value of the "delete_time" field.
-	DeleteTime time.Time `json:"delete_time,omitempty"`
+	DeleteTime time.Time `json:"-"`
 	// 用户名
 	Username string `json:"username,omitempty"`
 	// 昵称
 	Nickname string `json:"nickname,omitempty"`
 	// 昵称编号
-	NicknameNo int `json:"nickname_no,omitempty"`
+	NicknameNo int `json:"nicknameNo,omitempty"`
 	// 头像
 	Avatar string `json:"avatar,omitempty"`
 	// 会话状态
-	SessionState user.SessionState `json:"session_state,omitempty"`
+	SessionState user.SessionState `json:"sessionState,omitempty"`
 	// 密码
-	Password string `json:"password,omitempty"`
+	Password string `json:"-"`
 	// 密码盐
-	PasswordSalt string `json:"password_salt,omitempty"`
+	PasswordSalt string `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -47,9 +47,11 @@ type User struct {
 type UserEdges struct {
 	// Owner holds the value of the owner edge.
 	Owner []*Channel `json:"owner,omitempty"`
+	// Channels holds the value of the channels edge.
+	Channels []*Channel `json:"channels,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -59,6 +61,15 @@ func (e UserEdges) OwnerOrErr() ([]*Channel, error) {
 		return e.Owner, nil
 	}
 	return nil, &NotLoadedError{edge: "owner"}
+}
+
+// ChannelsOrErr returns the Channels value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ChannelsOrErr() ([]*Channel, error) {
+	if e.loadedTypes[1] {
+		return e.Channels, nil
+	}
+	return nil, &NotLoadedError{edge: "channels"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -95,13 +106,13 @@ func (u *User) assignValues(columns []string, values []any) error {
 			u.ID = int64(value.Int64)
 		case user.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+				return fmt.Errorf("unexpected type %T for field createTime", values[i])
 			} else if value.Valid {
 				u.CreateTime = value.Time
 			}
 		case user.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+				return fmt.Errorf("unexpected type %T for field updateTime", values[i])
 			} else if value.Valid {
 				u.UpdateTime = value.Time
 			}
@@ -125,7 +136,7 @@ func (u *User) assignValues(columns []string, values []any) error {
 			}
 		case user.FieldNicknameNo:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field nickname_no", values[i])
+				return fmt.Errorf("unexpected type %T for field nicknameNo", values[i])
 			} else if value.Valid {
 				u.NicknameNo = int(value.Int64)
 			}
@@ -137,7 +148,7 @@ func (u *User) assignValues(columns []string, values []any) error {
 			}
 		case user.FieldSessionState:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field session_state", values[i])
+				return fmt.Errorf("unexpected type %T for field sessionState", values[i])
 			} else if value.Valid {
 				u.SessionState = user.SessionState(value.String)
 			}
@@ -171,6 +182,11 @@ func (u *User) QueryOwner() *ChannelQuery {
 	return NewUserClient(u.config).QueryOwner(u)
 }
 
+// QueryChannels queries the "channels" edge of the User entity.
+func (u *User) QueryChannels() *ChannelQuery {
+	return NewUserClient(u.config).QueryChannels(u)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -194,10 +210,10 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
-	builder.WriteString("create_time=")
+	builder.WriteString("createTime=")
 	builder.WriteString(u.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("update_time=")
+	builder.WriteString("updateTime=")
 	builder.WriteString(u.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("delete_time=")
@@ -209,13 +225,13 @@ func (u *User) String() string {
 	builder.WriteString("nickname=")
 	builder.WriteString(u.Nickname)
 	builder.WriteString(", ")
-	builder.WriteString("nickname_no=")
+	builder.WriteString("nicknameNo=")
 	builder.WriteString(fmt.Sprintf("%v", u.NicknameNo))
 	builder.WriteString(", ")
 	builder.WriteString("avatar=")
 	builder.WriteString(u.Avatar)
 	builder.WriteString(", ")
-	builder.WriteString("session_state=")
+	builder.WriteString("sessionState=")
 	builder.WriteString(fmt.Sprintf("%v", u.SessionState))
 	builder.WriteString(", ")
 	builder.WriteString("password=")

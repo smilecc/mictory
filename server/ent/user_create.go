@@ -21,13 +21,13 @@ type UserCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
+// SetCreateTime sets the "createTime" field.
 func (uc *UserCreate) SetCreateTime(t time.Time) *UserCreate {
 	uc.mutation.SetCreateTime(t)
 	return uc
 }
 
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+// SetNillableCreateTime sets the "createTime" field if the given value is not nil.
 func (uc *UserCreate) SetNillableCreateTime(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetCreateTime(*t)
@@ -35,13 +35,13 @@ func (uc *UserCreate) SetNillableCreateTime(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (uc *UserCreate) SetUpdateTime(t time.Time) *UserCreate {
 	uc.mutation.SetUpdateTime(t)
 	return uc
 }
 
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+// SetNillableUpdateTime sets the "updateTime" field if the given value is not nil.
 func (uc *UserCreate) SetNillableUpdateTime(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetUpdateTime(*t)
@@ -75,7 +75,7 @@ func (uc *UserCreate) SetNickname(s string) *UserCreate {
 	return uc
 }
 
-// SetNicknameNo sets the "nickname_no" field.
+// SetNicknameNo sets the "nicknameNo" field.
 func (uc *UserCreate) SetNicknameNo(i int) *UserCreate {
 	uc.mutation.SetNicknameNo(i)
 	return uc
@@ -95,13 +95,13 @@ func (uc *UserCreate) SetNillableAvatar(s *string) *UserCreate {
 	return uc
 }
 
-// SetSessionState sets the "session_state" field.
+// SetSessionState sets the "sessionState" field.
 func (uc *UserCreate) SetSessionState(us user.SessionState) *UserCreate {
 	uc.mutation.SetSessionState(us)
 	return uc
 }
 
-// SetNillableSessionState sets the "session_state" field if the given value is not nil.
+// SetNillableSessionState sets the "sessionState" field if the given value is not nil.
 func (uc *UserCreate) SetNillableSessionState(us *user.SessionState) *UserCreate {
 	if us != nil {
 		uc.SetSessionState(*us)
@@ -140,6 +140,21 @@ func (uc *UserCreate) AddOwner(c ...*Channel) *UserCreate {
 		ids[i] = c[i].ID
 	}
 	return uc.AddOwnerIDs(ids...)
+}
+
+// AddChannelIDs adds the "channels" edge to the Channel entity by IDs.
+func (uc *UserCreate) AddChannelIDs(ids ...int64) *UserCreate {
+	uc.mutation.AddChannelIDs(ids...)
+	return uc
+}
+
+// AddChannels adds the "channels" edges to the Channel entity.
+func (uc *UserCreate) AddChannels(c ...*Channel) *UserCreate {
+	ids := make([]int64, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddChannelIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -203,10 +218,10 @@ func (uc *UserCreate) defaults() error {
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.CreateTime(); !ok {
-		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "User.create_time"`)}
+		return &ValidationError{Name: "createTime", err: errors.New(`ent: missing required field "User.createTime"`)}
 	}
 	if _, ok := uc.mutation.UpdateTime(); !ok {
-		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "User.update_time"`)}
+		return &ValidationError{Name: "updateTime", err: errors.New(`ent: missing required field "User.updateTime"`)}
 	}
 	if _, ok := uc.mutation.Username(); !ok {
 		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
@@ -225,7 +240,7 @@ func (uc *UserCreate) check() error {
 		}
 	}
 	if _, ok := uc.mutation.NicknameNo(); !ok {
-		return &ValidationError{Name: "nickname_no", err: errors.New(`ent: missing required field "User.nickname_no"`)}
+		return &ValidationError{Name: "nicknameNo", err: errors.New(`ent: missing required field "User.nicknameNo"`)}
 	}
 	if v, ok := uc.mutation.Avatar(); ok {
 		if err := user.AvatarValidator(v); err != nil {
@@ -233,11 +248,11 @@ func (uc *UserCreate) check() error {
 		}
 	}
 	if _, ok := uc.mutation.SessionState(); !ok {
-		return &ValidationError{Name: "session_state", err: errors.New(`ent: missing required field "User.session_state"`)}
+		return &ValidationError{Name: "sessionState", err: errors.New(`ent: missing required field "User.sessionState"`)}
 	}
 	if v, ok := uc.mutation.SessionState(); ok {
 		if err := user.SessionStateValidator(v); err != nil {
-			return &ValidationError{Name: "session_state", err: fmt.Errorf(`ent: validator failed for field "User.session_state": %w`, err)}
+			return &ValidationError{Name: "sessionState", err: fmt.Errorf(`ent: validator failed for field "User.sessionState": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.Password(); !ok {
@@ -334,6 +349,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Inverse: false,
 			Table:   user.OwnerTable,
 			Columns: []string{user.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ChannelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),

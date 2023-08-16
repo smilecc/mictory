@@ -346,6 +346,22 @@ func (c *ChannelClient) QueryRooms(ch *Channel) *RoomQuery {
 	return query
 }
 
+// QueryUsers queries the users edge of a Channel.
+func (c *ChannelClient) QueryUsers(ch *Channel) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ch.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channel.Table, channel.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, channel.UsersTable, channel.UsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ch.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryOwnerUser queries the owner_user edge of a Channel.
 func (c *ChannelClient) QueryOwnerUser(ch *Channel) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -865,6 +881,22 @@ func (c *UserClient) QueryOwner(u *User) *ChannelQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(channel.Table, channel.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.OwnerTable, user.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannels queries the channels edge of a User.
+func (c *UserClient) QueryChannels(u *User) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ChannelsTable, user.ChannelsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

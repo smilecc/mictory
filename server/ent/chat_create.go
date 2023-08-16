@@ -20,13 +20,13 @@ type ChatCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
+// SetCreateTime sets the "createTime" field.
 func (cc *ChatCreate) SetCreateTime(t time.Time) *ChatCreate {
 	cc.mutation.SetCreateTime(t)
 	return cc
 }
 
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+// SetNillableCreateTime sets the "createTime" field if the given value is not nil.
 func (cc *ChatCreate) SetNillableCreateTime(t *time.Time) *ChatCreate {
 	if t != nil {
 		cc.SetCreateTime(*t)
@@ -34,13 +34,13 @@ func (cc *ChatCreate) SetNillableCreateTime(t *time.Time) *ChatCreate {
 	return cc
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (cc *ChatCreate) SetUpdateTime(t time.Time) *ChatCreate {
 	cc.mutation.SetUpdateTime(t)
 	return cc
 }
 
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+// SetNillableUpdateTime sets the "updateTime" field if the given value is not nil.
 func (cc *ChatCreate) SetNillableUpdateTime(t *time.Time) *ChatCreate {
 	if t != nil {
 		cc.SetUpdateTime(*t)
@@ -62,7 +62,7 @@ func (cc *ChatCreate) SetNillableDeleteTime(t *time.Time) *ChatCreate {
 	return cc
 }
 
-// SetBusinessType sets the "business_type" field.
+// SetBusinessType sets the "businessType" field.
 func (cc *ChatCreate) SetBusinessType(ct chat.BusinessType) *ChatCreate {
 	cc.mutation.SetBusinessType(ct)
 	return cc
@@ -74,19 +74,19 @@ func (cc *ChatCreate) SetBusinessID(s string) *ChatCreate {
 	return cc
 }
 
-// SetFromUserID sets the "from_user_id" field.
-func (cc *ChatCreate) SetFromUserID(s string) *ChatCreate {
-	cc.mutation.SetFromUserID(s)
+// SetFromUserId sets the "fromUserId" field.
+func (cc *ChatCreate) SetFromUserId(s string) *ChatCreate {
+	cc.mutation.SetFromUserId(s)
 	return cc
 }
 
-// SetSourceType sets the "source_type" field.
+// SetSourceType sets the "sourceType" field.
 func (cc *ChatCreate) SetSourceType(ct chat.SourceType) *ChatCreate {
 	cc.mutation.SetSourceType(ct)
 	return cc
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (cc *ChatCreate) SetContentType(ct chat.ContentType) *ChatCreate {
 	cc.mutation.SetContentType(ct)
 	return cc
@@ -161,17 +161,17 @@ func (cc *ChatCreate) defaults() error {
 // check runs all checks and user-defined validators on the builder.
 func (cc *ChatCreate) check() error {
 	if _, ok := cc.mutation.CreateTime(); !ok {
-		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Chat.create_time"`)}
+		return &ValidationError{Name: "createTime", err: errors.New(`ent: missing required field "Chat.createTime"`)}
 	}
 	if _, ok := cc.mutation.UpdateTime(); !ok {
-		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Chat.update_time"`)}
+		return &ValidationError{Name: "updateTime", err: errors.New(`ent: missing required field "Chat.updateTime"`)}
 	}
 	if _, ok := cc.mutation.BusinessType(); !ok {
-		return &ValidationError{Name: "business_type", err: errors.New(`ent: missing required field "Chat.business_type"`)}
+		return &ValidationError{Name: "businessType", err: errors.New(`ent: missing required field "Chat.businessType"`)}
 	}
 	if v, ok := cc.mutation.BusinessType(); ok {
 		if err := chat.BusinessTypeValidator(v); err != nil {
-			return &ValidationError{Name: "business_type", err: fmt.Errorf(`ent: validator failed for field "Chat.business_type": %w`, err)}
+			return &ValidationError{Name: "businessType", err: fmt.Errorf(`ent: validator failed for field "Chat.businessType": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.BusinessID(); !ok {
@@ -182,28 +182,28 @@ func (cc *ChatCreate) check() error {
 			return &ValidationError{Name: "business_id", err: fmt.Errorf(`ent: validator failed for field "Chat.business_id": %w`, err)}
 		}
 	}
-	if _, ok := cc.mutation.FromUserID(); !ok {
-		return &ValidationError{Name: "from_user_id", err: errors.New(`ent: missing required field "Chat.from_user_id"`)}
+	if _, ok := cc.mutation.FromUserId(); !ok {
+		return &ValidationError{Name: "fromUserId", err: errors.New(`ent: missing required field "Chat.fromUserId"`)}
 	}
-	if v, ok := cc.mutation.FromUserID(); ok {
-		if err := chat.FromUserIDValidator(v); err != nil {
-			return &ValidationError{Name: "from_user_id", err: fmt.Errorf(`ent: validator failed for field "Chat.from_user_id": %w`, err)}
+	if v, ok := cc.mutation.FromUserId(); ok {
+		if err := chat.FromUserIdValidator(v); err != nil {
+			return &ValidationError{Name: "fromUserId", err: fmt.Errorf(`ent: validator failed for field "Chat.fromUserId": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.SourceType(); !ok {
-		return &ValidationError{Name: "source_type", err: errors.New(`ent: missing required field "Chat.source_type"`)}
+		return &ValidationError{Name: "sourceType", err: errors.New(`ent: missing required field "Chat.sourceType"`)}
 	}
 	if v, ok := cc.mutation.SourceType(); ok {
 		if err := chat.SourceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "source_type", err: fmt.Errorf(`ent: validator failed for field "Chat.source_type": %w`, err)}
+			return &ValidationError{Name: "sourceType", err: fmt.Errorf(`ent: validator failed for field "Chat.sourceType": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.ContentType(); !ok {
-		return &ValidationError{Name: "content_type", err: errors.New(`ent: missing required field "Chat.content_type"`)}
+		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Chat.contentType"`)}
 	}
 	if v, ok := cc.mutation.ContentType(); ok {
 		if err := chat.ContentTypeValidator(v); err != nil {
-			return &ValidationError{Name: "content_type", err: fmt.Errorf(`ent: validator failed for field "Chat.content_type": %w`, err)}
+			return &ValidationError{Name: "contentType", err: fmt.Errorf(`ent: validator failed for field "Chat.contentType": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.Content(); !ok {
@@ -261,9 +261,9 @@ func (cc *ChatCreate) createSpec() (*Chat, *sqlgraph.CreateSpec) {
 		_spec.SetField(chat.FieldBusinessID, field.TypeString, value)
 		_node.BusinessID = value
 	}
-	if value, ok := cc.mutation.FromUserID(); ok {
-		_spec.SetField(chat.FieldFromUserID, field.TypeString, value)
-		_node.FromUserID = value
+	if value, ok := cc.mutation.FromUserId(); ok {
+		_spec.SetField(chat.FieldFromUserId, field.TypeString, value)
+		_node.FromUserId = value
 	}
 	if value, ok := cc.mutation.SourceType(); ok {
 		_spec.SetField(chat.FieldSourceType, field.TypeEnum, value)

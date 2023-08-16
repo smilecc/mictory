@@ -25,15 +25,15 @@ func init() {
 	_ = channelMixinFields0
 	channelFields := schema.Channel{}.Fields()
 	_ = channelFields
-	// channelDescCreateTime is the schema descriptor for create_time field.
+	// channelDescCreateTime is the schema descriptor for createTime field.
 	channelDescCreateTime := channelMixinFields0[0].Descriptor()
-	// channel.DefaultCreateTime holds the default value on creation for the create_time field.
+	// channel.DefaultCreateTime holds the default value on creation for the createTime field.
 	channel.DefaultCreateTime = channelDescCreateTime.Default.(func() time.Time)
-	// channelDescUpdateTime is the schema descriptor for update_time field.
+	// channelDescUpdateTime is the schema descriptor for updateTime field.
 	channelDescUpdateTime := channelMixinFields0[1].Descriptor()
-	// channel.DefaultUpdateTime holds the default value on creation for the update_time field.
+	// channel.DefaultUpdateTime holds the default value on creation for the updateTime field.
 	channel.DefaultUpdateTime = channelDescUpdateTime.Default.(func() time.Time)
-	// channel.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	// channel.UpdateDefaultUpdateTime holds the default value on update for the updateTime field.
 	channel.UpdateDefaultUpdateTime = channelDescUpdateTime.UpdateDefault.(func() time.Time)
 	// channelDescCode is the schema descriptor for code field.
 	channelDescCode := channelFields[1].Descriptor()
@@ -52,24 +52,24 @@ func init() {
 	_ = chatMixinFields0
 	chatFields := schema.Chat{}.Fields()
 	_ = chatFields
-	// chatDescCreateTime is the schema descriptor for create_time field.
+	// chatDescCreateTime is the schema descriptor for createTime field.
 	chatDescCreateTime := chatMixinFields0[0].Descriptor()
-	// chat.DefaultCreateTime holds the default value on creation for the create_time field.
+	// chat.DefaultCreateTime holds the default value on creation for the createTime field.
 	chat.DefaultCreateTime = chatDescCreateTime.Default.(func() time.Time)
-	// chatDescUpdateTime is the schema descriptor for update_time field.
+	// chatDescUpdateTime is the schema descriptor for updateTime field.
 	chatDescUpdateTime := chatMixinFields0[1].Descriptor()
-	// chat.DefaultUpdateTime holds the default value on creation for the update_time field.
+	// chat.DefaultUpdateTime holds the default value on creation for the updateTime field.
 	chat.DefaultUpdateTime = chatDescUpdateTime.Default.(func() time.Time)
-	// chat.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	// chat.UpdateDefaultUpdateTime holds the default value on update for the updateTime field.
 	chat.UpdateDefaultUpdateTime = chatDescUpdateTime.UpdateDefault.(func() time.Time)
 	// chatDescBusinessID is the schema descriptor for business_id field.
 	chatDescBusinessID := chatFields[2].Descriptor()
 	// chat.BusinessIDValidator is a validator for the "business_id" field. It is called by the builders before save.
 	chat.BusinessIDValidator = chatDescBusinessID.Validators[0].(func(string) error)
-	// chatDescFromUserID is the schema descriptor for from_user_id field.
-	chatDescFromUserID := chatFields[3].Descriptor()
-	// chat.FromUserIDValidator is a validator for the "from_user_id" field. It is called by the builders before save.
-	chat.FromUserIDValidator = chatDescFromUserID.Validators[0].(func(string) error)
+	// chatDescFromUserId is the schema descriptor for fromUserId field.
+	chatDescFromUserId := chatFields[3].Descriptor()
+	// chat.FromUserIdValidator is a validator for the "fromUserId" field. It is called by the builders before save.
+	chat.FromUserIdValidator = chatDescFromUserId.Validators[0].(func(string) error)
 	roomMixin := schema.Room{}.Mixin()
 	roomMixinHooks1 := roomMixin[1].Hooks()
 	room.Hooks[0] = roomMixinHooks1[0]
@@ -79,23 +79,23 @@ func init() {
 	_ = roomMixinFields0
 	roomFields := schema.Room{}.Fields()
 	_ = roomFields
-	// roomDescCreateTime is the schema descriptor for create_time field.
+	// roomDescCreateTime is the schema descriptor for createTime field.
 	roomDescCreateTime := roomMixinFields0[0].Descriptor()
-	// room.DefaultCreateTime holds the default value on creation for the create_time field.
+	// room.DefaultCreateTime holds the default value on creation for the createTime field.
 	room.DefaultCreateTime = roomDescCreateTime.Default.(func() time.Time)
-	// roomDescUpdateTime is the schema descriptor for update_time field.
+	// roomDescUpdateTime is the schema descriptor for updateTime field.
 	roomDescUpdateTime := roomMixinFields0[1].Descriptor()
-	// room.DefaultUpdateTime holds the default value on creation for the update_time field.
+	// room.DefaultUpdateTime holds the default value on creation for the updateTime field.
 	room.DefaultUpdateTime = roomDescUpdateTime.Default.(func() time.Time)
-	// room.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	// room.UpdateDefaultUpdateTime holds the default value on update for the updateTime field.
 	room.UpdateDefaultUpdateTime = roomDescUpdateTime.UpdateDefault.(func() time.Time)
 	// roomDescName is the schema descriptor for name field.
 	roomDescName := roomFields[1].Descriptor()
 	// room.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	room.NameValidator = roomDescName.Validators[0].(func(string) error)
-	// roomDescMaxMember is the schema descriptor for max_member field.
+	// roomDescMaxMember is the schema descriptor for maxMember field.
 	roomDescMaxMember := roomFields[2].Descriptor()
-	// room.DefaultMaxMember holds the default value on creation for the max_member field.
+	// room.DefaultMaxMember holds the default value on creation for the maxMember field.
 	room.DefaultMaxMember = roomDescMaxMember.Default.(int)
 	// roomDescSort is the schema descriptor for sort field.
 	roomDescSort := roomFields[3].Descriptor()
@@ -110,15 +110,15 @@ func init() {
 	_ = userMixinFields0
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescCreateTime is the schema descriptor for create_time field.
+	// userDescCreateTime is the schema descriptor for createTime field.
 	userDescCreateTime := userMixinFields0[0].Descriptor()
-	// user.DefaultCreateTime holds the default value on creation for the create_time field.
+	// user.DefaultCreateTime holds the default value on creation for the createTime field.
 	user.DefaultCreateTime = userDescCreateTime.Default.(func() time.Time)
-	// userDescUpdateTime is the schema descriptor for update_time field.
+	// userDescUpdateTime is the schema descriptor for updateTime field.
 	userDescUpdateTime := userMixinFields0[1].Descriptor()
-	// user.DefaultUpdateTime holds the default value on creation for the update_time field.
+	// user.DefaultUpdateTime holds the default value on creation for the updateTime field.
 	user.DefaultUpdateTime = userDescUpdateTime.Default.(func() time.Time)
-	// user.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	// user.UpdateDefaultUpdateTime holds the default value on update for the updateTime field.
 	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
 	// userDescUsername is the schema descriptor for username field.
 	userDescUsername := userFields[1].Descriptor()
@@ -149,15 +149,15 @@ func init() {
 	_ = usernicknameMixinFields0
 	usernicknameFields := schema.UserNickname{}.Fields()
 	_ = usernicknameFields
-	// usernicknameDescCreateTime is the schema descriptor for create_time field.
+	// usernicknameDescCreateTime is the schema descriptor for createTime field.
 	usernicknameDescCreateTime := usernicknameMixinFields0[0].Descriptor()
-	// usernickname.DefaultCreateTime holds the default value on creation for the create_time field.
+	// usernickname.DefaultCreateTime holds the default value on creation for the createTime field.
 	usernickname.DefaultCreateTime = usernicknameDescCreateTime.Default.(func() time.Time)
-	// usernicknameDescUpdateTime is the schema descriptor for update_time field.
+	// usernicknameDescUpdateTime is the schema descriptor for updateTime field.
 	usernicknameDescUpdateTime := usernicknameMixinFields0[1].Descriptor()
-	// usernickname.DefaultUpdateTime holds the default value on creation for the update_time field.
+	// usernickname.DefaultUpdateTime holds the default value on creation for the updateTime field.
 	usernickname.DefaultUpdateTime = usernicknameDescUpdateTime.Default.(func() time.Time)
-	// usernickname.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	// usernickname.UpdateDefaultUpdateTime holds the default value on update for the updateTime field.
 	usernickname.UpdateDefaultUpdateTime = usernicknameDescUpdateTime.UpdateDefault.(func() time.Time)
 	// usernicknameDescNickname is the schema descriptor for nickname field.
 	usernicknameDescNickname := usernicknameFields[1].Descriptor()

@@ -13,21 +13,26 @@ type Chat struct {
 
 // Fields of the Chat.
 func (Chat) Fields() []ent.Field {
+
 	return []ent.Field{
 		field.Int64("id"),
-		field.Enum("business_type").
+		field.Enum("businessType").
+			StorageKey("business_type").
 			Values("room", "user").
 			Comment("业务类型"),
 		field.String("business_id").
 			MaxLen(128).
 			Comment("业务ID"),
-		field.String("from_user_id").
+		field.String("fromUserId").
+			StorageKey("from_user_id").
 			MaxLen(64).
 			Comment("来源用户ID"),
-		field.Enum("source_type").
+		field.Enum("sourceType").
+			StorageKey("source_type").
 			Values("system", "admin", "user").
 			Comment("来源类型"),
-		field.Enum("content_type").
+		field.Enum("contentType").
+			StorageKey("content_type").
 			Values("text", "image").
 			Comment("来源类型"),
 		field.Text("content").

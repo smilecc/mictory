@@ -30,7 +30,7 @@ func (cu *ChannelUpdate) Where(ps ...predicate.Channel) *ChannelUpdate {
 	return cu
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (cu *ChannelUpdate) SetUpdateTime(t time.Time) *ChannelUpdate {
 	cu.mutation.SetUpdateTime(t)
 	return cu
@@ -97,6 +97,21 @@ func (cu *ChannelUpdate) AddRooms(r ...*Room) *ChannelUpdate {
 	return cu.AddRoomIDs(ids...)
 }
 
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (cu *ChannelUpdate) AddUserIDs(ids ...int64) *ChannelUpdate {
+	cu.mutation.AddUserIDs(ids...)
+	return cu
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (cu *ChannelUpdate) AddUsers(u ...*User) *ChannelUpdate {
+	ids := make([]int64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cu.AddUserIDs(ids...)
+}
+
 // SetOwnerUserID sets the "owner_user" edge to the User entity by ID.
 func (cu *ChannelUpdate) SetOwnerUserID(id int64) *ChannelUpdate {
 	cu.mutation.SetOwnerUserID(id)
@@ -132,6 +147,27 @@ func (cu *ChannelUpdate) RemoveRooms(r ...*Room) *ChannelUpdate {
 		ids[i] = r[i].ID
 	}
 	return cu.RemoveRoomIDs(ids...)
+}
+
+// ClearUsers clears all "users" edges to the User entity.
+func (cu *ChannelUpdate) ClearUsers() *ChannelUpdate {
+	cu.mutation.ClearUsers()
+	return cu
+}
+
+// RemoveUserIDs removes the "users" edge to User entities by IDs.
+func (cu *ChannelUpdate) RemoveUserIDs(ids ...int64) *ChannelUpdate {
+	cu.mutation.RemoveUserIDs(ids...)
+	return cu
+}
+
+// RemoveUsers removes "users" edges to User entities.
+func (cu *ChannelUpdate) RemoveUsers(u ...*User) *ChannelUpdate {
+	ids := make([]int64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cu.RemoveUserIDs(ids...)
 }
 
 // ClearOwnerUser clears the "owner_user" edge to the User entity.
@@ -275,6 +311,51 @@ func (cu *ChannelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedUsersIDs(); len(nodes) > 0 && !cu.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if cu.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -324,7 +405,7 @@ type ChannelUpdateOne struct {
 	mutation *ChannelMutation
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (cuo *ChannelUpdateOne) SetUpdateTime(t time.Time) *ChannelUpdateOne {
 	cuo.mutation.SetUpdateTime(t)
 	return cuo
@@ -391,6 +472,21 @@ func (cuo *ChannelUpdateOne) AddRooms(r ...*Room) *ChannelUpdateOne {
 	return cuo.AddRoomIDs(ids...)
 }
 
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (cuo *ChannelUpdateOne) AddUserIDs(ids ...int64) *ChannelUpdateOne {
+	cuo.mutation.AddUserIDs(ids...)
+	return cuo
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (cuo *ChannelUpdateOne) AddUsers(u ...*User) *ChannelUpdateOne {
+	ids := make([]int64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cuo.AddUserIDs(ids...)
+}
+
 // SetOwnerUserID sets the "owner_user" edge to the User entity by ID.
 func (cuo *ChannelUpdateOne) SetOwnerUserID(id int64) *ChannelUpdateOne {
 	cuo.mutation.SetOwnerUserID(id)
@@ -426,6 +522,27 @@ func (cuo *ChannelUpdateOne) RemoveRooms(r ...*Room) *ChannelUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return cuo.RemoveRoomIDs(ids...)
+}
+
+// ClearUsers clears all "users" edges to the User entity.
+func (cuo *ChannelUpdateOne) ClearUsers() *ChannelUpdateOne {
+	cuo.mutation.ClearUsers()
+	return cuo
+}
+
+// RemoveUserIDs removes the "users" edge to User entities by IDs.
+func (cuo *ChannelUpdateOne) RemoveUserIDs(ids ...int64) *ChannelUpdateOne {
+	cuo.mutation.RemoveUserIDs(ids...)
+	return cuo
+}
+
+// RemoveUsers removes "users" edges to User entities.
+func (cuo *ChannelUpdateOne) RemoveUsers(u ...*User) *ChannelUpdateOne {
+	ids := make([]int64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cuo.RemoveUserIDs(ids...)
 }
 
 // ClearOwnerUser clears the "owner_user" edge to the User entity.
@@ -592,6 +709,51 @@ func (cuo *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedUsersIDs(); len(nodes) > 0 && !cuo.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

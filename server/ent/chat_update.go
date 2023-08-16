@@ -28,7 +28,7 @@ func (cu *ChatUpdate) Where(ps ...predicate.Chat) *ChatUpdate {
 	return cu
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (cu *ChatUpdate) SetUpdateTime(t time.Time) *ChatUpdate {
 	cu.mutation.SetUpdateTime(t)
 	return cu
@@ -54,7 +54,7 @@ func (cu *ChatUpdate) ClearDeleteTime() *ChatUpdate {
 	return cu
 }
 
-// SetBusinessType sets the "business_type" field.
+// SetBusinessType sets the "businessType" field.
 func (cu *ChatUpdate) SetBusinessType(ct chat.BusinessType) *ChatUpdate {
 	cu.mutation.SetBusinessType(ct)
 	return cu
@@ -66,19 +66,19 @@ func (cu *ChatUpdate) SetBusinessID(s string) *ChatUpdate {
 	return cu
 }
 
-// SetFromUserID sets the "from_user_id" field.
-func (cu *ChatUpdate) SetFromUserID(s string) *ChatUpdate {
-	cu.mutation.SetFromUserID(s)
+// SetFromUserId sets the "fromUserId" field.
+func (cu *ChatUpdate) SetFromUserId(s string) *ChatUpdate {
+	cu.mutation.SetFromUserId(s)
 	return cu
 }
 
-// SetSourceType sets the "source_type" field.
+// SetSourceType sets the "sourceType" field.
 func (cu *ChatUpdate) SetSourceType(ct chat.SourceType) *ChatUpdate {
 	cu.mutation.SetSourceType(ct)
 	return cu
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (cu *ChatUpdate) SetContentType(ct chat.ContentType) *ChatUpdate {
 	cu.mutation.SetContentType(ct)
 	return cu
@@ -141,7 +141,7 @@ func (cu *ChatUpdate) defaults() error {
 func (cu *ChatUpdate) check() error {
 	if v, ok := cu.mutation.BusinessType(); ok {
 		if err := chat.BusinessTypeValidator(v); err != nil {
-			return &ValidationError{Name: "business_type", err: fmt.Errorf(`ent: validator failed for field "Chat.business_type": %w`, err)}
+			return &ValidationError{Name: "businessType", err: fmt.Errorf(`ent: validator failed for field "Chat.businessType": %w`, err)}
 		}
 	}
 	if v, ok := cu.mutation.BusinessID(); ok {
@@ -149,19 +149,19 @@ func (cu *ChatUpdate) check() error {
 			return &ValidationError{Name: "business_id", err: fmt.Errorf(`ent: validator failed for field "Chat.business_id": %w`, err)}
 		}
 	}
-	if v, ok := cu.mutation.FromUserID(); ok {
-		if err := chat.FromUserIDValidator(v); err != nil {
-			return &ValidationError{Name: "from_user_id", err: fmt.Errorf(`ent: validator failed for field "Chat.from_user_id": %w`, err)}
+	if v, ok := cu.mutation.FromUserId(); ok {
+		if err := chat.FromUserIdValidator(v); err != nil {
+			return &ValidationError{Name: "fromUserId", err: fmt.Errorf(`ent: validator failed for field "Chat.fromUserId": %w`, err)}
 		}
 	}
 	if v, ok := cu.mutation.SourceType(); ok {
 		if err := chat.SourceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "source_type", err: fmt.Errorf(`ent: validator failed for field "Chat.source_type": %w`, err)}
+			return &ValidationError{Name: "sourceType", err: fmt.Errorf(`ent: validator failed for field "Chat.sourceType": %w`, err)}
 		}
 	}
 	if v, ok := cu.mutation.ContentType(); ok {
 		if err := chat.ContentTypeValidator(v); err != nil {
-			return &ValidationError{Name: "content_type", err: fmt.Errorf(`ent: validator failed for field "Chat.content_type": %w`, err)}
+			return &ValidationError{Name: "contentType", err: fmt.Errorf(`ent: validator failed for field "Chat.contentType": %w`, err)}
 		}
 	}
 	return nil
@@ -194,8 +194,8 @@ func (cu *ChatUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.BusinessID(); ok {
 		_spec.SetField(chat.FieldBusinessID, field.TypeString, value)
 	}
-	if value, ok := cu.mutation.FromUserID(); ok {
-		_spec.SetField(chat.FieldFromUserID, field.TypeString, value)
+	if value, ok := cu.mutation.FromUserId(); ok {
+		_spec.SetField(chat.FieldFromUserId, field.TypeString, value)
 	}
 	if value, ok := cu.mutation.SourceType(); ok {
 		_spec.SetField(chat.FieldSourceType, field.TypeEnum, value)
@@ -226,7 +226,7 @@ type ChatUpdateOne struct {
 	mutation *ChatMutation
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (cuo *ChatUpdateOne) SetUpdateTime(t time.Time) *ChatUpdateOne {
 	cuo.mutation.SetUpdateTime(t)
 	return cuo
@@ -252,7 +252,7 @@ func (cuo *ChatUpdateOne) ClearDeleteTime() *ChatUpdateOne {
 	return cuo
 }
 
-// SetBusinessType sets the "business_type" field.
+// SetBusinessType sets the "businessType" field.
 func (cuo *ChatUpdateOne) SetBusinessType(ct chat.BusinessType) *ChatUpdateOne {
 	cuo.mutation.SetBusinessType(ct)
 	return cuo
@@ -264,19 +264,19 @@ func (cuo *ChatUpdateOne) SetBusinessID(s string) *ChatUpdateOne {
 	return cuo
 }
 
-// SetFromUserID sets the "from_user_id" field.
-func (cuo *ChatUpdateOne) SetFromUserID(s string) *ChatUpdateOne {
-	cuo.mutation.SetFromUserID(s)
+// SetFromUserId sets the "fromUserId" field.
+func (cuo *ChatUpdateOne) SetFromUserId(s string) *ChatUpdateOne {
+	cuo.mutation.SetFromUserId(s)
 	return cuo
 }
 
-// SetSourceType sets the "source_type" field.
+// SetSourceType sets the "sourceType" field.
 func (cuo *ChatUpdateOne) SetSourceType(ct chat.SourceType) *ChatUpdateOne {
 	cuo.mutation.SetSourceType(ct)
 	return cuo
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (cuo *ChatUpdateOne) SetContentType(ct chat.ContentType) *ChatUpdateOne {
 	cuo.mutation.SetContentType(ct)
 	return cuo
@@ -352,7 +352,7 @@ func (cuo *ChatUpdateOne) defaults() error {
 func (cuo *ChatUpdateOne) check() error {
 	if v, ok := cuo.mutation.BusinessType(); ok {
 		if err := chat.BusinessTypeValidator(v); err != nil {
-			return &ValidationError{Name: "business_type", err: fmt.Errorf(`ent: validator failed for field "Chat.business_type": %w`, err)}
+			return &ValidationError{Name: "businessType", err: fmt.Errorf(`ent: validator failed for field "Chat.businessType": %w`, err)}
 		}
 	}
 	if v, ok := cuo.mutation.BusinessID(); ok {
@@ -360,19 +360,19 @@ func (cuo *ChatUpdateOne) check() error {
 			return &ValidationError{Name: "business_id", err: fmt.Errorf(`ent: validator failed for field "Chat.business_id": %w`, err)}
 		}
 	}
-	if v, ok := cuo.mutation.FromUserID(); ok {
-		if err := chat.FromUserIDValidator(v); err != nil {
-			return &ValidationError{Name: "from_user_id", err: fmt.Errorf(`ent: validator failed for field "Chat.from_user_id": %w`, err)}
+	if v, ok := cuo.mutation.FromUserId(); ok {
+		if err := chat.FromUserIdValidator(v); err != nil {
+			return &ValidationError{Name: "fromUserId", err: fmt.Errorf(`ent: validator failed for field "Chat.fromUserId": %w`, err)}
 		}
 	}
 	if v, ok := cuo.mutation.SourceType(); ok {
 		if err := chat.SourceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "source_type", err: fmt.Errorf(`ent: validator failed for field "Chat.source_type": %w`, err)}
+			return &ValidationError{Name: "sourceType", err: fmt.Errorf(`ent: validator failed for field "Chat.sourceType": %w`, err)}
 		}
 	}
 	if v, ok := cuo.mutation.ContentType(); ok {
 		if err := chat.ContentTypeValidator(v); err != nil {
-			return &ValidationError{Name: "content_type", err: fmt.Errorf(`ent: validator failed for field "Chat.content_type": %w`, err)}
+			return &ValidationError{Name: "contentType", err: fmt.Errorf(`ent: validator failed for field "Chat.contentType": %w`, err)}
 		}
 	}
 	return nil
@@ -422,8 +422,8 @@ func (cuo *ChatUpdateOne) sqlSave(ctx context.Context) (_node *Chat, err error) 
 	if value, ok := cuo.mutation.BusinessID(); ok {
 		_spec.SetField(chat.FieldBusinessID, field.TypeString, value)
 	}
-	if value, ok := cuo.mutation.FromUserID(); ok {
-		_spec.SetField(chat.FieldFromUserID, field.TypeString, value)
+	if value, ok := cuo.mutation.FromUserId(); ok {
+		_spec.SetField(chat.FieldFromUserId, field.TypeString, value)
 	}
 	if value, ok := cuo.mutation.SourceType(); ok {
 		_spec.SetField(chat.FieldSourceType, field.TypeEnum, value)

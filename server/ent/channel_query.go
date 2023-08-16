@@ -25,6 +25,7 @@ type ChannelQuery struct {
 	inters        []Interceptor
 	predicates    []predicate.Channel
 	withRooms     *RoomQuery
+	withUsers     *UserQuery
 	withOwnerUser *UserQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
@@ -78,6 +79,28 @@ func (cq *ChannelQuery) QueryRooms() *RoomQuery {
 			sqlgraph.From(channel.Table, channel.FieldID, selector),
 			sqlgraph.To(room.Table, room.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, channel.RoomsTable, channel.RoomsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUsers chains the current query on the "users" edge.
+func (cq *ChannelQuery) QueryUsers() *UserQuery {
+	query := (&UserClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channel.Table, channel.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, channel.UsersTable, channel.UsersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -300,6 +323,7 @@ func (cq *ChannelQuery) Clone() *ChannelQuery {
 		inters:        append([]Interceptor{}, cq.inters...),
 		predicates:    append([]predicate.Channel{}, cq.predicates...),
 		withRooms:     cq.withRooms.Clone(),
+		withUsers:     cq.withUsers.Clone(),
 		withOwnerUser: cq.withOwnerUser.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
@@ -315,6 +339,17 @@ func (cq *ChannelQuery) WithRooms(opts ...func(*RoomQuery)) *ChannelQuery {
 		opt(query)
 	}
 	cq.withRooms = query
+	return cq
+}
+
+// WithUsers tells the query-builder to eager-load the nodes that are connected to
+// the "users" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ChannelQuery) WithUsers(opts ...func(*UserQuery)) *ChannelQuery {
+	query := (&UserClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withUsers = query
 	return cq
 }
 
@@ -335,7 +370,7 @@ func (cq *ChannelQuery) WithOwnerUser(opts ...func(*UserQuery)) *ChannelQuery {
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		CreateTime time.Time `json:"createTime,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -358,7 +393,7 @@ func (cq *ChannelQuery) GroupBy(field string, fields ...string) *ChannelGroupBy 
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		CreateTime time.Time `json:"createTime,omitempty"`
 //	}
 //
 //	client.Channel.Query().
@@ -408,8 +443,9 @@ func (cq *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 		nodes       = []*Channel{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			cq.withRooms != nil,
+			cq.withUsers != nil,
 			cq.withOwnerUser != nil,
 		}
 	)
@@ -441,6 +477,13 @@ func (cq *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 		if err := cq.loadRooms(ctx, query, nodes,
 			func(n *Channel) { n.Edges.Rooms = []*Room{} },
 			func(n *Channel, e *Room) { n.Edges.Rooms = append(n.Edges.Rooms, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := cq.withUsers; query != nil {
+		if err := cq.loadUsers(ctx, query, nodes,
+			func(n *Channel) { n.Edges.Users = []*User{} },
+			func(n *Channel, e *User) { n.Edges.Users = append(n.Edges.Users, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -481,6 +524,67 @@ func (cq *ChannelQuery) loadRooms(ctx context.Context, query *RoomQuery, nodes [
 			return fmt.Errorf(`unexpected referenced foreign-key "channel_rooms" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (cq *ChannelQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Channel, init func(*Channel), assign func(*Channel, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int64]*Channel)
+	nids := make(map[int64]map[*Channel]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(channel.UsersTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(channel.UsersPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(channel.UsersPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(channel.UsersPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := values[1].(*sql.NullInt64).Int64
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Channel]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "users" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

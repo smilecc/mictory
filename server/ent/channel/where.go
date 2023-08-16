@@ -55,12 +55,12 @@ func IDLTE(id int64) predicate.Channel {
 	return predicate.Channel(sql.FieldLTE(FieldID, id))
 }
 
-// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+// CreateTime applies equality check predicate on the "createTime" field. It's identical to CreateTimeEQ.
 func CreateTime(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+// UpdateTime applies equality check predicate on the "updateTime" field. It's identical to UpdateTimeEQ.
 func UpdateTime(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldUpdateTime, v))
 }
@@ -80,82 +80,82 @@ func Name(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldName, v))
 }
 
-// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+// CreateTimeEQ applies the EQ predicate on the "createTime" field.
 func CreateTimeEQ(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+// CreateTimeNEQ applies the NEQ predicate on the "createTime" field.
 func CreateTimeNEQ(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldNEQ(FieldCreateTime, v))
 }
 
-// CreateTimeIn applies the In predicate on the "create_time" field.
+// CreateTimeIn applies the In predicate on the "createTime" field.
 func CreateTimeIn(vs ...time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+// CreateTimeNotIn applies the NotIn predicate on the "createTime" field.
 func CreateTimeNotIn(vs ...time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldNotIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeGT applies the GT predicate on the "create_time" field.
+// CreateTimeGT applies the GT predicate on the "createTime" field.
 func CreateTimeGT(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldGT(FieldCreateTime, v))
 }
 
-// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+// CreateTimeGTE applies the GTE predicate on the "createTime" field.
 func CreateTimeGTE(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldGTE(FieldCreateTime, v))
 }
 
-// CreateTimeLT applies the LT predicate on the "create_time" field.
+// CreateTimeLT applies the LT predicate on the "createTime" field.
 func CreateTimeLT(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldLT(FieldCreateTime, v))
 }
 
-// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+// CreateTimeLTE applies the LTE predicate on the "createTime" field.
 func CreateTimeLTE(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldLTE(FieldCreateTime, v))
 }
 
-// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+// UpdateTimeEQ applies the EQ predicate on the "updateTime" field.
 func UpdateTimeEQ(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+// UpdateTimeNEQ applies the NEQ predicate on the "updateTime" field.
 func UpdateTimeNEQ(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldNEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeIn applies the In predicate on the "update_time" field.
+// UpdateTimeIn applies the In predicate on the "updateTime" field.
 func UpdateTimeIn(vs ...time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+// UpdateTimeNotIn applies the NotIn predicate on the "updateTime" field.
 func UpdateTimeNotIn(vs ...time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldNotIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeGT applies the GT predicate on the "update_time" field.
+// UpdateTimeGT applies the GT predicate on the "updateTime" field.
 func UpdateTimeGT(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldGT(FieldUpdateTime, v))
 }
 
-// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+// UpdateTimeGTE applies the GTE predicate on the "updateTime" field.
 func UpdateTimeGTE(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldGTE(FieldUpdateTime, v))
 }
 
-// UpdateTimeLT applies the LT predicate on the "update_time" field.
+// UpdateTimeLT applies the LT predicate on the "updateTime" field.
 func UpdateTimeLT(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldLT(FieldUpdateTime, v))
 }
 
-// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+// UpdateTimeLTE applies the LTE predicate on the "updateTime" field.
 func UpdateTimeLTE(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldLTE(FieldUpdateTime, v))
 }
@@ -365,6 +365,29 @@ func HasRooms() predicate.Channel {
 func HasRoomsWith(preds ...predicate.Room) predicate.Channel {
 	return predicate.Channel(func(s *sql.Selector) {
 		step := newRoomsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUsers applies the HasEdge predicate on the "users" edge.
+func HasUsers() predicate.Channel {
+	return predicate.Channel(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUsersWith applies the HasEdge predicate on the "users" edge with a given conditions (other predicates).
+func HasUsersWith(preds ...predicate.User) predicate.Channel {
+	return predicate.Channel(func(s *sql.Selector) {
+		step := newUsersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

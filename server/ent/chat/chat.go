@@ -15,21 +15,21 @@ const (
 	Label = "chat"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldCreateTime holds the string denoting the create_time field in the database.
+	// FieldCreateTime holds the string denoting the createtime field in the database.
 	FieldCreateTime = "create_time"
-	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	// FieldUpdateTime holds the string denoting the updatetime field in the database.
 	FieldUpdateTime = "update_time"
 	// FieldDeleteTime holds the string denoting the delete_time field in the database.
 	FieldDeleteTime = "delete_time"
-	// FieldBusinessType holds the string denoting the business_type field in the database.
+	// FieldBusinessType holds the string denoting the businesstype field in the database.
 	FieldBusinessType = "business_type"
 	// FieldBusinessID holds the string denoting the business_id field in the database.
 	FieldBusinessID = "business_id"
-	// FieldFromUserID holds the string denoting the from_user_id field in the database.
-	FieldFromUserID = "from_user_id"
-	// FieldSourceType holds the string denoting the source_type field in the database.
+	// FieldFromUserId holds the string denoting the fromuserid field in the database.
+	FieldFromUserId = "from_user_id"
+	// FieldSourceType holds the string denoting the sourcetype field in the database.
 	FieldSourceType = "source_type"
-	// FieldContentType holds the string denoting the content_type field in the database.
+	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
@@ -45,7 +45,7 @@ var Columns = []string{
 	FieldDeleteTime,
 	FieldBusinessType,
 	FieldBusinessID,
-	FieldFromUserID,
+	FieldFromUserId,
 	FieldSourceType,
 	FieldContentType,
 	FieldContent,
@@ -69,19 +69,19 @@ func ValidColumn(column string) bool {
 var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
-	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	// DefaultCreateTime holds the default value on creation for the "createTime" field.
 	DefaultCreateTime func() time.Time
-	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	// DefaultUpdateTime holds the default value on creation for the "updateTime" field.
 	DefaultUpdateTime func() time.Time
-	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	// UpdateDefaultUpdateTime holds the default value on update for the "updateTime" field.
 	UpdateDefaultUpdateTime func() time.Time
 	// BusinessIDValidator is a validator for the "business_id" field. It is called by the builders before save.
 	BusinessIDValidator func(string) error
-	// FromUserIDValidator is a validator for the "from_user_id" field. It is called by the builders before save.
-	FromUserIDValidator func(string) error
+	// FromUserIdValidator is a validator for the "fromUserId" field. It is called by the builders before save.
+	FromUserIdValidator func(string) error
 )
 
-// BusinessType defines the type for the "business_type" enum field.
+// BusinessType defines the type for the "businessType" enum field.
 type BusinessType string
 
 // BusinessType values.
@@ -94,17 +94,17 @@ func (bt BusinessType) String() string {
 	return string(bt)
 }
 
-// BusinessTypeValidator is a validator for the "business_type" field enum values. It is called by the builders before save.
+// BusinessTypeValidator is a validator for the "businessType" field enum values. It is called by the builders before save.
 func BusinessTypeValidator(bt BusinessType) error {
 	switch bt {
 	case BusinessTypeRoom, BusinessTypeUser:
 		return nil
 	default:
-		return fmt.Errorf("chat: invalid enum value for business_type field: %q", bt)
+		return fmt.Errorf("chat: invalid enum value for businessType field: %q", bt)
 	}
 }
 
-// SourceType defines the type for the "source_type" enum field.
+// SourceType defines the type for the "sourceType" enum field.
 type SourceType string
 
 // SourceType values.
@@ -118,17 +118,17 @@ func (st SourceType) String() string {
 	return string(st)
 }
 
-// SourceTypeValidator is a validator for the "source_type" field enum values. It is called by the builders before save.
+// SourceTypeValidator is a validator for the "sourceType" field enum values. It is called by the builders before save.
 func SourceTypeValidator(st SourceType) error {
 	switch st {
 	case SourceTypeSystem, SourceTypeAdmin, SourceTypeUser:
 		return nil
 	default:
-		return fmt.Errorf("chat: invalid enum value for source_type field: %q", st)
+		return fmt.Errorf("chat: invalid enum value for sourceType field: %q", st)
 	}
 }
 
-// ContentType defines the type for the "content_type" enum field.
+// ContentType defines the type for the "contentType" enum field.
 type ContentType string
 
 // ContentType values.
@@ -141,13 +141,13 @@ func (ct ContentType) String() string {
 	return string(ct)
 }
 
-// ContentTypeValidator is a validator for the "content_type" field enum values. It is called by the builders before save.
+// ContentTypeValidator is a validator for the "contentType" field enum values. It is called by the builders before save.
 func ContentTypeValidator(ct ContentType) error {
 	switch ct {
 	case ContentTypeText, ContentTypeImage:
 		return nil
 	default:
-		return fmt.Errorf("chat: invalid enum value for content_type field: %q", ct)
+		return fmt.Errorf("chat: invalid enum value for contentType field: %q", ct)
 	}
 }
 
@@ -159,12 +159,12 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByCreateTime orders the results by the create_time field.
+// ByCreateTime orders the results by the createTime field.
 func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
 }
 
-// ByUpdateTime orders the results by the update_time field.
+// ByUpdateTime orders the results by the updateTime field.
 func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
 }
@@ -174,7 +174,7 @@ func ByDeleteTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeleteTime, opts...).ToFunc()
 }
 
-// ByBusinessType orders the results by the business_type field.
+// ByBusinessType orders the results by the businessType field.
 func ByBusinessType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBusinessType, opts...).ToFunc()
 }
@@ -184,17 +184,17 @@ func ByBusinessID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBusinessID, opts...).ToFunc()
 }
 
-// ByFromUserID orders the results by the from_user_id field.
-func ByFromUserID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFromUserID, opts...).ToFunc()
+// ByFromUserId orders the results by the fromUserId field.
+func ByFromUserId(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFromUserId, opts...).ToFunc()
 }
 
-// BySourceType orders the results by the source_type field.
+// BySourceType orders the results by the sourceType field.
 func BySourceType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSourceType, opts...).ToFunc()
 }
 
-// ByContentType orders the results by the content_type field.
+// ByContentType orders the results by the contentType field.
 func ByContentType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldContentType, opts...).ToFunc()
 }

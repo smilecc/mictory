@@ -14,7 +14,8 @@ type CreateTime struct{ mixin.Schema }
 // Fields of the create time mixin.
 func (CreateTime) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("create_time").
+		field.Time("createTime").
+			StorageKey("create_time").
 			SchemaType(map[string]string{
 				dialect.MySQL: "datetime",
 			}).
@@ -32,7 +33,8 @@ type UpdateTime struct{ mixin.Schema }
 // Fields of the update time mixin.
 func (UpdateTime) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("update_time").
+		field.Time("updateTime").
+			StorageKey("update_time").
 			SchemaType(map[string]string{
 				dialect.MySQL: "datetime",
 			}).

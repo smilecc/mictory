@@ -22,13 +22,13 @@ type ChannelCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
+// SetCreateTime sets the "createTime" field.
 func (cc *ChannelCreate) SetCreateTime(t time.Time) *ChannelCreate {
 	cc.mutation.SetCreateTime(t)
 	return cc
 }
 
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+// SetNillableCreateTime sets the "createTime" field if the given value is not nil.
 func (cc *ChannelCreate) SetNillableCreateTime(t *time.Time) *ChannelCreate {
 	if t != nil {
 		cc.SetCreateTime(*t)
@@ -36,13 +36,13 @@ func (cc *ChannelCreate) SetNillableCreateTime(t *time.Time) *ChannelCreate {
 	return cc
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (cc *ChannelCreate) SetUpdateTime(t time.Time) *ChannelCreate {
 	cc.mutation.SetUpdateTime(t)
 	return cc
 }
 
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+// SetNillableUpdateTime sets the "updateTime" field if the given value is not nil.
 func (cc *ChannelCreate) SetNillableUpdateTime(t *time.Time) *ChannelCreate {
 	if t != nil {
 		cc.SetUpdateTime(*t)
@@ -103,6 +103,21 @@ func (cc *ChannelCreate) AddRooms(r ...*Room) *ChannelCreate {
 		ids[i] = r[i].ID
 	}
 	return cc.AddRoomIDs(ids...)
+}
+
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (cc *ChannelCreate) AddUserIDs(ids ...int64) *ChannelCreate {
+	cc.mutation.AddUserIDs(ids...)
+	return cc
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (cc *ChannelCreate) AddUsers(u ...*User) *ChannelCreate {
+	ids := make([]int64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cc.AddUserIDs(ids...)
 }
 
 // SetOwnerUserID sets the "owner_user" edge to the User entity by ID.
@@ -173,10 +188,10 @@ func (cc *ChannelCreate) defaults() error {
 // check runs all checks and user-defined validators on the builder.
 func (cc *ChannelCreate) check() error {
 	if _, ok := cc.mutation.CreateTime(); !ok {
-		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Channel.create_time"`)}
+		return &ValidationError{Name: "createTime", err: errors.New(`ent: missing required field "Channel.createTime"`)}
 	}
 	if _, ok := cc.mutation.UpdateTime(); !ok {
-		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Channel.update_time"`)}
+		return &ValidationError{Name: "updateTime", err: errors.New(`ent: missing required field "Channel.updateTime"`)}
 	}
 	if v, ok := cc.mutation.Code(); ok {
 		if err := channel.CodeValidator(v); err != nil {
@@ -255,6 +270,22 @@ func (cc *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   channel.UsersTable,
+			Columns: channel.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

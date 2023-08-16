@@ -21,13 +21,13 @@ type RoomCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
+// SetCreateTime sets the "createTime" field.
 func (rc *RoomCreate) SetCreateTime(t time.Time) *RoomCreate {
 	rc.mutation.SetCreateTime(t)
 	return rc
 }
 
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+// SetNillableCreateTime sets the "createTime" field if the given value is not nil.
 func (rc *RoomCreate) SetNillableCreateTime(t *time.Time) *RoomCreate {
 	if t != nil {
 		rc.SetCreateTime(*t)
@@ -35,13 +35,13 @@ func (rc *RoomCreate) SetNillableCreateTime(t *time.Time) *RoomCreate {
 	return rc
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (rc *RoomCreate) SetUpdateTime(t time.Time) *RoomCreate {
 	rc.mutation.SetUpdateTime(t)
 	return rc
 }
 
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+// SetNillableUpdateTime sets the "updateTime" field if the given value is not nil.
 func (rc *RoomCreate) SetNillableUpdateTime(t *time.Time) *RoomCreate {
 	if t != nil {
 		rc.SetUpdateTime(*t)
@@ -69,13 +69,13 @@ func (rc *RoomCreate) SetName(s string) *RoomCreate {
 	return rc
 }
 
-// SetMaxMember sets the "max_member" field.
+// SetMaxMember sets the "maxMember" field.
 func (rc *RoomCreate) SetMaxMember(i int) *RoomCreate {
 	rc.mutation.SetMaxMember(i)
 	return rc
 }
 
-// SetNillableMaxMember sets the "max_member" field if the given value is not nil.
+// SetNillableMaxMember sets the "maxMember" field if the given value is not nil.
 func (rc *RoomCreate) SetNillableMaxMember(i *int) *RoomCreate {
 	if i != nil {
 		rc.SetMaxMember(*i)
@@ -179,10 +179,10 @@ func (rc *RoomCreate) defaults() error {
 // check runs all checks and user-defined validators on the builder.
 func (rc *RoomCreate) check() error {
 	if _, ok := rc.mutation.CreateTime(); !ok {
-		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Room.create_time"`)}
+		return &ValidationError{Name: "createTime", err: errors.New(`ent: missing required field "Room.createTime"`)}
 	}
 	if _, ok := rc.mutation.UpdateTime(); !ok {
-		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Room.update_time"`)}
+		return &ValidationError{Name: "updateTime", err: errors.New(`ent: missing required field "Room.updateTime"`)}
 	}
 	if _, ok := rc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Room.name"`)}
@@ -193,7 +193,7 @@ func (rc *RoomCreate) check() error {
 		}
 	}
 	if _, ok := rc.mutation.MaxMember(); !ok {
-		return &ValidationError{Name: "max_member", err: errors.New(`ent: missing required field "Room.max_member"`)}
+		return &ValidationError{Name: "maxMember", err: errors.New(`ent: missing required field "Room.maxMember"`)}
 	}
 	if _, ok := rc.mutation.Sort(); !ok {
 		return &ValidationError{Name: "sort", err: errors.New(`ent: missing required field "Room.sort"`)}

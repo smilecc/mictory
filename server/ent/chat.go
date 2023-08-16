@@ -17,22 +17,22 @@ type Chat struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
+	// CreateTime holds the value of the "createTime" field.
+	CreateTime time.Time `json:"createTime,omitempty"`
+	// UpdateTime holds the value of the "updateTime" field.
+	UpdateTime time.Time `json:"updateTime,omitempty"`
 	// DeleteTime holds the value of the "delete_time" field.
-	DeleteTime time.Time `json:"delete_time,omitempty"`
+	DeleteTime time.Time `json:"-"`
 	// 业务类型
-	BusinessType chat.BusinessType `json:"business_type,omitempty"`
+	BusinessType chat.BusinessType `json:"businessType,omitempty"`
 	// 业务ID
 	BusinessID string `json:"business_id,omitempty"`
 	// 来源用户ID
-	FromUserID string `json:"from_user_id,omitempty"`
+	FromUserId string `json:"fromUserId,omitempty"`
 	// 来源类型
-	SourceType chat.SourceType `json:"source_type,omitempty"`
+	SourceType chat.SourceType `json:"sourceType,omitempty"`
 	// 来源类型
-	ContentType chat.ContentType `json:"content_type,omitempty"`
+	ContentType chat.ContentType `json:"contentType,omitempty"`
 	// 消息内容
 	Content      string `json:"content,omitempty"`
 	selectValues sql.SelectValues
@@ -45,7 +45,7 @@ func (*Chat) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case chat.FieldID:
 			values[i] = new(sql.NullInt64)
-		case chat.FieldBusinessType, chat.FieldBusinessID, chat.FieldFromUserID, chat.FieldSourceType, chat.FieldContentType, chat.FieldContent:
+		case chat.FieldBusinessType, chat.FieldBusinessID, chat.FieldFromUserId, chat.FieldSourceType, chat.FieldContentType, chat.FieldContent:
 			values[i] = new(sql.NullString)
 		case chat.FieldCreateTime, chat.FieldUpdateTime, chat.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -72,13 +72,13 @@ func (c *Chat) assignValues(columns []string, values []any) error {
 			c.ID = int64(value.Int64)
 		case chat.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+				return fmt.Errorf("unexpected type %T for field createTime", values[i])
 			} else if value.Valid {
 				c.CreateTime = value.Time
 			}
 		case chat.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+				return fmt.Errorf("unexpected type %T for field updateTime", values[i])
 			} else if value.Valid {
 				c.UpdateTime = value.Time
 			}
@@ -90,7 +90,7 @@ func (c *Chat) assignValues(columns []string, values []any) error {
 			}
 		case chat.FieldBusinessType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field business_type", values[i])
+				return fmt.Errorf("unexpected type %T for field businessType", values[i])
 			} else if value.Valid {
 				c.BusinessType = chat.BusinessType(value.String)
 			}
@@ -100,21 +100,21 @@ func (c *Chat) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				c.BusinessID = value.String
 			}
-		case chat.FieldFromUserID:
+		case chat.FieldFromUserId:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field from_user_id", values[i])
+				return fmt.Errorf("unexpected type %T for field fromUserId", values[i])
 			} else if value.Valid {
-				c.FromUserID = value.String
+				c.FromUserId = value.String
 			}
 		case chat.FieldSourceType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_type", values[i])
+				return fmt.Errorf("unexpected type %T for field sourceType", values[i])
 			} else if value.Valid {
 				c.SourceType = chat.SourceType(value.String)
 			}
 		case chat.FieldContentType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field content_type", values[i])
+				return fmt.Errorf("unexpected type %T for field contentType", values[i])
 			} else if value.Valid {
 				c.ContentType = chat.ContentType(value.String)
 			}
@@ -160,28 +160,28 @@ func (c *Chat) String() string {
 	var builder strings.Builder
 	builder.WriteString("Chat(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
-	builder.WriteString("create_time=")
+	builder.WriteString("createTime=")
 	builder.WriteString(c.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("update_time=")
+	builder.WriteString("updateTime=")
 	builder.WriteString(c.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("delete_time=")
 	builder.WriteString(c.DeleteTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("business_type=")
+	builder.WriteString("businessType=")
 	builder.WriteString(fmt.Sprintf("%v", c.BusinessType))
 	builder.WriteString(", ")
 	builder.WriteString("business_id=")
 	builder.WriteString(c.BusinessID)
 	builder.WriteString(", ")
-	builder.WriteString("from_user_id=")
-	builder.WriteString(c.FromUserID)
+	builder.WriteString("fromUserId=")
+	builder.WriteString(c.FromUserId)
 	builder.WriteString(", ")
-	builder.WriteString("source_type=")
+	builder.WriteString("sourceType=")
 	builder.WriteString(fmt.Sprintf("%v", c.SourceType))
 	builder.WriteString(", ")
-	builder.WriteString("content_type=")
+	builder.WriteString("contentType=")
 	builder.WriteString(fmt.Sprintf("%v", c.ContentType))
 	builder.WriteString(", ")
 	builder.WriteString("content=")

@@ -29,7 +29,7 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (uu *UserUpdate) SetUpdateTime(t time.Time) *UserUpdate {
 	uu.mutation.SetUpdateTime(t)
 	return uu
@@ -67,14 +67,14 @@ func (uu *UserUpdate) SetNickname(s string) *UserUpdate {
 	return uu
 }
 
-// SetNicknameNo sets the "nickname_no" field.
+// SetNicknameNo sets the "nicknameNo" field.
 func (uu *UserUpdate) SetNicknameNo(i int) *UserUpdate {
 	uu.mutation.ResetNicknameNo()
 	uu.mutation.SetNicknameNo(i)
 	return uu
 }
 
-// AddNicknameNo adds i to the "nickname_no" field.
+// AddNicknameNo adds i to the "nicknameNo" field.
 func (uu *UserUpdate) AddNicknameNo(i int) *UserUpdate {
 	uu.mutation.AddNicknameNo(i)
 	return uu
@@ -100,13 +100,13 @@ func (uu *UserUpdate) ClearAvatar() *UserUpdate {
 	return uu
 }
 
-// SetSessionState sets the "session_state" field.
+// SetSessionState sets the "sessionState" field.
 func (uu *UserUpdate) SetSessionState(us user.SessionState) *UserUpdate {
 	uu.mutation.SetSessionState(us)
 	return uu
 }
 
-// SetNillableSessionState sets the "session_state" field if the given value is not nil.
+// SetNillableSessionState sets the "sessionState" field if the given value is not nil.
 func (uu *UserUpdate) SetNillableSessionState(us *user.SessionState) *UserUpdate {
 	if us != nil {
 		uu.SetSessionState(*us)
@@ -141,6 +141,21 @@ func (uu *UserUpdate) AddOwner(c ...*Channel) *UserUpdate {
 	return uu.AddOwnerIDs(ids...)
 }
 
+// AddChannelIDs adds the "channels" edge to the Channel entity by IDs.
+func (uu *UserUpdate) AddChannelIDs(ids ...int64) *UserUpdate {
+	uu.mutation.AddChannelIDs(ids...)
+	return uu
+}
+
+// AddChannels adds the "channels" edges to the Channel entity.
+func (uu *UserUpdate) AddChannels(c ...*Channel) *UserUpdate {
+	ids := make([]int64, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddChannelIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -165,6 +180,27 @@ func (uu *UserUpdate) RemoveOwner(c ...*Channel) *UserUpdate {
 		ids[i] = c[i].ID
 	}
 	return uu.RemoveOwnerIDs(ids...)
+}
+
+// ClearChannels clears all "channels" edges to the Channel entity.
+func (uu *UserUpdate) ClearChannels() *UserUpdate {
+	uu.mutation.ClearChannels()
+	return uu
+}
+
+// RemoveChannelIDs removes the "channels" edge to Channel entities by IDs.
+func (uu *UserUpdate) RemoveChannelIDs(ids ...int64) *UserUpdate {
+	uu.mutation.RemoveChannelIDs(ids...)
+	return uu
+}
+
+// RemoveChannels removes "channels" edges to Channel entities.
+func (uu *UserUpdate) RemoveChannels(c ...*Channel) *UserUpdate {
+	ids := make([]int64, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveChannelIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -228,7 +264,7 @@ func (uu *UserUpdate) check() error {
 	}
 	if v, ok := uu.mutation.SessionState(); ok {
 		if err := user.SessionStateValidator(v); err != nil {
-			return &ValidationError{Name: "session_state", err: fmt.Errorf(`ent: validator failed for field "User.session_state": %w`, err)}
+			return &ValidationError{Name: "sessionState", err: fmt.Errorf(`ent: validator failed for field "User.sessionState": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.Password(); ok {
@@ -337,6 +373,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedChannelsIDs(); len(nodes) > 0 && !uu.mutation.ChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ChannelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -357,7 +438,7 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (uuo *UserUpdateOne) SetUpdateTime(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetUpdateTime(t)
 	return uuo
@@ -395,14 +476,14 @@ func (uuo *UserUpdateOne) SetNickname(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetNicknameNo sets the "nickname_no" field.
+// SetNicknameNo sets the "nicknameNo" field.
 func (uuo *UserUpdateOne) SetNicknameNo(i int) *UserUpdateOne {
 	uuo.mutation.ResetNicknameNo()
 	uuo.mutation.SetNicknameNo(i)
 	return uuo
 }
 
-// AddNicknameNo adds i to the "nickname_no" field.
+// AddNicknameNo adds i to the "nicknameNo" field.
 func (uuo *UserUpdateOne) AddNicknameNo(i int) *UserUpdateOne {
 	uuo.mutation.AddNicknameNo(i)
 	return uuo
@@ -428,13 +509,13 @@ func (uuo *UserUpdateOne) ClearAvatar() *UserUpdateOne {
 	return uuo
 }
 
-// SetSessionState sets the "session_state" field.
+// SetSessionState sets the "sessionState" field.
 func (uuo *UserUpdateOne) SetSessionState(us user.SessionState) *UserUpdateOne {
 	uuo.mutation.SetSessionState(us)
 	return uuo
 }
 
-// SetNillableSessionState sets the "session_state" field if the given value is not nil.
+// SetNillableSessionState sets the "sessionState" field if the given value is not nil.
 func (uuo *UserUpdateOne) SetNillableSessionState(us *user.SessionState) *UserUpdateOne {
 	if us != nil {
 		uuo.SetSessionState(*us)
@@ -469,6 +550,21 @@ func (uuo *UserUpdateOne) AddOwner(c ...*Channel) *UserUpdateOne {
 	return uuo.AddOwnerIDs(ids...)
 }
 
+// AddChannelIDs adds the "channels" edge to the Channel entity by IDs.
+func (uuo *UserUpdateOne) AddChannelIDs(ids ...int64) *UserUpdateOne {
+	uuo.mutation.AddChannelIDs(ids...)
+	return uuo
+}
+
+// AddChannels adds the "channels" edges to the Channel entity.
+func (uuo *UserUpdateOne) AddChannels(c ...*Channel) *UserUpdateOne {
+	ids := make([]int64, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddChannelIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -493,6 +589,27 @@ func (uuo *UserUpdateOne) RemoveOwner(c ...*Channel) *UserUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return uuo.RemoveOwnerIDs(ids...)
+}
+
+// ClearChannels clears all "channels" edges to the Channel entity.
+func (uuo *UserUpdateOne) ClearChannels() *UserUpdateOne {
+	uuo.mutation.ClearChannels()
+	return uuo
+}
+
+// RemoveChannelIDs removes the "channels" edge to Channel entities by IDs.
+func (uuo *UserUpdateOne) RemoveChannelIDs(ids ...int64) *UserUpdateOne {
+	uuo.mutation.RemoveChannelIDs(ids...)
+	return uuo
+}
+
+// RemoveChannels removes "channels" edges to Channel entities.
+func (uuo *UserUpdateOne) RemoveChannels(c ...*Channel) *UserUpdateOne {
+	ids := make([]int64, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveChannelIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -569,7 +686,7 @@ func (uuo *UserUpdateOne) check() error {
 	}
 	if v, ok := uuo.mutation.SessionState(); ok {
 		if err := user.SessionStateValidator(v); err != nil {
-			return &ValidationError{Name: "session_state", err: fmt.Errorf(`ent: validator failed for field "User.session_state": %w`, err)}
+			return &ValidationError{Name: "sessionState", err: fmt.Errorf(`ent: validator failed for field "User.sessionState": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.Password(); ok {
@@ -685,6 +802,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Inverse: false,
 			Table:   user.OwnerTable,
 			Columns: []string{user.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedChannelsIDs(); len(nodes) > 0 && !uuo.mutation.ChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ChannelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChannelsTable,
+			Columns: user.ChannelsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeInt64),

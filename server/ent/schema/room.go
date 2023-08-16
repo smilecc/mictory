@@ -17,7 +17,10 @@ func (Room) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("id"),
 		field.String("name").MaxLen(64).Comment("房间名"),
-		field.Int("max_member").Default(50).Comment("房间最大人数"),
+		field.Int("maxMember").
+			StorageKey("max_member").
+			Default(50).
+			Comment("房间最大人数"),
 		field.Int("sort").Default(0),
 	}
 }

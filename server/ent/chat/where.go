@@ -54,12 +54,12 @@ func IDLTE(id int64) predicate.Chat {
 	return predicate.Chat(sql.FieldLTE(FieldID, id))
 }
 
-// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+// CreateTime applies equality check predicate on the "createTime" field. It's identical to CreateTimeEQ.
 func CreateTime(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+// UpdateTime applies equality check predicate on the "updateTime" field. It's identical to UpdateTimeEQ.
 func UpdateTime(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldUpdateTime, v))
 }
@@ -74,9 +74,9 @@ func BusinessID(v string) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldBusinessID, v))
 }
 
-// FromUserID applies equality check predicate on the "from_user_id" field. It's identical to FromUserIDEQ.
-func FromUserID(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldEQ(FieldFromUserID, v))
+// FromUserId applies equality check predicate on the "fromUserId" field. It's identical to FromUserIdEQ.
+func FromUserId(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldEQ(FieldFromUserId, v))
 }
 
 // Content applies equality check predicate on the "content" field. It's identical to ContentEQ.
@@ -84,82 +84,82 @@ func Content(v string) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldContent, v))
 }
 
-// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+// CreateTimeEQ applies the EQ predicate on the "createTime" field.
 func CreateTimeEQ(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+// CreateTimeNEQ applies the NEQ predicate on the "createTime" field.
 func CreateTimeNEQ(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldNEQ(FieldCreateTime, v))
 }
 
-// CreateTimeIn applies the In predicate on the "create_time" field.
+// CreateTimeIn applies the In predicate on the "createTime" field.
 func CreateTimeIn(vs ...time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+// CreateTimeNotIn applies the NotIn predicate on the "createTime" field.
 func CreateTimeNotIn(vs ...time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldNotIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeGT applies the GT predicate on the "create_time" field.
+// CreateTimeGT applies the GT predicate on the "createTime" field.
 func CreateTimeGT(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldGT(FieldCreateTime, v))
 }
 
-// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+// CreateTimeGTE applies the GTE predicate on the "createTime" field.
 func CreateTimeGTE(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldGTE(FieldCreateTime, v))
 }
 
-// CreateTimeLT applies the LT predicate on the "create_time" field.
+// CreateTimeLT applies the LT predicate on the "createTime" field.
 func CreateTimeLT(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldLT(FieldCreateTime, v))
 }
 
-// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+// CreateTimeLTE applies the LTE predicate on the "createTime" field.
 func CreateTimeLTE(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldLTE(FieldCreateTime, v))
 }
 
-// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+// UpdateTimeEQ applies the EQ predicate on the "updateTime" field.
 func UpdateTimeEQ(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+// UpdateTimeNEQ applies the NEQ predicate on the "updateTime" field.
 func UpdateTimeNEQ(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldNEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeIn applies the In predicate on the "update_time" field.
+// UpdateTimeIn applies the In predicate on the "updateTime" field.
 func UpdateTimeIn(vs ...time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+// UpdateTimeNotIn applies the NotIn predicate on the "updateTime" field.
 func UpdateTimeNotIn(vs ...time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldNotIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeGT applies the GT predicate on the "update_time" field.
+// UpdateTimeGT applies the GT predicate on the "updateTime" field.
 func UpdateTimeGT(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldGT(FieldUpdateTime, v))
 }
 
-// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+// UpdateTimeGTE applies the GTE predicate on the "updateTime" field.
 func UpdateTimeGTE(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldGTE(FieldUpdateTime, v))
 }
 
-// UpdateTimeLT applies the LT predicate on the "update_time" field.
+// UpdateTimeLT applies the LT predicate on the "updateTime" field.
 func UpdateTimeLT(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldLT(FieldUpdateTime, v))
 }
 
-// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+// UpdateTimeLTE applies the LTE predicate on the "updateTime" field.
 func UpdateTimeLTE(v time.Time) predicate.Chat {
 	return predicate.Chat(sql.FieldLTE(FieldUpdateTime, v))
 }
@@ -214,22 +214,22 @@ func DeleteTimeNotNil() predicate.Chat {
 	return predicate.Chat(sql.FieldNotNull(FieldDeleteTime))
 }
 
-// BusinessTypeEQ applies the EQ predicate on the "business_type" field.
+// BusinessTypeEQ applies the EQ predicate on the "businessType" field.
 func BusinessTypeEQ(v BusinessType) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldBusinessType, v))
 }
 
-// BusinessTypeNEQ applies the NEQ predicate on the "business_type" field.
+// BusinessTypeNEQ applies the NEQ predicate on the "businessType" field.
 func BusinessTypeNEQ(v BusinessType) predicate.Chat {
 	return predicate.Chat(sql.FieldNEQ(FieldBusinessType, v))
 }
 
-// BusinessTypeIn applies the In predicate on the "business_type" field.
+// BusinessTypeIn applies the In predicate on the "businessType" field.
 func BusinessTypeIn(vs ...BusinessType) predicate.Chat {
 	return predicate.Chat(sql.FieldIn(FieldBusinessType, vs...))
 }
 
-// BusinessTypeNotIn applies the NotIn predicate on the "business_type" field.
+// BusinessTypeNotIn applies the NotIn predicate on the "businessType" field.
 func BusinessTypeNotIn(vs ...BusinessType) predicate.Chat {
 	return predicate.Chat(sql.FieldNotIn(FieldBusinessType, vs...))
 }
@@ -299,107 +299,107 @@ func BusinessIDContainsFold(v string) predicate.Chat {
 	return predicate.Chat(sql.FieldContainsFold(FieldBusinessID, v))
 }
 
-// FromUserIDEQ applies the EQ predicate on the "from_user_id" field.
-func FromUserIDEQ(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldEQ(FieldFromUserID, v))
+// FromUserIdEQ applies the EQ predicate on the "fromUserId" field.
+func FromUserIdEQ(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldEQ(FieldFromUserId, v))
 }
 
-// FromUserIDNEQ applies the NEQ predicate on the "from_user_id" field.
-func FromUserIDNEQ(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldNEQ(FieldFromUserID, v))
+// FromUserIdNEQ applies the NEQ predicate on the "fromUserId" field.
+func FromUserIdNEQ(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldNEQ(FieldFromUserId, v))
 }
 
-// FromUserIDIn applies the In predicate on the "from_user_id" field.
-func FromUserIDIn(vs ...string) predicate.Chat {
-	return predicate.Chat(sql.FieldIn(FieldFromUserID, vs...))
+// FromUserIdIn applies the In predicate on the "fromUserId" field.
+func FromUserIdIn(vs ...string) predicate.Chat {
+	return predicate.Chat(sql.FieldIn(FieldFromUserId, vs...))
 }
 
-// FromUserIDNotIn applies the NotIn predicate on the "from_user_id" field.
-func FromUserIDNotIn(vs ...string) predicate.Chat {
-	return predicate.Chat(sql.FieldNotIn(FieldFromUserID, vs...))
+// FromUserIdNotIn applies the NotIn predicate on the "fromUserId" field.
+func FromUserIdNotIn(vs ...string) predicate.Chat {
+	return predicate.Chat(sql.FieldNotIn(FieldFromUserId, vs...))
 }
 
-// FromUserIDGT applies the GT predicate on the "from_user_id" field.
-func FromUserIDGT(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldGT(FieldFromUserID, v))
+// FromUserIdGT applies the GT predicate on the "fromUserId" field.
+func FromUserIdGT(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldGT(FieldFromUserId, v))
 }
 
-// FromUserIDGTE applies the GTE predicate on the "from_user_id" field.
-func FromUserIDGTE(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldGTE(FieldFromUserID, v))
+// FromUserIdGTE applies the GTE predicate on the "fromUserId" field.
+func FromUserIdGTE(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldGTE(FieldFromUserId, v))
 }
 
-// FromUserIDLT applies the LT predicate on the "from_user_id" field.
-func FromUserIDLT(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldLT(FieldFromUserID, v))
+// FromUserIdLT applies the LT predicate on the "fromUserId" field.
+func FromUserIdLT(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldLT(FieldFromUserId, v))
 }
 
-// FromUserIDLTE applies the LTE predicate on the "from_user_id" field.
-func FromUserIDLTE(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldLTE(FieldFromUserID, v))
+// FromUserIdLTE applies the LTE predicate on the "fromUserId" field.
+func FromUserIdLTE(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldLTE(FieldFromUserId, v))
 }
 
-// FromUserIDContains applies the Contains predicate on the "from_user_id" field.
-func FromUserIDContains(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldContains(FieldFromUserID, v))
+// FromUserIdContains applies the Contains predicate on the "fromUserId" field.
+func FromUserIdContains(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldContains(FieldFromUserId, v))
 }
 
-// FromUserIDHasPrefix applies the HasPrefix predicate on the "from_user_id" field.
-func FromUserIDHasPrefix(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldHasPrefix(FieldFromUserID, v))
+// FromUserIdHasPrefix applies the HasPrefix predicate on the "fromUserId" field.
+func FromUserIdHasPrefix(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldHasPrefix(FieldFromUserId, v))
 }
 
-// FromUserIDHasSuffix applies the HasSuffix predicate on the "from_user_id" field.
-func FromUserIDHasSuffix(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldHasSuffix(FieldFromUserID, v))
+// FromUserIdHasSuffix applies the HasSuffix predicate on the "fromUserId" field.
+func FromUserIdHasSuffix(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldHasSuffix(FieldFromUserId, v))
 }
 
-// FromUserIDEqualFold applies the EqualFold predicate on the "from_user_id" field.
-func FromUserIDEqualFold(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldEqualFold(FieldFromUserID, v))
+// FromUserIdEqualFold applies the EqualFold predicate on the "fromUserId" field.
+func FromUserIdEqualFold(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldEqualFold(FieldFromUserId, v))
 }
 
-// FromUserIDContainsFold applies the ContainsFold predicate on the "from_user_id" field.
-func FromUserIDContainsFold(v string) predicate.Chat {
-	return predicate.Chat(sql.FieldContainsFold(FieldFromUserID, v))
+// FromUserIdContainsFold applies the ContainsFold predicate on the "fromUserId" field.
+func FromUserIdContainsFold(v string) predicate.Chat {
+	return predicate.Chat(sql.FieldContainsFold(FieldFromUserId, v))
 }
 
-// SourceTypeEQ applies the EQ predicate on the "source_type" field.
+// SourceTypeEQ applies the EQ predicate on the "sourceType" field.
 func SourceTypeEQ(v SourceType) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldSourceType, v))
 }
 
-// SourceTypeNEQ applies the NEQ predicate on the "source_type" field.
+// SourceTypeNEQ applies the NEQ predicate on the "sourceType" field.
 func SourceTypeNEQ(v SourceType) predicate.Chat {
 	return predicate.Chat(sql.FieldNEQ(FieldSourceType, v))
 }
 
-// SourceTypeIn applies the In predicate on the "source_type" field.
+// SourceTypeIn applies the In predicate on the "sourceType" field.
 func SourceTypeIn(vs ...SourceType) predicate.Chat {
 	return predicate.Chat(sql.FieldIn(FieldSourceType, vs...))
 }
 
-// SourceTypeNotIn applies the NotIn predicate on the "source_type" field.
+// SourceTypeNotIn applies the NotIn predicate on the "sourceType" field.
 func SourceTypeNotIn(vs ...SourceType) predicate.Chat {
 	return predicate.Chat(sql.FieldNotIn(FieldSourceType, vs...))
 }
 
-// ContentTypeEQ applies the EQ predicate on the "content_type" field.
+// ContentTypeEQ applies the EQ predicate on the "contentType" field.
 func ContentTypeEQ(v ContentType) predicate.Chat {
 	return predicate.Chat(sql.FieldEQ(FieldContentType, v))
 }
 
-// ContentTypeNEQ applies the NEQ predicate on the "content_type" field.
+// ContentTypeNEQ applies the NEQ predicate on the "contentType" field.
 func ContentTypeNEQ(v ContentType) predicate.Chat {
 	return predicate.Chat(sql.FieldNEQ(FieldContentType, v))
 }
 
-// ContentTypeIn applies the In predicate on the "content_type" field.
+// ContentTypeIn applies the In predicate on the "contentType" field.
 func ContentTypeIn(vs ...ContentType) predicate.Chat {
 	return predicate.Chat(sql.FieldIn(FieldContentType, vs...))
 }
 
-// ContentTypeNotIn applies the NotIn predicate on the "content_type" field.
+// ContentTypeNotIn applies the NotIn predicate on the "contentType" field.
 func ContentTypeNotIn(vs ...ContentType) predicate.Chat {
 	return predicate.Chat(sql.FieldNotIn(FieldContentType, vs...))
 }

@@ -29,7 +29,7 @@ func (ru *RoomUpdate) Where(ps ...predicate.Room) *RoomUpdate {
 	return ru
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (ru *RoomUpdate) SetUpdateTime(t time.Time) *RoomUpdate {
 	ru.mutation.SetUpdateTime(t)
 	return ru
@@ -61,14 +61,14 @@ func (ru *RoomUpdate) SetName(s string) *RoomUpdate {
 	return ru
 }
 
-// SetMaxMember sets the "max_member" field.
+// SetMaxMember sets the "maxMember" field.
 func (ru *RoomUpdate) SetMaxMember(i int) *RoomUpdate {
 	ru.mutation.ResetMaxMember()
 	ru.mutation.SetMaxMember(i)
 	return ru
 }
 
-// SetNillableMaxMember sets the "max_member" field if the given value is not nil.
+// SetNillableMaxMember sets the "maxMember" field if the given value is not nil.
 func (ru *RoomUpdate) SetNillableMaxMember(i *int) *RoomUpdate {
 	if i != nil {
 		ru.SetMaxMember(*i)
@@ -76,7 +76,7 @@ func (ru *RoomUpdate) SetNillableMaxMember(i *int) *RoomUpdate {
 	return ru
 }
 
-// AddMaxMember adds i to the "max_member" field.
+// AddMaxMember adds i to the "maxMember" field.
 func (ru *RoomUpdate) AddMaxMember(i int) *RoomUpdate {
 	ru.mutation.AddMaxMember(i)
 	return ru
@@ -265,7 +265,7 @@ type RoomUpdateOne struct {
 	mutation *RoomMutation
 }
 
-// SetUpdateTime sets the "update_time" field.
+// SetUpdateTime sets the "updateTime" field.
 func (ruo *RoomUpdateOne) SetUpdateTime(t time.Time) *RoomUpdateOne {
 	ruo.mutation.SetUpdateTime(t)
 	return ruo
@@ -297,14 +297,14 @@ func (ruo *RoomUpdateOne) SetName(s string) *RoomUpdateOne {
 	return ruo
 }
 
-// SetMaxMember sets the "max_member" field.
+// SetMaxMember sets the "maxMember" field.
 func (ruo *RoomUpdateOne) SetMaxMember(i int) *RoomUpdateOne {
 	ruo.mutation.ResetMaxMember()
 	ruo.mutation.SetMaxMember(i)
 	return ruo
 }
 
-// SetNillableMaxMember sets the "max_member" field if the given value is not nil.
+// SetNillableMaxMember sets the "maxMember" field if the given value is not nil.
 func (ruo *RoomUpdateOne) SetNillableMaxMember(i *int) *RoomUpdateOne {
 	if i != nil {
 		ruo.SetMaxMember(*i)
@@ -312,7 +312,7 @@ func (ruo *RoomUpdateOne) SetNillableMaxMember(i *int) *RoomUpdateOne {
 	return ruo
 }
 
-// AddMaxMember adds i to the "max_member" field.
+// AddMaxMember adds i to the "maxMember" field.
 func (ruo *RoomUpdateOne) AddMaxMember(i int) *RoomUpdateOne {
 	ruo.mutation.AddMaxMember(i)
 	return ruo

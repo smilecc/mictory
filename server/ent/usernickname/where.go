@@ -54,12 +54,12 @@ func IDLTE(id int64) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldLTE(FieldID, id))
 }
 
-// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+// CreateTime applies equality check predicate on the "createTime" field. It's identical to CreateTimeEQ.
 func CreateTime(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+// UpdateTime applies equality check predicate on the "updateTime" field. It's identical to UpdateTimeEQ.
 func UpdateTime(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldEQ(FieldUpdateTime, v))
 }
@@ -79,82 +79,82 @@ func No(v int) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldEQ(FieldNo, v))
 }
 
-// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+// CreateTimeEQ applies the EQ predicate on the "createTime" field.
 func CreateTimeEQ(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldEQ(FieldCreateTime, v))
 }
 
-// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+// CreateTimeNEQ applies the NEQ predicate on the "createTime" field.
 func CreateTimeNEQ(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldNEQ(FieldCreateTime, v))
 }
 
-// CreateTimeIn applies the In predicate on the "create_time" field.
+// CreateTimeIn applies the In predicate on the "createTime" field.
 func CreateTimeIn(vs ...time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+// CreateTimeNotIn applies the NotIn predicate on the "createTime" field.
 func CreateTimeNotIn(vs ...time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldNotIn(FieldCreateTime, vs...))
 }
 
-// CreateTimeGT applies the GT predicate on the "create_time" field.
+// CreateTimeGT applies the GT predicate on the "createTime" field.
 func CreateTimeGT(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldGT(FieldCreateTime, v))
 }
 
-// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+// CreateTimeGTE applies the GTE predicate on the "createTime" field.
 func CreateTimeGTE(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldGTE(FieldCreateTime, v))
 }
 
-// CreateTimeLT applies the LT predicate on the "create_time" field.
+// CreateTimeLT applies the LT predicate on the "createTime" field.
 func CreateTimeLT(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldLT(FieldCreateTime, v))
 }
 
-// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+// CreateTimeLTE applies the LTE predicate on the "createTime" field.
 func CreateTimeLTE(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldLTE(FieldCreateTime, v))
 }
 
-// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+// UpdateTimeEQ applies the EQ predicate on the "updateTime" field.
 func UpdateTimeEQ(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+// UpdateTimeNEQ applies the NEQ predicate on the "updateTime" field.
 func UpdateTimeNEQ(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldNEQ(FieldUpdateTime, v))
 }
 
-// UpdateTimeIn applies the In predicate on the "update_time" field.
+// UpdateTimeIn applies the In predicate on the "updateTime" field.
 func UpdateTimeIn(vs ...time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+// UpdateTimeNotIn applies the NotIn predicate on the "updateTime" field.
 func UpdateTimeNotIn(vs ...time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldNotIn(FieldUpdateTime, vs...))
 }
 
-// UpdateTimeGT applies the GT predicate on the "update_time" field.
+// UpdateTimeGT applies the GT predicate on the "updateTime" field.
 func UpdateTimeGT(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldGT(FieldUpdateTime, v))
 }
 
-// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+// UpdateTimeGTE applies the GTE predicate on the "updateTime" field.
 func UpdateTimeGTE(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldGTE(FieldUpdateTime, v))
 }
 
-// UpdateTimeLT applies the LT predicate on the "update_time" field.
+// UpdateTimeLT applies the LT predicate on the "updateTime" field.
 func UpdateTimeLT(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldLT(FieldUpdateTime, v))
 }
 
-// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+// UpdateTimeLTE applies the LTE predicate on the "updateTime" field.
 func UpdateTimeLTE(v time.Time) predicate.UserNickname {
 	return predicate.UserNickname(sql.FieldLTE(FieldUpdateTime, v))
 }

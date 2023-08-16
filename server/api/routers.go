@@ -19,6 +19,8 @@ func HandleRouters(app *fiber.App) {
 	publicApi.Post("/user", UserApiCreateUser)
 	publicApi.Post("/user/login", UserApiUserLogin)
 
+	publicApi.Get("/channel/:channelCode", ChannelApiGetChannel)
+
 	// 需要登录的API
 	api := app.Group("/api", func(ctx *fiber.Ctx) error {
 		// 解析会话token
@@ -42,6 +44,11 @@ func HandleRouters(app *fiber.App) {
 	})
 
 	api.Get("/user", UserApiGetCurrentUser)
+	api.Get("/user/channels", ChannelApiListUserChannels)
+
+	api.Post("/channel", ChannelApiCreateChannel)
+	api.Post("/channel/:channelCode/join", ChannelApiJoinChannel)
+
 }
 
 func GetUserClaims(ctx *fiber.Ctx) *entity.UserSessionClaims {

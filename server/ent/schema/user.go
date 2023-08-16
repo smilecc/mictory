@@ -18,14 +18,17 @@ func (User) Fields() []ent.Field {
 		field.Int64("id"),
 		field.String("username").MaxLen(32).Comment("用户名"),
 		field.String("nickname").MaxLen(32).Comment("昵称"),
-		field.Int("nickname_no").Comment("昵称编号"),
+		field.Int("nicknameNo").
+			StorageKey("nickname_no").
+			Comment("昵称编号"),
 		field.String("avatar").MaxLen(512).Optional().Comment("头像"),
-		field.Enum("session_state").
+		field.Enum("sessionState").
+			StorageKey("session_state").
 			Values("online", "offline").
 			Default("offline").
 			Comment("会话状态"),
-		field.String("password").MaxLen(512).Comment("密码"),
-		field.String("password_salt").MaxLen(512).Comment("密码盐"),
+		field.String("password").MaxLen(512).Comment("密码").StructTag(`json:"-"`),
+		field.String("password_salt").MaxLen(512).Comment("密码盐").StructTag(`json:"-"`),
 	}
 }
 
@@ -33,6 +36,7 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("owner", Channel.Type),
+		edge.From("channels", Channel.Type).Ref("users"),
 	}
 }
 
