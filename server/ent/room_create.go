@@ -70,13 +70,13 @@ func (rc *RoomCreate) SetName(s string) *RoomCreate {
 }
 
 // SetMaxMember sets the "maxMember" field.
-func (rc *RoomCreate) SetMaxMember(i int) *RoomCreate {
+func (rc *RoomCreate) SetMaxMember(i int32) *RoomCreate {
 	rc.mutation.SetMaxMember(i)
 	return rc
 }
 
 // SetNillableMaxMember sets the "maxMember" field if the given value is not nil.
-func (rc *RoomCreate) SetNillableMaxMember(i *int) *RoomCreate {
+func (rc *RoomCreate) SetNillableMaxMember(i *int32) *RoomCreate {
 	if i != nil {
 		rc.SetMaxMember(*i)
 	}
@@ -84,13 +84,13 @@ func (rc *RoomCreate) SetNillableMaxMember(i *int) *RoomCreate {
 }
 
 // SetSort sets the "sort" field.
-func (rc *RoomCreate) SetSort(i int) *RoomCreate {
+func (rc *RoomCreate) SetSort(i int32) *RoomCreate {
 	rc.mutation.SetSort(i)
 	return rc
 }
 
 // SetNillableSort sets the "sort" field if the given value is not nil.
-func (rc *RoomCreate) SetNillableSort(i *int) *RoomCreate {
+func (rc *RoomCreate) SetNillableSort(i *int32) *RoomCreate {
 	if i != nil {
 		rc.SetSort(*i)
 	}
@@ -250,11 +250,11 @@ func (rc *RoomCreate) createSpec() (*Room, *sqlgraph.CreateSpec) {
 		_node.Name = value
 	}
 	if value, ok := rc.mutation.MaxMember(); ok {
-		_spec.SetField(room.FieldMaxMember, field.TypeInt, value)
+		_spec.SetField(room.FieldMaxMember, field.TypeInt32, value)
 		_node.MaxMember = value
 	}
 	if value, ok := rc.mutation.Sort(); ok {
-		_spec.SetField(room.FieldSort, field.TypeInt, value)
+		_spec.SetField(room.FieldSort, field.TypeInt32, value)
 		_node.Sort = value
 	}
 	if nodes := rc.mutation.ChannelIDs(); len(nodes) > 0 {

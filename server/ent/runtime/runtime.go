@@ -96,11 +96,11 @@ func init() {
 	// roomDescMaxMember is the schema descriptor for maxMember field.
 	roomDescMaxMember := roomFields[2].Descriptor()
 	// room.DefaultMaxMember holds the default value on creation for the maxMember field.
-	room.DefaultMaxMember = roomDescMaxMember.Default.(int)
+	room.DefaultMaxMember = roomDescMaxMember.Default.(int32)
 	// roomDescSort is the schema descriptor for sort field.
 	roomDescSort := roomFields[3].Descriptor()
 	// room.DefaultSort holds the default value on creation for the sort field.
-	room.DefaultSort = roomDescSort.Default.(int)
+	room.DefaultSort = roomDescSort.Default.(int32)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks1 := userMixin[1].Hooks()
 	user.Hooks[0] = userMixinHooks1[0]

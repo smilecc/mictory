@@ -27,9 +27,9 @@ type Room struct {
 	// 房间名
 	Name string `json:"name,omitempty"`
 	// 房间最大人数
-	MaxMember int `json:"maxMember,omitempty"`
+	MaxMember int32 `json:"maxMember,omitempty"`
 	// Sort holds the value of the "sort" field.
-	Sort int `json:"sort,omitempty"`
+	Sort int32 `json:"sort,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoomQuery when eager-loading is set.
 	Edges         RoomEdges `json:"edges"`
@@ -121,13 +121,13 @@ func (r *Room) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field maxMember", values[i])
 			} else if value.Valid {
-				r.MaxMember = int(value.Int64)
+				r.MaxMember = int32(value.Int64)
 			}
 		case room.FieldSort:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field sort", values[i])
 			} else if value.Valid {
-				r.Sort = int(value.Int64)
+				r.Sort = int32(value.Int64)
 			}
 		case room.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {

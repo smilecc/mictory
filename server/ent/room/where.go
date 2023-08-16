@@ -76,12 +76,12 @@ func Name(v string) predicate.Room {
 }
 
 // MaxMember applies equality check predicate on the "maxMember" field. It's identical to MaxMemberEQ.
-func MaxMember(v int) predicate.Room {
+func MaxMember(v int32) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldMaxMember, v))
 }
 
 // Sort applies equality check predicate on the "sort" field. It's identical to SortEQ.
-func Sort(v int) predicate.Room {
+func Sort(v int32) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldSort, v))
 }
 
@@ -281,82 +281,82 @@ func NameContainsFold(v string) predicate.Room {
 }
 
 // MaxMemberEQ applies the EQ predicate on the "maxMember" field.
-func MaxMemberEQ(v int) predicate.Room {
+func MaxMemberEQ(v int32) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldMaxMember, v))
 }
 
 // MaxMemberNEQ applies the NEQ predicate on the "maxMember" field.
-func MaxMemberNEQ(v int) predicate.Room {
+func MaxMemberNEQ(v int32) predicate.Room {
 	return predicate.Room(sql.FieldNEQ(FieldMaxMember, v))
 }
 
 // MaxMemberIn applies the In predicate on the "maxMember" field.
-func MaxMemberIn(vs ...int) predicate.Room {
+func MaxMemberIn(vs ...int32) predicate.Room {
 	return predicate.Room(sql.FieldIn(FieldMaxMember, vs...))
 }
 
 // MaxMemberNotIn applies the NotIn predicate on the "maxMember" field.
-func MaxMemberNotIn(vs ...int) predicate.Room {
+func MaxMemberNotIn(vs ...int32) predicate.Room {
 	return predicate.Room(sql.FieldNotIn(FieldMaxMember, vs...))
 }
 
 // MaxMemberGT applies the GT predicate on the "maxMember" field.
-func MaxMemberGT(v int) predicate.Room {
+func MaxMemberGT(v int32) predicate.Room {
 	return predicate.Room(sql.FieldGT(FieldMaxMember, v))
 }
 
 // MaxMemberGTE applies the GTE predicate on the "maxMember" field.
-func MaxMemberGTE(v int) predicate.Room {
+func MaxMemberGTE(v int32) predicate.Room {
 	return predicate.Room(sql.FieldGTE(FieldMaxMember, v))
 }
 
 // MaxMemberLT applies the LT predicate on the "maxMember" field.
-func MaxMemberLT(v int) predicate.Room {
+func MaxMemberLT(v int32) predicate.Room {
 	return predicate.Room(sql.FieldLT(FieldMaxMember, v))
 }
 
 // MaxMemberLTE applies the LTE predicate on the "maxMember" field.
-func MaxMemberLTE(v int) predicate.Room {
+func MaxMemberLTE(v int32) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldMaxMember, v))
 }
 
 // SortEQ applies the EQ predicate on the "sort" field.
-func SortEQ(v int) predicate.Room {
+func SortEQ(v int32) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldSort, v))
 }
 
 // SortNEQ applies the NEQ predicate on the "sort" field.
-func SortNEQ(v int) predicate.Room {
+func SortNEQ(v int32) predicate.Room {
 	return predicate.Room(sql.FieldNEQ(FieldSort, v))
 }
 
 // SortIn applies the In predicate on the "sort" field.
-func SortIn(vs ...int) predicate.Room {
+func SortIn(vs ...int32) predicate.Room {
 	return predicate.Room(sql.FieldIn(FieldSort, vs...))
 }
 
 // SortNotIn applies the NotIn predicate on the "sort" field.
-func SortNotIn(vs ...int) predicate.Room {
+func SortNotIn(vs ...int32) predicate.Room {
 	return predicate.Room(sql.FieldNotIn(FieldSort, vs...))
 }
 
 // SortGT applies the GT predicate on the "sort" field.
-func SortGT(v int) predicate.Room {
+func SortGT(v int32) predicate.Room {
 	return predicate.Room(sql.FieldGT(FieldSort, v))
 }
 
 // SortGTE applies the GTE predicate on the "sort" field.
-func SortGTE(v int) predicate.Room {
+func SortGTE(v int32) predicate.Room {
 	return predicate.Room(sql.FieldGTE(FieldSort, v))
 }
 
 // SortLT applies the LT predicate on the "sort" field.
-func SortLT(v int) predicate.Room {
+func SortLT(v int32) predicate.Room {
 	return predicate.Room(sql.FieldLT(FieldSort, v))
 }
 
 // SortLTE applies the LTE predicate on the "sort" field.
-func SortLTE(v int) predicate.Room {
+func SortLTE(v int32) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldSort, v))
 }
 

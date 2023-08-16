@@ -62,14 +62,14 @@ func (ru *RoomUpdate) SetName(s string) *RoomUpdate {
 }
 
 // SetMaxMember sets the "maxMember" field.
-func (ru *RoomUpdate) SetMaxMember(i int) *RoomUpdate {
+func (ru *RoomUpdate) SetMaxMember(i int32) *RoomUpdate {
 	ru.mutation.ResetMaxMember()
 	ru.mutation.SetMaxMember(i)
 	return ru
 }
 
 // SetNillableMaxMember sets the "maxMember" field if the given value is not nil.
-func (ru *RoomUpdate) SetNillableMaxMember(i *int) *RoomUpdate {
+func (ru *RoomUpdate) SetNillableMaxMember(i *int32) *RoomUpdate {
 	if i != nil {
 		ru.SetMaxMember(*i)
 	}
@@ -77,20 +77,20 @@ func (ru *RoomUpdate) SetNillableMaxMember(i *int) *RoomUpdate {
 }
 
 // AddMaxMember adds i to the "maxMember" field.
-func (ru *RoomUpdate) AddMaxMember(i int) *RoomUpdate {
+func (ru *RoomUpdate) AddMaxMember(i int32) *RoomUpdate {
 	ru.mutation.AddMaxMember(i)
 	return ru
 }
 
 // SetSort sets the "sort" field.
-func (ru *RoomUpdate) SetSort(i int) *RoomUpdate {
+func (ru *RoomUpdate) SetSort(i int32) *RoomUpdate {
 	ru.mutation.ResetSort()
 	ru.mutation.SetSort(i)
 	return ru
 }
 
 // SetNillableSort sets the "sort" field if the given value is not nil.
-func (ru *RoomUpdate) SetNillableSort(i *int) *RoomUpdate {
+func (ru *RoomUpdate) SetNillableSort(i *int32) *RoomUpdate {
 	if i != nil {
 		ru.SetSort(*i)
 	}
@@ -98,7 +98,7 @@ func (ru *RoomUpdate) SetNillableSort(i *int) *RoomUpdate {
 }
 
 // AddSort adds i to the "sort" field.
-func (ru *RoomUpdate) AddSort(i int) *RoomUpdate {
+func (ru *RoomUpdate) AddSort(i int32) *RoomUpdate {
 	ru.mutation.AddSort(i)
 	return ru
 }
@@ -205,16 +205,16 @@ func (ru *RoomUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(room.FieldName, field.TypeString, value)
 	}
 	if value, ok := ru.mutation.MaxMember(); ok {
-		_spec.SetField(room.FieldMaxMember, field.TypeInt, value)
+		_spec.SetField(room.FieldMaxMember, field.TypeInt32, value)
 	}
 	if value, ok := ru.mutation.AddedMaxMember(); ok {
-		_spec.AddField(room.FieldMaxMember, field.TypeInt, value)
+		_spec.AddField(room.FieldMaxMember, field.TypeInt32, value)
 	}
 	if value, ok := ru.mutation.Sort(); ok {
-		_spec.SetField(room.FieldSort, field.TypeInt, value)
+		_spec.SetField(room.FieldSort, field.TypeInt32, value)
 	}
 	if value, ok := ru.mutation.AddedSort(); ok {
-		_spec.AddField(room.FieldSort, field.TypeInt, value)
+		_spec.AddField(room.FieldSort, field.TypeInt32, value)
 	}
 	if ru.mutation.ChannelCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -298,14 +298,14 @@ func (ruo *RoomUpdateOne) SetName(s string) *RoomUpdateOne {
 }
 
 // SetMaxMember sets the "maxMember" field.
-func (ruo *RoomUpdateOne) SetMaxMember(i int) *RoomUpdateOne {
+func (ruo *RoomUpdateOne) SetMaxMember(i int32) *RoomUpdateOne {
 	ruo.mutation.ResetMaxMember()
 	ruo.mutation.SetMaxMember(i)
 	return ruo
 }
 
 // SetNillableMaxMember sets the "maxMember" field if the given value is not nil.
-func (ruo *RoomUpdateOne) SetNillableMaxMember(i *int) *RoomUpdateOne {
+func (ruo *RoomUpdateOne) SetNillableMaxMember(i *int32) *RoomUpdateOne {
 	if i != nil {
 		ruo.SetMaxMember(*i)
 	}
@@ -313,20 +313,20 @@ func (ruo *RoomUpdateOne) SetNillableMaxMember(i *int) *RoomUpdateOne {
 }
 
 // AddMaxMember adds i to the "maxMember" field.
-func (ruo *RoomUpdateOne) AddMaxMember(i int) *RoomUpdateOne {
+func (ruo *RoomUpdateOne) AddMaxMember(i int32) *RoomUpdateOne {
 	ruo.mutation.AddMaxMember(i)
 	return ruo
 }
 
 // SetSort sets the "sort" field.
-func (ruo *RoomUpdateOne) SetSort(i int) *RoomUpdateOne {
+func (ruo *RoomUpdateOne) SetSort(i int32) *RoomUpdateOne {
 	ruo.mutation.ResetSort()
 	ruo.mutation.SetSort(i)
 	return ruo
 }
 
 // SetNillableSort sets the "sort" field if the given value is not nil.
-func (ruo *RoomUpdateOne) SetNillableSort(i *int) *RoomUpdateOne {
+func (ruo *RoomUpdateOne) SetNillableSort(i *int32) *RoomUpdateOne {
 	if i != nil {
 		ruo.SetSort(*i)
 	}
@@ -334,7 +334,7 @@ func (ruo *RoomUpdateOne) SetNillableSort(i *int) *RoomUpdateOne {
 }
 
 // AddSort adds i to the "sort" field.
-func (ruo *RoomUpdateOne) AddSort(i int) *RoomUpdateOne {
+func (ruo *RoomUpdateOne) AddSort(i int32) *RoomUpdateOne {
 	ruo.mutation.AddSort(i)
 	return ruo
 }
@@ -471,16 +471,16 @@ func (ruo *RoomUpdateOne) sqlSave(ctx context.Context) (_node *Room, err error) 
 		_spec.SetField(room.FieldName, field.TypeString, value)
 	}
 	if value, ok := ruo.mutation.MaxMember(); ok {
-		_spec.SetField(room.FieldMaxMember, field.TypeInt, value)
+		_spec.SetField(room.FieldMaxMember, field.TypeInt32, value)
 	}
 	if value, ok := ruo.mutation.AddedMaxMember(); ok {
-		_spec.AddField(room.FieldMaxMember, field.TypeInt, value)
+		_spec.AddField(room.FieldMaxMember, field.TypeInt32, value)
 	}
 	if value, ok := ruo.mutation.Sort(); ok {
-		_spec.SetField(room.FieldSort, field.TypeInt, value)
+		_spec.SetField(room.FieldSort, field.TypeInt32, value)
 	}
 	if value, ok := ruo.mutation.AddedSort(); ok {
-		_spec.AddField(room.FieldSort, field.TypeInt, value)
+		_spec.AddField(room.FieldSort, field.TypeInt32, value)
 	}
 	if ruo.mutation.ChannelCleared() {
 		edge := &sqlgraph.EdgeSpec{

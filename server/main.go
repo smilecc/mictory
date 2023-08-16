@@ -41,7 +41,7 @@ func main() {
 
 // GenerateAppSecret 生成应用秘钥
 func GenerateAppSecret() {
-	path := "./.secret"
+	path := storage.GetEnv("APP_SECRET_PATH", "./.secret")
 	if fsutil.PathExist(path) {
 		storage.AppSecret = fsutil.ReadString(path)
 	} else {

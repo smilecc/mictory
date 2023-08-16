@@ -68,8 +68,8 @@ var (
 		{Name: "update_time", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "delete_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "name", Type: field.TypeString, Size: 64},
-		{Name: "max_member", Type: field.TypeInt, Default: 50},
-		{Name: "sort", Type: field.TypeInt, Default: 0},
+		{Name: "max_member", Type: field.TypeInt32, Default: 50},
+		{Name: "sort", Type: field.TypeInt32, Default: 0},
 		{Name: "channel_rooms", Type: field.TypeInt64},
 	}
 	// RoomsTable holds the schema information for the "rooms" table.

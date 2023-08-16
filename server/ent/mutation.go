@@ -1920,10 +1920,10 @@ type RoomMutation struct {
 	updateTime     *time.Time
 	delete_time    *time.Time
 	name           *string
-	maxMember      *int
-	addmaxMember   *int
-	sort           *int
-	addsort        *int
+	maxMember      *int32
+	addmaxMember   *int32
+	sort           *int32
+	addsort        *int32
 	clearedFields  map[string]struct{}
 	channel        *int64
 	clearedchannel bool
@@ -2194,13 +2194,13 @@ func (m *RoomMutation) ResetName() {
 }
 
 // SetMaxMember sets the "maxMember" field.
-func (m *RoomMutation) SetMaxMember(i int) {
+func (m *RoomMutation) SetMaxMember(i int32) {
 	m.maxMember = &i
 	m.addmaxMember = nil
 }
 
 // MaxMember returns the value of the "maxMember" field in the mutation.
-func (m *RoomMutation) MaxMember() (r int, exists bool) {
+func (m *RoomMutation) MaxMember() (r int32, exists bool) {
 	v := m.maxMember
 	if v == nil {
 		return
@@ -2211,7 +2211,7 @@ func (m *RoomMutation) MaxMember() (r int, exists bool) {
 // OldMaxMember returns the old "maxMember" field's value of the Room entity.
 // If the Room object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoomMutation) OldMaxMember(ctx context.Context) (v int, err error) {
+func (m *RoomMutation) OldMaxMember(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMaxMember is only allowed on UpdateOne operations")
 	}
@@ -2226,7 +2226,7 @@ func (m *RoomMutation) OldMaxMember(ctx context.Context) (v int, err error) {
 }
 
 // AddMaxMember adds i to the "maxMember" field.
-func (m *RoomMutation) AddMaxMember(i int) {
+func (m *RoomMutation) AddMaxMember(i int32) {
 	if m.addmaxMember != nil {
 		*m.addmaxMember += i
 	} else {
@@ -2235,7 +2235,7 @@ func (m *RoomMutation) AddMaxMember(i int) {
 }
 
 // AddedMaxMember returns the value that was added to the "maxMember" field in this mutation.
-func (m *RoomMutation) AddedMaxMember() (r int, exists bool) {
+func (m *RoomMutation) AddedMaxMember() (r int32, exists bool) {
 	v := m.addmaxMember
 	if v == nil {
 		return
@@ -2250,13 +2250,13 @@ func (m *RoomMutation) ResetMaxMember() {
 }
 
 // SetSort sets the "sort" field.
-func (m *RoomMutation) SetSort(i int) {
+func (m *RoomMutation) SetSort(i int32) {
 	m.sort = &i
 	m.addsort = nil
 }
 
 // Sort returns the value of the "sort" field in the mutation.
-func (m *RoomMutation) Sort() (r int, exists bool) {
+func (m *RoomMutation) Sort() (r int32, exists bool) {
 	v := m.sort
 	if v == nil {
 		return
@@ -2267,7 +2267,7 @@ func (m *RoomMutation) Sort() (r int, exists bool) {
 // OldSort returns the old "sort" field's value of the Room entity.
 // If the Room object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoomMutation) OldSort(ctx context.Context) (v int, err error) {
+func (m *RoomMutation) OldSort(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSort is only allowed on UpdateOne operations")
 	}
@@ -2282,7 +2282,7 @@ func (m *RoomMutation) OldSort(ctx context.Context) (v int, err error) {
 }
 
 // AddSort adds i to the "sort" field.
-func (m *RoomMutation) AddSort(i int) {
+func (m *RoomMutation) AddSort(i int32) {
 	if m.addsort != nil {
 		*m.addsort += i
 	} else {
@@ -2291,7 +2291,7 @@ func (m *RoomMutation) AddSort(i int) {
 }
 
 // AddedSort returns the value that was added to the "sort" field in this mutation.
-func (m *RoomMutation) AddedSort() (r int, exists bool) {
+func (m *RoomMutation) AddedSort() (r int32, exists bool) {
 	v := m.addsort
 	if v == nil {
 		return
@@ -2476,14 +2476,14 @@ func (m *RoomMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case room.FieldMaxMember:
-		v, ok := value.(int)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMaxMember(v)
 		return nil
 	case room.FieldSort:
-		v, ok := value.(int)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2525,14 +2525,14 @@ func (m *RoomMutation) AddedField(name string) (ent.Value, bool) {
 func (m *RoomMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case room.FieldMaxMember:
-		v, ok := value.(int)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMaxMember(v)
 		return nil
 	case room.FieldSort:
-		v, ok := value.(int)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

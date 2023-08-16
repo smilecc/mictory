@@ -89,9 +89,9 @@ var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// DefaultMaxMember holds the default value on creation for the "maxMember" field.
-	DefaultMaxMember int
+	DefaultMaxMember int32
 	// DefaultSort holds the default value on creation for the "sort" field.
-	DefaultSort int
+	DefaultSort int32
 )
 
 // OrderOption defines the ordering options for the Room queries.

@@ -5,7 +5,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"server/api/entity"
 	"server/api/result"
+	"server/ent"
 	"server/ent/channel"
+	"server/ent/room"
 	"server/storage"
 	"strconv"
 )
@@ -18,7 +20,9 @@ func ChannelApiGetChannel(c *fiber.Ctx) error {
 		Where(channel.Code(channelCode)).
 		WithOwnerUser().
 		WithUsers().
-		WithRooms().
+		WithRooms(func(query *ent.RoomQuery) {
+			query.Order(room.BySort())
+		}).
 		FirstX(dbCtx)
 
 	return c.JSON(result.NewOkResult(&list))
@@ -68,6 +72,16 @@ func ChannelApiCreateChannel(c *fiber.Ctx) error {
 	_, err = storage.UserJoinChannel(dbCtx, storage.DbClient, claims.UserId, newChannel.ID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(result.NewErrorResult(storage.RollbackTx(tx, err)))
+	}
+
+	// 创建一个默认房间
+	_, err = tx.Room.Create().
+		SetChannelID(newChannel.ID).
+		SetName("Voice").
+		Save(dbCtx)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(result.NewErrorResult(storage.RollbackTx(tx, err)))
 	}
 
 	err = tx.Commit()
