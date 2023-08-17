@@ -37,7 +37,7 @@ export const ThemeWrapper: React.FC<React.PropsWithChildren<unknown>> = (
 
   return (
     <>
-      <div className="bg-background text-foreground">{props.children}</div>
+      <div>{props.children}</div>
     </>
   );
 };
