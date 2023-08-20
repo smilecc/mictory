@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { autorun } from "mobx";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { HomePage } from "@/pages/Home";
+import { ChannelPage } from "@/pages/channel";
 
 export const RouteGuard: React.FC<{
   children: React.ReactNode;
@@ -36,6 +37,24 @@ const router = createHashRouter([
         <HomePage />
       </RouteGuard>
     ),
+  },
+  {
+    path: "/channel",
+    children: [
+      {
+        path: ":channelId",
+        element: (
+          <RouteGuard>
+            <ChannelPage />
+          </RouteGuard>
+        ),
+        loader: async (args) => {
+          console.log(args);
+
+          return null;
+        },
+      },
+    ],
   },
 ]);
 
