@@ -31,6 +31,12 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface0: "var(--surface-0)",
+        surface1: "var(--surface-1)",
+        surface2: "var(--surface-2)",
+        surface3: "var(--surface-3)",
+        surface4: "var(--surface-4)",
+        surface5: "var(--surface-5)",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
