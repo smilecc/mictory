@@ -1,12 +1,17 @@
 import { SideAvatar } from "@/components/business";
 import { Button } from "@/components/ui/button";
 import { useCommonStore } from "@/stores";
+import { useMount } from "ahooks";
 import React from "react";
 // import { useLoaderData } from "react-router-dom";
+import * as mediasoupClient from "mediasoup-client";
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
   const commonStore = useCommonStore();
+  useMount(() => {
+    console.log("mount");
+  });
 
   return (
     <main className="h-screen">

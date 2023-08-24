@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserSessionState {
+  ONLINE
+  OFFLINE
+}
+
+/// 用户表
+model User {
+  id            BigInt           @id @default(autoincrement())
+  /// 用户名
+  username      String           @unique @db.VarChar(32)
+  /// 昵称
+  nickname      String           @db.VarChar(32)
+  /// 昵称编号
+  nicknameNo    Int
+  /// 在线状态
+  sessionState  UserSessionState @default(OFFLINE)
+  /// 密码
+  password      String
+  /// 密码盐
+  passwordSalt  String
+  createdTime   DateTime         @default(now())
+  updatedTime   DateTime         @updatedAt
+  deletedTime   DateTime?
+  /// 拥有的频道
+  ownedChannels Channel[]        @relation("UserOwnedChannels")
+  /// 加入的频道
+  channels      Channel[]
+}
+
+/// 用户昵称表
+model UserNickname {
+  id          BigInt    @id @default(autoincrement())
+  /// 昵称
+  nickname    String    @unique @db.VarChar(32)
+  /// 昵称编号
+  no          Int
+  createdTime DateTime  @default(now())
+  updatedTime DateTime  @updatedAt
+  deletedTime DateTime?
+}
+
+model Channel {
+  id          BigInt    @id @default(autoincrement())
+  /// 频道代号
+  code        String    @unique @default(cuid()) @db.VarChar(32)
+  /// 频道名
+  name        String    @db.VarChar(32)
+  /// 拥有者
+  ownerUser   User      @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])
+  /// 拥有者ID
+  ownerUserId BigInt
+  /// 频道用户
+  users       User[]
+  /// 房间
+  rooms       Room[]
+  createdTime DateTime  @default(now())
+  updatedTime DateTime  @updatedAt
+  deletedTime DateTime?
+}
+
+model Room {
+  id          BigInt    @id @default(autoincrement())
+  channelId   BigInt
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  name        String
+  maxMember   Int       @default(50)
+  createdTime DateTime  @default(now())
+  updatedTime DateTime  @updatedAt
+  deletedTime DateTime?
+}

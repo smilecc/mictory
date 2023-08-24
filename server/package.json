@@ -23,9 +23,15 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.2.1",
+    "@nestjs/websockets": "^10.2.1",
+    "@prisma/client": "5.2.0",
+    "mediasoup": "^3.12.10",
     "prisma": "^5.2.0",
+    "prisma-soft-delete-middleware": "^1.1.2",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
