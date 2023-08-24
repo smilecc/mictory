@@ -14,11 +14,14 @@ export const ChannelPage: React.FC = () => {
         <div>Mictory</div>
       </div> */}
       <div className="flex h-full">
+        {/* 侧边栏 */}
         <div className="bg-background pr-2 pt-2">
           <SideAvatar />
         </div>
-        <div className="bg-surface2 flex flex-1">
-          <div className="bg-surface1 relative w-60">
+        <div className="flex flex-1 bg-surface2">
+          {/* 频道 */}
+          <div className="relative w-60 bg-surface1">
+            {/* 底部控制面板 */}
             <div className="absolute inset-x-0 bottom-0 bg-background/60 p-2">
               1
             </div>
