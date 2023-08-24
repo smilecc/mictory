@@ -2,16 +2,43 @@ import { SideAvatar } from "@/components/business";
 import { Button } from "@/components/ui/button";
 import { useCommonStore } from "@/stores";
 import { useMount } from "ahooks";
-import React from "react";
+import React, { useCallback } from "react";
 // import { useLoaderData } from "react-router-dom";
+import { io } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
+
+const socket = io("http://localhost:3000");
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
-  const commonStore = useCommonStore();
+  // const commonStore = useCommonStore();
   useMount(() => {
     console.log("mount");
   });
+
+  const connect = useCallback(async () => {
+    const rtpCapabilities = await socket.emitWithAck(
+      "getRouterRtpCapabilities",
+    );
+    console.log(rtpCapabilities);
+
+    const device = new mediasoupClient.Device();
+    await device.load({ routerRtpCapabilities: rtpCapabilities });
+
+    // device.create
+    console.log("device", device);
+
+    // 创建连接
+    const sendTransport = await socket.emitWithAck("createWebRtcTransport");
+    const transport = device.createSendTransport(sendTransport);
+
+    transport.on("connect", async (data, callback, errback) => {
+      socket
+        .emitWithAck("connectTransport", data)
+        .then(callback)
+        .catch(errback);
+    });
+  }, []);
 
   return (
     <main className="h-screen">
@@ -35,9 +62,7 @@ export const ChannelPage: React.FC = () => {
             <Button
               variant="secondary"
               onClick={() => {
-                commonStore.setThemeDarkMode(
-                  commonStore.themeDarkMode === "dark" ? "light" : "dark",
-                );
+                connect();
               }}
             >
               切换主题
