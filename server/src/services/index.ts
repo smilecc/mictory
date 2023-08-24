@@ -1,1 +1,1 @@
-export * from './rtc.service';
+export * from './web-rtc.service';
