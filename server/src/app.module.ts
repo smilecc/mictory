@@ -5,6 +5,7 @@ import { EventsGateway } from './events/events.gateway';
 import { PrismaClient } from '@prisma/client';
 import { createSoftDeleteMiddleware } from 'prisma-soft-delete-middleware';
 import { WebRtcService } from './services/web-rtc.service';
+import { RoomManager } from './manager/room.manager';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -33,6 +34,7 @@ prisma.$use(
       useValue: prisma,
     },
     WebRtcService,
+    RoomManager,
   ],
 })
 export class AppModule {}
