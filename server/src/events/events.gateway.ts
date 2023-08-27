@@ -16,53 +16,57 @@ export class EventsGateway {
 
   @SubscribeMessage('joinRoom')
   async joinRoom(@MessageBody() payload: Record<string, any>) {
-    const session = await this.webRtcService.joinRoom(1, payload.userId);
-    const transportToResponse = (transport: WebRtcTransport) => ({
-      id: transport.id,
-      iceParameters: transport.iceParameters,
-      iceCandidates: transport.iceCandidates,
-      dtlsParameters: transport.dtlsParameters,
-      sctpParameters: transport.sctpParameters,
-    });
+    const roomSession = await this.webRtcService.joinRoom(1, payload.userId);
+    return roomSession;
+    // const transportToResponse = (transport: WebRtcTransport) => ({
+    //   id: transport.id,
+    //   iceParameters: transport.iceParameters,
+    //   iceCandidates: transport.iceCandidates,
+    //   dtlsParameters: transport.dtlsParameters,
+    //   sctpParameters: transport.sctpParameters,
+    // });
 
-    return {
-      sessionId: session.id,
-      recvTransport: transportToResponse(session.recvTransport),
-      sendTransport: transportToResponse(session.sendTransport),
-    };
+    // return {
+    //   sessionId: session.id,
+    //   recvTransport: transportToResponse(session.recvTransport),
+    //   sendTransport: transportToResponse(session.sendTransport),
+    // };
   }
 
-  @SubscribeMessage('connectTransport')
-  async connectTransport(@MessageBody() payload: Record<string, any>) {
-    const room = this.webRtcService.getRoom(1);
-    const session = room.sessions.find((it) => it.userId == payload.userId);
+  @SubscribeMessage('createTransport')
+  async createTransport(@MessageBody() payload: any) {}
 
-    let transport: WebRtcTransport;
-    if (payload.send) {
-      transport = session.sendTransport;
-    } else {
-      transport = session.recvTransport;
-    }
+  // @SubscribeMessage('connectTransport')
+  // async connectTransport(@MessageBody() payload: Record<string, any>) {
+  //   const room = this.webRtcService.getRoom(1);
+  //   const session = room.sessions.find((it) => it.userId == payload.userId);
 
-    console.log(payload, transport.id);
-    await transport.connect({ dtlsParameters: payload.dtlsParameters });
-    return { id: transport.id };
-  }
+  //   let transport: WebRtcTransport;
+  //   if (payload.send) {
+  //     transport = session.sendTransport;
+  //   } else {
+  //     transport = session.recvTransport;
+  //   }
 
-  @SubscribeMessage('produceTransport')
-  async produceTransport(@MessageBody() payload: Record<string, any>) {
-    console.log('produceTransport', payload);
-    const room = this.webRtcService.getRoom(1);
-    const session = room.sessions.find((it) => it.userId == payload.userId);
-    const producer = await session.sendTransport.produce({
-      kind: payload.kind,
-      rtpParameters: payload.rtpParameters,
-    });
+  //   console.log(payload, transport.id);
+  //   await transport.connect({ dtlsParameters: payload.dtlsParameters });
+  //   return { id: transport.id };
+  // }
 
-    return {
-      id: producer.id,
-    };
-  }
+  // @SubscribeMessage('produceTransport')
+  // async produceTransport(@MessageBody() payload: Record<string, any>) {
+  //   console.log('produceTransport', payload);
+  //   const room = this.webRtcService.getRoom(1);
+  //   const session = room.sessions.find((it) => it.userId == payload.userId);
+  //   const producer = await session.sendTransport.produce({
+  //     kind: payload.kind,
+  //     rtpParameters: payload.rtpParameters,
+  //   });
+
+  //   return {
+  //     id: producer.id,
+  //   };
+  // }
 
   // @SubscribeMessage('consumeTransport')
   // async consumeTransport(@MessageBody() payload: Record<string, any>) {

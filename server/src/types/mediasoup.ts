@@ -19,6 +19,5 @@ export type RoomSession = {
   id: string;
   roomId: RoomId;
   userId: number;
-  sendTransport: WebRtcTransport;
-  recvTransport?: WebRtcTransport;
+  workerId: WorkerId;
 };

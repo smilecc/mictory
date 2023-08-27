@@ -84,8 +84,7 @@ export class WebRtcService implements OnModuleInit {
       id: nanoid(),
       roomId,
       userId,
-      recvTransport: await this.createTransport(worker),
-      sendTransport: undefined,
+      workerId: worker.appData.id,
     };
 
     room.sessions.push(session);
