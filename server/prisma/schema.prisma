@@ -6,10 +6,13 @@ generator client {
 }
 
 generator nestgraphql {
-  provider = "node node_modules/prisma-nestjs-graphql"
+  provider                        = "node node_modules/prisma-nestjs-graphql"
   // for yarn monorepos
   // provider = "prisma-nestjs-graphql"
-  output   = "../src/@generated"
+  output                          = "../src/@generated"
+  graphqlScalars_BigInt_name      = "GraphQLBigInt"
+  graphqlScalars_BigInt_specifier = "graphql-scalars"
+  noTypeId                        = true
 }
 
 datasource db {
@@ -32,17 +35,24 @@ model User {
   /// 昵称编号
   nicknameNo    Int
   /// 在线状态
+  /// @HideField({ input: true, output: false })
   sessionState  UserSessionState @default(OFFLINE)
   /// 密码
   password      String
   /// 密码盐
+  /// @HideField({ input: true, output: false })
   passwordSalt  String
+  /// @HideField({ input: true, output: false })
   createdTime   DateTime         @default(now())
+  /// @HideField({ input: true, output: false })
   updatedTime   DateTime         @updatedAt
+  /// @HideField({ input: true, output: true })
   deletedTime   DateTime?
   /// 拥有的频道
+  /// @HideField({ input: true, output: false })
   ownedChannels Channel[]        @relation("UserOwnedChannels")
   /// 加入的频道
+  /// @HideField({ input: true, output: false })
   channels      Channel[]
 }
 
@@ -55,6 +65,7 @@ model UserNickname {
   no          Int
   createdTime DateTime  @default(now())
   updatedTime DateTime  @updatedAt
+  /// @HideField({ input: true, output: true })
   deletedTime DateTime?
 }
 
@@ -74,6 +85,7 @@ model Channel {
   rooms       Room[]
   createdTime DateTime  @default(now())
   updatedTime DateTime  @updatedAt
+  /// @HideField({ input: true, output: true })
   deletedTime DateTime?
 }
 
@@ -85,5 +97,6 @@ model Room {
   maxMember   Int       @default(50)
   createdTime DateTime  @default(now())
   updatedTime DateTime  @updatedAt
+  /// @HideField({ input: true, output: true })
   deletedTime DateTime?
 }

@@ -1,6 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as mediasoup from 'mediasoup';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import {} from 'os';
+import { env } from './utils';
+import { nanoid } from 'nanoid';
+import { Logger } from '@nestjs/common';
+
+declare global {
+  // eslint-disable-next-line no-var
+  var appSecret: string;
+}
 
 async function bootstrap() {
   // const worker = await mediasoup.createWorker<Record<string, any>>({
@@ -47,10 +56,27 @@ async function bootstrap() {
   //   );
   // }, 2000);
 
+  loadOrGenerateAppSecret();
+
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
   await app.listen(3000);
+}
+
+/**
+ * 加载或生成一个应用秘钥
+ */
+function loadOrGenerateAppSecret() {
+  const secretPath = env('APP_SECRET_PATH', '.secret');
+  if (!existsSync(secretPath)) {
+    global.appSecret = nanoid(64);
+    writeFileSync(secretPath, global.appSecret);
+  } else {
+    global.appSecret = readFileSync(secretPath).toString();
+  }
+
+  Logger.log(`AppSecret: ${global.appSecret}`);
 }
 
 bootstrap();
