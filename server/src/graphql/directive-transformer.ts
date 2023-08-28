@@ -13,7 +13,8 @@ export function directiveTransformer(schema: GraphQLSchema) {
         // Replace the original resolver with a function that *first* calls
         // the original resolver, then converts its result to upper case
         fieldConfig.resolve = async function (source, args, context, info) {
-          throw new ForbiddenError('unauth');
+          // throw new ForbiddenError('unauth');
+          // console.log('context.req', context.req);
           return resolve(source, args, context, info);
         };
         return fieldConfig;

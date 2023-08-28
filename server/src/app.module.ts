@@ -11,6 +11,9 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserResolver } from './resolvers/user/user.resolver';
 import { DirectiveLocation, GraphQLDirective } from 'graphql';
 import { directiveTransformer } from './graphql/directive-transformer';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { loadOrGenerateAppSecret } from './utils';
+import { Request } from 'express';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -28,21 +31,43 @@ prisma.$use(
   }),
 );
 
+const JwtDynamicModule = JwtModule.register({
+  global: true,
+  secret: loadOrGenerateAppSecret(),
+  signOptions: { expiresIn: '365d' },
+});
+
 @Module({
   imports: [
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    JwtDynamicModule,
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
-      installSubscriptionHandlers: true,
-      transformSchema: directiveTransformer,
-      buildSchemaOptions: {
-        directives: [
-          new GraphQLDirective({
-            name: 'auth',
-            locations: [DirectiveLocation.FIELD_DEFINITION],
-          }),
-        ],
-      },
+      imports: [JwtDynamicModule],
+      inject: [JwtService],
+      useFactory: (jwtService: JwtService) => ({
+        autoSchemaFile: true,
+        installSubscriptionHandlers: true,
+        transformSchema: directiveTransformer,
+        context: async (ctx: { req?: Request }) => {
+          try {
+            if (ctx.req && ctx.req?.headers?.authorization) {
+              const jwtJson = await jwtService.verifyAsync(ctx.req.headers.authorization);
+              return { ...ctx, user: jwtJson };
+            }
+            return ctx;
+          } catch {
+            return ctx;
+          }
+        },
+        buildSchemaOptions: {
+          directives: [
+            new GraphQLDirective({
+              name: 'auth',
+              locations: [DirectiveLocation.FIELD_DEFINITION],
+            }),
+          ],
+        },
+      }),
     }),
   ],
   controllers: [AppController],

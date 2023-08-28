@@ -1,10 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import {} from 'os';
-import { env } from './utils';
-import { nanoid } from 'nanoid';
-import { Logger } from '@nestjs/common';
+import { loadOrGenerateAppSecret } from './utils';
+import { ValidationPipe } from '@nestjs/common';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -61,22 +58,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
+  app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);
-}
-
-/**
- * 加载或生成一个应用秘钥
- */
-function loadOrGenerateAppSecret() {
-  const secretPath = env('APP_SECRET_PATH', '.secret');
-  if (!existsSync(secretPath)) {
-    global.appSecret = nanoid(64);
-    writeFileSync(secretPath, global.appSecret);
-  } else {
-    global.appSecret = readFileSync(secretPath).toString();
-  }
-
-  Logger.log(`AppSecret: ${global.appSecret}`);
 }
 
 bootstrap();

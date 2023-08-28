@@ -12,7 +12,14 @@ generator nestgraphql {
   output                          = "../src/@generated"
   graphqlScalars_BigInt_name      = "GraphQLBigInt"
   graphqlScalars_BigInt_specifier = "graphql-scalars"
+  fields_Validator_from           = "class-validator"
+  fields_Validator_input          = true
   noTypeId                        = true
+  decorate_1_type                 = "Create@(One|Many)*Args"
+  decorate_1_field                = data
+  decorate_1_name                 = ValidateNested
+  decorate_1_from                 = "class-validator"
+  decorate_1_arguments            = "[]"
 }
 
 datasource db {
@@ -27,10 +34,14 @@ enum UserSessionState {
 
 /// 用户表
 model User {
+  /// @HideField({ match: 'UserWhereInput' })
   id            BigInt           @id @default(autoincrement())
   /// 用户名
+  /// @Validator.MinLength(3)
+  /// @HideField({ match: 'UserWhereInput' })
   username      String           @unique @db.VarChar(32)
   /// 昵称
+  /// @Validator.MinLength(1)
   nickname      String           @db.VarChar(32)
   /// 昵称编号
   nicknameNo    Int
@@ -38,6 +49,8 @@ model User {
   /// @HideField({ input: true, output: false })
   sessionState  UserSessionState @default(OFFLINE)
   /// 密码
+  /// @Validator.MinLength(6)
+  /// @HideField({ match: 'UserWhereInput' })
   password      String
   /// 密码盐
   /// @HideField({ input: true, output: false })
