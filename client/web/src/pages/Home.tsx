@@ -5,7 +5,22 @@ import { gql } from "@/@generated";
 
 export const HomePage: React.FC = () => {
   const commonStore = useCommonStore();
-  const TEST = gql(/* GraphQL */ `query`);
+  const A = gql(/* GraphQL */ `
+    query GetUser {
+      user(where: { id: { equals: 3 } }) {
+        id
+        nickname
+      }
+    }
+  `);
+
+  // const a = useQuery(
+  //   gql(`query {
+  //   user (where: { id: {equals: 3} }) {
+  //     id
+  //   }
+  // }`),
+  // );
   return (
     <div
       onClick={() => {
