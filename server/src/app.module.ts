@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { EventsGateway } from './events/events.gateway';
 import { PrismaClient } from '@prisma/client';
 import { createSoftDeleteMiddleware } from 'prisma-soft-delete-middleware';
-import { WebRtcService } from './services/web-rtc.service';
+import { WebRtcService, UserService } from './services';
 import { RoomManager } from './manager/room.manager';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -14,6 +14,7 @@ import { directiveTransformer } from './graphql/directive-transformer';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { loadOrGenerateAppSecret } from './utils';
 import { Request } from 'express';
+import { UserSessionResolver } from './resolvers/user/user-session.resolver';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -81,6 +82,8 @@ const JwtDynamicModule = JwtModule.register({
     WebRtcService,
     RoomManager,
     UserResolver,
+    UserService,
+    UserSessionResolver,
   ],
 })
 export class AppModule {}
