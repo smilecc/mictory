@@ -1,7 +1,15 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as mediasoup from 'mediasoup';
 import { RoomManager } from 'src/manager';
-import { RoomId, WorkerAppData, MediasoupWorker, WorkerId, RoomSession } from 'src/types';
+import {
+  RoomId,
+  WorkerAppData,
+  MediasoupWorker,
+  WorkerId,
+  RoomSession,
+  SessionTransportDirection,
+  SessionTransport,
+} from 'src/types';
 import { nanoid } from 'nanoid';
 
 @Injectable()
@@ -76,6 +84,7 @@ export class WebRtcService implements OnModuleInit {
   }
 
   async joinRoom(roomId: RoomId, userId: bigint): Promise<RoomSession> {
+    Logger.log(`Join Room, User: ${userId} Room: ${roomId}`);
     const room = this.getRoom(roomId);
     const worker = this.getWorker(room.workerId);
 
@@ -97,12 +106,44 @@ export class WebRtcService implements OnModuleInit {
     return session;
   }
 
-  async createTransport(worker: MediasoupWorker) {
-    return await worker.appData.router.createWebRtcTransport({
+  async createTransport(roomId: RoomId, userId: bigint, transportDirection: SessionTransportDirection) {
+    Logger.log(`CreateTransport, Room: ${roomId} User: ${userId} Direction: ${transportDirection}`);
+    const room = this.getRoom(roomId);
+    const worker = this.getWorker(room.workerId);
+    const transport = await worker.appData.router.createWebRtcTransport({
       enableTcp: true,
       enableUdp: true,
       preferUdp: true,
       webRtcServer: worker.appData.webRtcServer,
     });
+
+    const session = room.sessions.find((it) => it.userId === userId);
+    session.transports.push({
+      transport,
+      direction: transportDirection,
+    });
+
+    Logger.log(
+      `CreateTransport Success, TransportId: ${transport.id} Room: ${roomId} User: ${userId} TransportCount: ${session.transports.length}`,
+    );
+    return transport;
+  }
+
+  getTransport(roomId: RoomId, userId: bigint, transportId: string): SessionTransport | undefined {
+    const room = this.getRoom(roomId);
+    const session = room.sessions.find((it) => it.userId == userId);
+    return session?.transports?.find((it) => it.transport.id === transportId);
+  }
+
+  async exitRoom(roomId: RoomId, userId: bigint) {
+    const room = this.getRoom(roomId);
+    const roomSessionIndex = room.sessions.findIndex((it) => it.userId === userId);
+    if (roomSessionIndex !== -1) {
+      const roomSession = room.sessions[roomSessionIndex];
+      roomSession.transports.forEach((it) => it.transport.close());
+      room.sessions.splice(roomSessionIndex, 1);
+    }
+
+    Logger.log(`Exit Room, User: ${userId} Room: ${roomId}`);
   }
 }

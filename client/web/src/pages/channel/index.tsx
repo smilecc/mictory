@@ -1,19 +1,20 @@
 import { SideAvatar } from "@/components/business";
 import { Button } from "@/components/ui/button";
 import { useCommonStore } from "@/stores";
-import { useMount } from "ahooks";
-import React, { useCallback } from "react";
+import { useMount, useReactive } from "ahooks";
+import React, { useCallback, useEffect, useState } from "react";
 // import { useLoaderData } from "react-router-dom";
 import { io } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
 import { useSearchParams } from "react-router-dom";
+import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 
+const storeToken = localStorage.getItem("TOKEN") as string;
 const socket = io("http://localhost:3000", {
   auth(cb) {
     console.log("auth cb");
     cb({
-      token:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwiaWF0IjoxNjkzMzczMjgyLCJleHAiOjE3MjQ5MDkyODJ9.fbVYhllKHCjku5C_DdFTNg9gsxAo6IjQlkH6wwTIM-0",
+      token: storeToken,
     });
   },
 });
@@ -26,10 +27,19 @@ export const ChannelPage: React.FC = () => {
   });
 
   const [searchParams] = useSearchParams();
+  const [token, setToken] = useState<string>(storeToken);
+  const state = useReactive({
+    streams: [] as MediaStream[],
+  });
+
+  useEffect(() => {
+    localStorage.setItem("TOKEN", token);
+  }, [token]);
 
   const connect = useCallback(async () => {
+    const roomId = 1;
     const rtpCapabilities = await socket.emitWithAck("getRouterRtpCapabilities", {
-      roomId: 1,
+      roomId,
     });
     console.log(rtpCapabilities);
 
@@ -41,19 +51,23 @@ export const ChannelPage: React.FC = () => {
     const userId = searchParams.get("userId");
 
     // 创建连接
-    const roomSession = await socket.emitWithAck("joinRoom", { roomId: 1 });
+    const roomSession = await socket.emitWithAck("joinRoom", { roomId });
     console.log("roomSession", roomSession);
 
-    const sendTransport = device.createSendTransport(roomSession.sendTransport);
-    const recvTransport = device.createRecvTransport(roomSession.recvTransport);
+    const producers = (await socket.emitWithAck("getRoomProducers")) as string[];
+    console.log("producers", producers);
+
+    const produceTransport = await socket.emitWithAck("createTransport", {
+      direction: "Producer",
+    });
+
+    const sendTransport = device.createSendTransport(produceTransport);
 
     sendTransport.on("connect", async ({ dtlsParameters }, callback, errback) => {
       socket
         .emitWithAck("connectTransport", {
-          send: true,
-          userId,
+          transportId: sendTransport.id,
           dtlsParameters,
-          id: sendTransport.id,
         })
         .then(callback)
         .catch(errback);
@@ -61,8 +75,7 @@ export const ChannelPage: React.FC = () => {
 
     sendTransport.on("produce", async ({ kind, rtpParameters }, callback) => {
       const produceResp = await socket.emitWithAck("produceTransport", {
-        userId,
-        id: sendTransport.id,
+        transportId: sendTransport.id,
         kind,
         rtpParameters,
       });
@@ -71,31 +84,67 @@ export const ChannelPage: React.FC = () => {
     });
 
     sendTransport.on("connectionstatechange", (state) => console.log("send:connectionstatechange", state));
+    const processor = new NoiseSuppressionProcessor("/noise-suppression/");
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false,
-    });
+    const stream = await navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: false,
+      })
+      .then(async (stream) => {
+        return stream;
+        // const track = stream.getAudioTracks()[0];
 
-    await sendTransport.produce({
+        // const processed_track = await processor.startProcessing(track);
+        // return new MediaStream([processed_track]);
+      });
+
+    const producer = await sendTransport.produce({
       track: stream.getAudioTracks()[0],
     });
+
+    // 消费
+    const consumeTransport = await socket.emitWithAck("createTransport", {
+      direction: "Consumer",
+    });
+
+    const recvTransport = device.createRecvTransport(consumeTransport);
 
     recvTransport.on("connect", async ({ dtlsParameters }, callback, errback) => {
       console.log("recvTransport:connect");
       socket
         .emitWithAck("connectTransport", {
-          userId,
+          transportId: recvTransport.id,
           dtlsParameters,
-          id: recvTransport.id,
         })
         .then(callback)
         .catch(errback);
     });
 
     recvTransport.on("connectionstatechange", (state) => console.log("recv:connectionstatechange", state));
-    // recvTransport.
-  }, [searchParams]);
+
+    const consume = async (producerId: string) => {
+      const consumerData = await socket.emitWithAck("consumeTransport", {
+        producerId: producerId,
+        transportId: recvTransport.id,
+        rtpCapabilities: device.rtpCapabilities,
+      });
+
+      const consumer = await recvTransport.consume({
+        ...consumerData,
+      });
+
+      consumer.on("@close", () => {
+        state.streams = state.streams.filter((it) => it.id === consumer.id);
+      });
+
+      const ms = new MediaStream();
+      ms.addTrack(consumer.track);
+      state.streams.push(ms);
+    };
+
+    producers.forEach(consume);
+  }, [searchParams, state]);
 
   return (
     <main className="h-screen">
@@ -122,6 +171,21 @@ export const ChannelPage: React.FC = () => {
             >
               切换主题
             </Button>
+            <textarea className=" text-black" value={token} onChange={(v) => setToken(v.target.value)} />
+            {state.streams.map((it) => (
+              <audio
+                key={it.id}
+                controls
+                autoPlay
+                playsInline
+                ref={(audio) => {
+                  if (audio) {
+                    console.log("au", audio);
+                    audio.srcObject = it;
+                  }
+                }}
+              />
+            ))}
           </div>
         </div>
         <div>3</div>

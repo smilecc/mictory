@@ -1,4 +1,14 @@
-import type { WebRtcServer, Router, Worker, WebRtcTransport } from 'mediasoup/node/lib/types';
+import type {
+  WebRtcServer,
+  Router,
+  Worker,
+  WebRtcTransport,
+  DtlsParameters,
+  RtpParameters,
+  MediaKind,
+  RtpCapabilities,
+  Producer,
+} from 'mediasoup/node/lib/types';
 
 export type RoomId = number | string;
 export type WorkerId = number | string;
@@ -28,6 +38,7 @@ export type SessionTransportDirection = 'Producer' | 'Consumer';
 export type SessionTransport = {
   transport: WebRtcTransport;
   direction: SessionTransportDirection;
+  producer?: Producer;
 };
 
 export type MessageGetRouterRtpCapabilities = {
@@ -36,4 +47,25 @@ export type MessageGetRouterRtpCapabilities = {
 
 export type MessageJoinRoom = {
   roomId: RoomId;
+};
+
+export type MessageCreateTransport = {
+  direction: SessionTransportDirection;
+};
+
+export type MessageConnectTransport = {
+  transportId: string;
+  dtlsParameters: DtlsParameters;
+};
+
+export type MessageProduceTransport = {
+  transportId: string;
+  kind: MediaKind;
+  rtpParameters: RtpParameters;
+};
+
+export type MessageConsumeTransport = {
+  transportId: string;
+  producerId: string;
+  rtpCapabilities: RtpCapabilities;
 };

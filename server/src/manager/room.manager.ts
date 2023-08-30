@@ -6,7 +6,6 @@ export class RoomManager {
   private rooms: Room[] = [];
 
   getOrCreateRoom(roomId: RoomId, getWorker: () => MediasoupWorker) {
-    console.log('rooms', this.rooms.length);
     let room = this.rooms.find((it) => it.roomId === roomId);
     if (!room) {
       const worker = getWorker();

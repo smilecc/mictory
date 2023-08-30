@@ -5,21 +5,37 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import { WebRtcTransport } from 'mediasoup/node/lib/WebRtcTransport';
-import type { Socket } from 'socket.io';
 import { WebRtcService } from 'src/services';
 import { MictorySocket } from './socket.adapter';
 import { Logger } from '@nestjs/common';
-import { MessageGetRouterRtpCapabilities, MessageJoinRoom } from 'src/types';
-import { Client } from 'socket.io/dist/client';
+import {
+  MessageConnectTransport,
+  MessageConsumeTransport,
+  MessageCreateTransport,
+  MessageGetRouterRtpCapabilities,
+  MessageJoinRoom,
+  MessageProduceTransport,
+  RoomId,
+} from 'src/types';
+
+const socketRoomKey = (roomId: RoomId) => `ROOM_${roomId}`;
 
 @WebSocketGateway(0, {
-  cors: true,
+  cors: {
+    origin: true,
+    credentials: true,
+  },
 })
 export class EventsGateway implements OnGatewayDisconnect {
   constructor(private readonly webRtcService: WebRtcService) {}
   handleDisconnect(client: MictorySocket) {
-    Logger.log(`[${client.id}] disconnect`);
+    Logger.log(`[${client.id}, User: ${client.user.userId}] disconnect`, 'EventsGateway');
+    if (client.mediasoupRoomId) {
+      // 关闭连接时退出房间
+      this.webRtcService.exitRoom(client.mediasoupRoomId, BigInt(client.user.userId));
+      client.leave(socketRoomKey(client.mediasoupRoomId));
+      client.mediasoupRoomId = undefined;
+    }
   }
 
   @SubscribeMessage('getRouterRtpCapabilities')
@@ -29,70 +45,139 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('joinRoom')
   async joinRoom(@ConnectedSocket() socket: MictorySocket, @MessageBody() payload: MessageJoinRoom) {
-    const roomSession = await this.webRtcService.joinRoom(payload.roomId, BigInt(socket.user.userId));
-    return roomSession;
-    // const transportToResponse = (transport: WebRtcTransport) => ({
-    //   id: transport.id,
-    //   iceParameters: transport.iceParameters,
-    //   iceCandidates: transport.iceCandidates,
-    //   dtlsParameters: transport.dtlsParameters,
-    //   sctpParameters: transport.sctpParameters,
-    // });
+    const userId = BigInt(socket.user.userId);
+    // 退出之前的房间
+    if (socket.mediasoupRoomId) {
+      this.webRtcService.exitRoom(socket.mediasoupRoomId, userId);
+      socket.leave(socketRoomKey(socket.mediasoupRoomId));
+    }
 
-    // return {
-    //   sessionId: session.id,
-    //   recvTransport: transportToResponse(session.recvTransport),
-    //   sendTransport: transportToResponse(session.sendTransport),
-    // };
+    const roomSession = await this.webRtcService.joinRoom(payload.roomId, BigInt(socket.user.userId));
+    socket.join(socketRoomKey(payload.roomId));
+    socket.mediasoupRoomId = roomSession.roomId;
+    return roomSession;
   }
 
   @SubscribeMessage('createTransport')
-  async createTransport(@MessageBody() payload: any) {}
+  async createTransport(socket: MictorySocket, payload: MessageCreateTransport) {
+    if (!socket.mediasoupRoomId) {
+      Logger.error(`CreateTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      return;
+    }
 
-  // @SubscribeMessage('connectTransport')
-  // async connectTransport(@MessageBody() payload: Record<string, any>) {
-  //   const room = this.webRtcService.getRoom(1);
-  //   const session = room.sessions.find((it) => it.userId == payload.userId);
+    const transport = await this.webRtcService.createTransport(
+      socket.mediasoupRoomId,
+      BigInt(socket.user.userId),
+      payload.direction,
+    );
 
-  //   let transport: WebRtcTransport;
-  //   if (payload.send) {
-  //     transport = session.sendTransport;
-  //   } else {
-  //     transport = session.recvTransport;
-  //   }
+    return {
+      id: transport.id,
+      iceParameters: transport.iceParameters,
+      iceCandidates: transport.iceCandidates,
+      dtlsParameters: transport.dtlsParameters,
+      sctpParameters: transport.sctpParameters,
+    };
+  }
 
-  //   console.log(payload, transport.id);
-  //   await transport.connect({ dtlsParameters: payload.dtlsParameters });
-  //   return { id: transport.id };
-  // }
+  @SubscribeMessage('connectTransport')
+  async connectTransport(socket: MictorySocket, payload: MessageConnectTransport) {
+    if (!socket.mediasoupRoomId) {
+      Logger.error(`ConnectTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      return;
+    }
 
-  // @SubscribeMessage('produceTransport')
-  // async produceTransport(@MessageBody() payload: Record<string, any>) {
-  //   console.log('produceTransport', payload);
-  //   const room = this.webRtcService.getRoom(1);
-  //   const session = room.sessions.find((it) => it.userId == payload.userId);
-  //   const producer = await session.sendTransport.produce({
-  //     kind: payload.kind,
-  //     rtpParameters: payload.rtpParameters,
-  //   });
+    const userId = BigInt(socket.user.userId);
+    const sessionTransport = this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
 
-  //   return {
-  //     id: producer.id,
-  //   };
-  // }
+    Logger.log(`ConnectTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId}`);
+    await sessionTransport?.transport?.connect({ dtlsParameters: payload.dtlsParameters });
 
-  // @SubscribeMessage('consumeTransport')
-  // async consumeTransport(@MessageBody() payload: Record<string, any>) {
-  //   console.log('consumeTransport', payload);
-  //   const room = this.webRtcService.getRoom(1);
-  //   const session = room.sessions.find((it) => it.userId == payload.userId);
-  //   const producer = await transport.produce({
-  //     kind: payload.kind,
-  //     rtpParameters: payload.rtpParameters,
-  //   });
+    return { id: payload.transportId };
+  }
 
-  //   return {
-  //     id: producer.id,
-  //   };
-  // }
+  @SubscribeMessage('produceTransport')
+  async produceTransport(socket: MictorySocket, payload: MessageProduceTransport) {
+    if (!socket.mediasoupRoomId) {
+      Logger.error(`ProduceTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      return;
+    }
+
+    const userId = BigInt(socket.user.userId);
+    const sessionTransport = this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
+
+    const producer = await sessionTransport.transport.produce({
+      kind: payload.kind,
+      rtpParameters: payload.rtpParameters,
+    });
+
+    // 通知房间中的其他客户端有新生产者
+    socket.broadcast.to(socketRoomKey(socket.mediasoupRoomId)).emit('newProducer', {
+      producerId: producer.id,
+    });
+
+    sessionTransport.producer = producer;
+    producer.on('@close', () => {
+      Logger.log(`ProducerClosed, Producer: ${producer.id} User: ${userId}`);
+      sessionTransport.producer = undefined;
+    });
+
+    Logger.log(
+      `ProduceTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${producer.id}`,
+    );
+
+    return {
+      id: producer.id,
+    };
+  }
+
+  @SubscribeMessage('consumeTransport')
+  async consumeTransport(socket: MictorySocket, payload: MessageConsumeTransport) {
+    if (!socket.mediasoupRoomId) {
+      Logger.error(`ConsumeTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      return;
+    }
+
+    const userId = BigInt(socket.user.userId);
+    const sessionTransport = this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
+
+    const consumer = await sessionTransport.transport.consume({
+      producerId: payload.producerId,
+      rtpCapabilities: payload.rtpCapabilities,
+    });
+
+    // sessionTransport.consumer = consumer;
+    // consumer.on('@close', () => {
+    //   Logger.log(`ConsumerClosed, Consumer: ${consumer.id} User: ${userId}`);
+    //   sessionTransport.consumer = undefined;
+    // });
+
+    Logger.log(
+      `ConsumeTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${payload.producerId}`,
+    );
+
+    return {
+      id: consumer.id,
+      kind: consumer.kind,
+      producerId: consumer.producerId,
+      rtpParameters: consumer.rtpParameters,
+    };
+  }
+
+  @SubscribeMessage('getRoomProducers')
+  async getRoomProducers(socket: MictorySocket) {
+    if (!socket.mediasoupRoomId) {
+      Logger.error(`GetRoomProducers Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      return;
+    }
+
+    const room = this.webRtcService.getRoom(socket.mediasoupRoomId);
+    const producers = room.sessions
+      .filter((it) => it.userId !== BigInt(socket.user.userId))
+      .flatMap((it) => it.transports)
+      .filter((it) => it.direction === 'Producer' && it.producer)
+      .map((it) => it.producer.id);
+
+    return producers;
+  }
 }

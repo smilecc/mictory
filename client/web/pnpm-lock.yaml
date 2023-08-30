@@ -16,6 +16,9 @@ dependencies:
   '@radix-ui/react-slot':
     specifier: ^1.0.2
     version: 1.0.2(@types/react@18.2.20)(react@18.2.0)
+  '@shiguredo/noise-suppression':
+    specifier: ^2022.4.2
+    version: 2022.4.2
   ahooks:
     specifier: ^3.7.8
     version: 3.7.8(react@18.2.0)
@@ -1972,6 +1975,12 @@ packages:
     resolution: {integrity: sha512-AW8PKd6iX3vAZ0vA43nOUOnbq/X5ihgU+mSXXqunMkeQADGiqw/PY0JNeYtD5sr0PAy51YPgAPbDoeapv9r8WA==}
     dev: true
 
+  /@shiguredo/noise-suppression@2022.4.2:
+    resolution: {integrity: sha512-cgNgDcqiamc2VDpWYVjZXEIGwEio51QvKcdipf452gTESie1PR6rqZaKVwHxuABgsudKGq/1FrBlui9KCdFAtg==}
+    dependencies:
+      '@types/dom-mediacapture-transform': 0.1.6
+    dev: false
+
   /@socket.io/component-emitter@3.1.0:
     resolution: {integrity: sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==}
     dev: false
@@ -1980,6 +1989,16 @@ packages:
     resolution: {integrity: sha512-/vPO1EPOs306Cvhwv7KfVfYvOJqA/S/AXjaHQiJboCZzcNDb+TIJFN9/2C9DZ//ijSKWioNyUxD792QmDJ+HKQ==}
     dependencies:
       '@types/ms': 0.7.31
+    dev: false
+
+  /@types/dom-mediacapture-transform@0.1.6:
+    resolution: {integrity: sha512-sl2o+PVeciAozjEmj6UOnxOB3n4qv9bs2mw7PFYWYxpUKTHRIpDvm8TTfsWoRI86byQXWjQKecckaGSx/ExDPA==}
+    dependencies:
+      '@types/dom-webcodecs': 0.1.8
+    dev: false
+
+  /@types/dom-webcodecs@0.1.8:
+    resolution: {integrity: sha512-KThTPaGQJLITk8Q0XkEkz+GqFdoWDyQfbyeJmfEUagB15TZQdNx5AqP2b7GP6vkVM6X/6T1Z8EHxA8RgHfY9BA==}
     dev: false
 
   /@types/js-cookie@2.2.7:
