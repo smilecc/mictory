@@ -3,6 +3,9 @@ import { WebRtcTransport } from 'mediasoup/node/lib/WebRtcTransport';
 import type { Socket } from 'socket.io';
 import { WebRtcService } from 'src/services';
 import { MictorySocket } from './socket.adapter';
+import { Logger } from '@nestjs/common';
+import { MessageGetRouterRtpCapabilities, MessageJoinRoom } from 'src/types';
+import { Client } from 'socket.io/dist/client';
 
 @WebSocketGateway(0, {
   cors: true,
@@ -10,17 +13,17 @@ import { MictorySocket } from './socket.adapter';
 export class EventsGateway implements OnGatewayDisconnect {
   constructor(private readonly webRtcService: WebRtcService) {}
   handleDisconnect(client: MictorySocket) {
-    // throw new Error('Method not implemented.');
+    Logger.log(`[${client.id}] disconnect`);
   }
 
   @SubscribeMessage('getRouterRtpCapabilities')
-  getRouterRtpCapabilities() {
-    return this.webRtcService.getWorkerByRoomId(1).appData.router.rtpCapabilities;
+  getRouterRtpCapabilities(@MessageBody() payload: MessageGetRouterRtpCapabilities) {
+    return this.webRtcService.getWorkerByRoomId(payload.roomId).appData.router.rtpCapabilities;
   }
 
   @SubscribeMessage('joinRoom')
-  async joinRoom(@MessageBody() payload: Record<string, any>) {
-    const roomSession = await this.webRtcService.joinRoom(1, payload.userId);
+  async joinRoom(socket: MictorySocket, @MessageBody() payload: MessageJoinRoom) {
+    const roomSession = await this.webRtcService.joinRoom(payload.roomId, BigInt(socket.user.userId));
     return roomSession;
     // const transportToResponse = (transport: WebRtcTransport) => ({
     //   id: transport.id,

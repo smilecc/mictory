@@ -18,6 +18,14 @@ export type MediasoupWorker = Worker<WorkerAppData>;
 export type RoomSession = {
   id: string;
   roomId: RoomId;
-  userId: number;
+  userId: bigint;
   workerId: WorkerId;
+};
+
+export type MessageGetRouterRtpCapabilities = {
+  roomId: RoomId;
+};
+
+export type MessageJoinRoom = {
+  roomId: RoomId;
 };

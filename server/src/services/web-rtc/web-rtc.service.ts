@@ -75,7 +75,7 @@ export class WebRtcService implements OnModuleInit {
     return this.getWorker(room.workerId);
   }
 
-  async joinRoom(roomId: RoomId, userId: number): Promise<RoomSession> {
+  async joinRoom(roomId: RoomId, userId: bigint): Promise<RoomSession> {
     const room = this.getRoom(roomId);
     const worker = this.getWorker(room.workerId);
 
