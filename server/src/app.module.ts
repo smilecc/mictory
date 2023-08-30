@@ -15,6 +15,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { loadOrGenerateAppSecret } from './utils';
 import { Request } from 'express';
 import { UserSessionResolver } from './resolvers/user/user-session.resolver';
+import { ConfigModule } from '@nestjs/config';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -40,6 +41,9 @@ const JwtDynamicModule = JwtModule.register({
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     JwtDynamicModule,
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,

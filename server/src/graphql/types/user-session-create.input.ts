@@ -1,8 +1,7 @@
-import { Field } from '@nestjs/graphql';
-import { ObjectType } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 
-@ObjectType()
-export class UserSession {
+@InputType()
+export class UserSessionCreateInput {
   @Field(() => String, { nullable: false })
   account: string;
 

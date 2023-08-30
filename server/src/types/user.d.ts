@@ -1,3 +1,3 @@
 export interface JwtUserClaims {
-  userId: number;
+  userId: string;
 }

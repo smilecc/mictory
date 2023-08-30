@@ -24,6 +24,7 @@
     "@graphql-tools/utils": "^10.0.5",
     "@nestjs/apollo": "^12.0.7",
     "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/graphql": "^12.0.8",
     "@nestjs/jwt": "^10.1.0",

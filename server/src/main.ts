@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { loadOrGenerateAppSecret } from './utils';
 import { ValidationPipe } from '@nestjs/common';
+import { MictorySocketAdapter } from './events/socket.adapter';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -59,6 +60,7 @@ async function bootstrap() {
     cors: true,
   });
   app.useGlobalPipes(new ValidationPipe());
+  app.useWebSocketAdapter(new MictorySocketAdapter(app));
   await app.listen(3000);
 }
 

@@ -1,15 +1,16 @@
 import { UserInputError } from '@nestjs/apollo';
-import { Args, Context, Directive, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Context, Directive, Info, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaSelect } from '@paljs/plugins';
 import { PrismaClient } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import { GraphQLResolveInfo } from 'graphql';
+import { GraphQLBigInt } from 'graphql-scalars';
 import { nanoid } from 'nanoid';
 import { CreateOneUserArgs } from 'src/@generated/user/create-one-user.args';
-import { UserCreateInput } from 'src/@generated/user/user-create.input';
 import { UserWhereInput } from 'src/@generated/user/user-where.input';
 import { User } from 'src/@generated/user/user.model';
+import { UserSessionCreateInput } from 'src/graphql/types/user-session-create.input';
 import { UserSession } from 'src/graphql/types/user-session.output';
 import { UserService } from 'src/services';
 import { JwtUserClaims } from 'src/types';
@@ -22,14 +23,10 @@ export class UserResolver {
     private readonly jwtService: JwtService,
   ) {}
 
-  // @Directive('@auth')
-  @Query(() => UserSession)
-  async test(@Context('user') req) {
-    return plainToClass(UserSession, {
-      userId: 12,
-      sessionToken: '123',
-    });
-    // return 'hello';
+  @Directive('@auth')
+  @Query(() => GraphQLBigInt)
+  async test(@Context('user') user: JwtUserClaims) {
+    return user.userId;
   }
 
   @Query(() => User, { nullable: true })
@@ -67,7 +64,7 @@ export class UserResolver {
     });
 
     // 生成token
-    const sessionToken = await this.jwtService.signAsync({ userId: 1 } as JwtUserClaims);
+    const sessionToken = await this.userService.generateSessionToken(newUser);
 
     return {
       userId: newUser.id,
@@ -76,5 +73,24 @@ export class UserResolver {
   }
 
   @Mutation(() => UserSession)
-  async userSessionCreate(@Args() args: UserCreateInput) {}
+  async userSessionCreate(@Args('args') args: UserSessionCreateInput) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        username: args.account,
+      },
+    });
+
+    if (!user) {
+      throw new UserInputError('用户不存在或密码错误');
+    }
+
+    if (user.password !== this.userService.generatePasswordHash(args.password, user.passwordSalt)) {
+      throw new UserInputError('用户不存在或密码错误');
+    }
+
+    return plainToClass(UserSession, {
+      userId: user.id,
+      sessionToken: await this.userService.generateSessionToken(user),
+    } as UserSession);
+  }
 }

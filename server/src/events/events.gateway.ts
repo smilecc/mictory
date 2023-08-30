@@ -1,13 +1,17 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import { MessageBody, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { WebRtcTransport } from 'mediasoup/node/lib/WebRtcTransport';
 import type { Socket } from 'socket.io';
 import { WebRtcService } from 'src/services';
+import { MictorySocket } from './socket.adapter';
 
 @WebSocketGateway(0, {
   cors: true,
 })
-export class EventsGateway {
+export class EventsGateway implements OnGatewayDisconnect {
   constructor(private readonly webRtcService: WebRtcService) {}
+  handleDisconnect(client: MictorySocket) {
+    // throw new Error('Method not implemented.');
+  }
 
   @SubscribeMessage('getRouterRtpCapabilities')
   getRouterRtpCapabilities() {

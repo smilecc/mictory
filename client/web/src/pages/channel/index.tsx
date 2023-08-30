@@ -8,7 +8,15 @@ import { io } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
 import { useSearchParams } from "react-router-dom";
 
-const socket = io("http://localhost:3000");
+const socket = io("http://localhost:3000", {
+  auth(cb) {
+    console.log("auth cb");
+    cb({
+      token:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwiaWF0IjoxNjkzMzczMjgyLCJleHAiOjE3MjQ5MDkyODJ9.fbVYhllKHCjku5C_DdFTNg9gsxAo6IjQlkH6wwTIM-0",
+    });
+  },
+});
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
