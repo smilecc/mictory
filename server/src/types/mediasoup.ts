@@ -20,6 +20,14 @@ export type RoomSession = {
   roomId: RoomId;
   userId: bigint;
   workerId: WorkerId;
+  transports: SessionTransport[];
+};
+
+export type SessionTransportDirection = 'Producer' | 'Consumer';
+
+export type SessionTransport = {
+  transport: WebRtcTransport;
+  direction: SessionTransportDirection;
 };
 
 export type MessageGetRouterRtpCapabilities = {

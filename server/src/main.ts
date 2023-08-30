@@ -9,6 +9,15 @@ declare global {
   var appSecret: string;
 }
 
+global.Object.defineProperty(global.BigInt.prototype, 'toJSON', {
+  value: function () {
+    return this.toString();
+  },
+  configurable: true,
+  enumerable: false,
+  writable: true,
+});
+
 async function bootstrap() {
   // const worker = await mediasoup.createWorker<Record<string, any>>({
   //   logLevel: 'debug',

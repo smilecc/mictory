@@ -28,7 +28,9 @@ export const ChannelPage: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const connect = useCallback(async () => {
-    const rtpCapabilities = await socket.emitWithAck("getRouterRtpCapabilities");
+    const rtpCapabilities = await socket.emitWithAck("getRouterRtpCapabilities", {
+      roomId: 1,
+    });
     console.log(rtpCapabilities);
 
     const device = new mediasoupClient.Device();
@@ -39,7 +41,7 @@ export const ChannelPage: React.FC = () => {
     const userId = searchParams.get("userId");
 
     // 创建连接
-    const roomSession = await socket.emitWithAck("joinRoom", { userId });
+    const roomSession = await socket.emitWithAck("joinRoom", { roomId: 1 });
     console.log("roomSession", roomSession);
 
     const sendTransport = device.createSendTransport(roomSession.sendTransport);

@@ -79,12 +79,18 @@ export class WebRtcService implements OnModuleInit {
     const room = this.getRoom(roomId);
     const worker = this.getWorker(room.workerId);
 
+    const oldSession = room.sessions.find((it) => it.userId == userId);
+    if (oldSession) {
+      return oldSession;
+    }
+
     // 创建会话
     const session: RoomSession = {
       id: nanoid(),
       roomId,
       userId,
       workerId: worker.appData.id,
+      transports: [],
     };
 
     room.sessions.push(session);

@@ -1,4 +1,10 @@
-import { MessageBody, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
 import { WebRtcTransport } from 'mediasoup/node/lib/WebRtcTransport';
 import type { Socket } from 'socket.io';
 import { WebRtcService } from 'src/services';
@@ -22,7 +28,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinRoom')
-  async joinRoom(socket: MictorySocket, @MessageBody() payload: MessageJoinRoom) {
+  async joinRoom(@ConnectedSocket() socket: MictorySocket, @MessageBody() payload: MessageJoinRoom) {
     const roomSession = await this.webRtcService.joinRoom(payload.roomId, BigInt(socket.user.userId));
     return roomSession;
     // const transportToResponse = (transport: WebRtcTransport) => ({
