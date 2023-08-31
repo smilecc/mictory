@@ -12,7 +12,7 @@ import { UserResolver } from './resolvers/user/user.resolver';
 import { DirectiveLocation, GraphQLDirective } from 'graphql';
 import { directiveTransformer } from './graphql/directive-transformer';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { loadOrGenerateAppSecret } from './utils';
+import { env, loadOrGenerateAppSecret } from './utils';
 import { Request } from 'express';
 import { UserSessionResolver } from './resolvers/user/user-session.resolver';
 import { ConfigModule } from '@nestjs/config';
@@ -56,6 +56,15 @@ const JwtDynamicModule = JwtModule.register({
         transformSchema: directiveTransformer,
         context: async (ctx: { req?: Request }) => {
           try {
+            if (env('APP_ENV', 'prod') === 'dev' && ctx.req && ctx.req?.headers?.debuguser) {
+              return {
+                ...ctx,
+                user: {
+                  userId: parseInt(ctx.req.headers.debuguser as string),
+                },
+              };
+            }
+
             if (ctx.req && ctx.req?.headers?.authorization) {
               const jwtJson = await jwtService.verifyAsync(ctx.req.headers.authorization);
               return { ...ctx, user: jwtJson };

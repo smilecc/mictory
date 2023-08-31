@@ -4,6 +4,7 @@ import { INestApplicationContext, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtUserClaims, RoomId } from 'src/types';
 import { instrument } from '@socket.io/admin-ui';
+import { env } from 'src/utils';
 
 export interface MictorySocket extends Socket {
   user: JwtUserClaims;
@@ -11,6 +12,8 @@ export interface MictorySocket extends Socket {
 }
 
 export class MictorySocketAdapter extends IoAdapter {
+  private readonly logger = new Logger(MictorySocketAdapter.name);
+
   constructor(private app: INestApplicationContext) {
     super(app);
   }
@@ -21,15 +24,23 @@ export class MictorySocketAdapter extends IoAdapter {
       const jwtService = this.app.get(JwtService);
       const token = socket.handshake.auth.token;
       try {
+        if (env('APP_ENV', 'prod') === 'dev' && socket.handshake.auth.debugUser) {
+          socket.user = {
+            userId: parseInt(socket.handshake.auth.debugUser),
+          };
+
+          return next();
+        }
+
         if (token) {
           socket.user = jwtService.verify<JwtUserClaims>(token);
-          Logger.debug(socket.user, 'MictorySocketAdapter');
+          this.logger.debug(JSON.stringify(socket.user));
           next();
         } else {
           next(new Error('Auth Error'));
         }
       } catch (e) {
-        Logger.warn(e, 'MictorySocketAdapter');
+        this.logger.warn(e, 'MictorySocketAdapter');
         next(e);
       }
     });

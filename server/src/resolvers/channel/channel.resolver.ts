@@ -24,8 +24,13 @@ export class ChannelResolver {
 
   @Directive('@auth')
   @Mutation(() => Channel)
-  async channelCreate(@Context('user') user: JwtUserClaims, @Args() args: CreateOneChannelArgs) {
+  async channelCreate(
+    @Context('user') user: JwtUserClaims,
+    @Args() args: CreateOneChannelArgs,
+    @Info() info: GraphQLResolveInfo,
+  ) {
     this.logger.log(`ChannelCreate, User: ${user.userId} Channel: ${JSON.stringify(args)}`);
+    const select = new PrismaSelect(info).value;
     return this.prisma.$transaction(async (tx) => {
       // 创建频道
       const channel = await tx.channel.create({
@@ -46,6 +51,7 @@ export class ChannelResolver {
 
       // 创建默认角色和初始用户
       return tx.channel.update({
+        ...select,
         data: {
           users: {
             create: [
@@ -68,18 +74,31 @@ export class ChannelResolver {
   }
 
   @Mutation(() => Channel)
-  async channelUpdate(@Context('user') user: JwtUserClaims, @Args() args: UpdateOneChannelArgs) {
+  async channelUpdate(
+    @Context('user') user: JwtUserClaims,
+    @Args() args: UpdateOneChannelArgs,
+    @Info() info: GraphQLResolveInfo,
+  ) {
+    const select = new PrismaSelect(info).value;
+    // TODO 判断用户是否有权限更新
+    const channel = await this.prisma.channel.findFirst({ where: args.where });
+    this.logger.log(`ChannelUpdate, User: ${user.userId} OldChannel: ${channel} Data: ${args.data}`);
     return this.prisma.channel.update({
+      ...select,
       data: args.data,
       where: {
-        ...args.where,
-        ownerUserId: 0,
+        id: channel.id,
       },
     });
   }
 
   @Mutation(() => Channel)
-  async channelJoin(@Context('user') user: JwtUserClaims, @Args('data') args: ChannelJoinInput) {
+  async channelJoin(
+    @Context('user') user: JwtUserClaims,
+    @Args('data') args: ChannelJoinInput,
+    @Info() info: GraphQLResolveInfo,
+  ) {
+    const select = new PrismaSelect(info).value;
     const defaultRole = await this.prisma.channelRole.findFirst({
       where: {
         channelId: args.channelId,
@@ -87,7 +106,8 @@ export class ChannelResolver {
       },
     });
 
-    this.prisma.channel.update({
+    return this.prisma.channel.update({
+      ...select,
       where: {
         id: args.channelId,
       },

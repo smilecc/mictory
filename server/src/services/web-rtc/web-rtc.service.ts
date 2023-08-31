@@ -9,13 +9,20 @@ import {
   RoomSession,
   SessionTransportDirection,
   SessionTransport,
+  Room,
 } from 'src/types';
 import { nanoid } from 'nanoid';
+import { Server as SocketServer } from 'socket.io';
+import { socketRoomKey } from 'src/utils';
 
 @Injectable()
 export class WebRtcService implements OnModuleInit {
-  protected workers: MediasoupWorker[] = [];
-  protected nextWorkderIndex: number = 0;
+  private workers: MediasoupWorker[] = [];
+  private nextWorkderIndex: number = 0;
+  private rooms: Room[] = [];
+  public socketServer: SocketServer;
+
+  private readonly logger = new Logger(WebRtcService.name);
 
   constructor(private readonly roomManager: RoomManager) {}
 
@@ -74,18 +81,58 @@ export class WebRtcService implements OnModuleInit {
     return worker;
   }
 
-  getRoom(roomId: RoomId) {
-    return this.roomManager.getOrCreateRoom(roomId, () => this.getNextWorker());
+  async getRoom(roomId: RoomId): Promise<Room> {
+    let room = this.rooms.find((it) => it.roomId === roomId);
+    if (!room) {
+      const worker = this.getNextWorker();
+      room = {
+        roomId,
+        workerId: worker.appData.id,
+        sessions: [],
+        activeSpeakerObserver: await worker.appData.router.createActiveSpeakerObserver(),
+        audioLevelObserver: await worker.appData.router.createAudioLevelObserver({
+          maxEntries: 50,
+          threshold: -50,
+          interval: 2000,
+        }),
+      };
+
+      room.audioLevelObserver.on('volumes', (volumes) => {
+        volumes.forEach(async ({ producer, volume }) => {
+          this.logger.debug(
+            `AudioLevelObserver on:volumes, Producer: ${producer.id} Volume: ${volume} [${volumes.length}]`,
+          );
+
+          // 通知客户端
+          const transport = room.sessions.flatMap((it) => it.transports).find((it) => it.producer.id === producer.id);
+          const session = room.sessions.find((it) => it.id === transport.sessionId);
+          this.socketServer.to(socketRoomKey(roomId)).emit('speak', {
+            producerId: producer.id,
+            userId: session.userId,
+            sessionId: session.id,
+            volume,
+          });
+        });
+      });
+
+      room.audioLevelObserver.on('silence', () => {
+        this.logger.debug(`AudioLevelObserver on:silence`);
+      });
+
+      this.rooms.push(room);
+    }
+
+    return room;
   }
 
-  getWorkerByRoomId(roomId: RoomId): MediasoupWorker {
-    const room = this.getRoom(roomId);
+  async getWorkerByRoomId(roomId: RoomId): Promise<MediasoupWorker> {
+    const room = await this.getRoom(roomId);
     return this.getWorker(room.workerId);
   }
 
   async joinRoom(roomId: RoomId, userId: bigint): Promise<RoomSession> {
-    Logger.log(`Join Room, User: ${userId} Room: ${roomId}`);
-    const room = this.getRoom(roomId);
+    this.logger.log(`Join Room, User: ${userId} Room: ${roomId}`);
+    const room = await this.getRoom(roomId);
     const worker = this.getWorker(room.workerId);
 
     const oldSession = room.sessions.find((it) => it.userId == userId);
@@ -107,8 +154,8 @@ export class WebRtcService implements OnModuleInit {
   }
 
   async createTransport(roomId: RoomId, userId: bigint, transportDirection: SessionTransportDirection) {
-    Logger.log(`CreateTransport, Room: ${roomId} User: ${userId} Direction: ${transportDirection}`);
-    const room = this.getRoom(roomId);
+    this.logger.log(`CreateTransport, Room: ${roomId} User: ${userId} Direction: ${transportDirection}`);
+    const room = await this.getRoom(roomId);
     const worker = this.getWorker(room.workerId);
     const transport = await worker.appData.router.createWebRtcTransport({
       enableTcp: true,
@@ -119,24 +166,25 @@ export class WebRtcService implements OnModuleInit {
 
     const session = room.sessions.find((it) => it.userId === userId);
     session.transports.push({
+      sessionId: session.id,
       transport,
       direction: transportDirection,
     });
 
-    Logger.log(
+    this.logger.log(
       `CreateTransport Success, TransportId: ${transport.id} Room: ${roomId} User: ${userId} TransportCount: ${session.transports.length}`,
     );
     return transport;
   }
 
-  getTransport(roomId: RoomId, userId: bigint, transportId: string): SessionTransport | undefined {
-    const room = this.getRoom(roomId);
+  async getTransport(roomId: RoomId, userId: bigint, transportId: string): Promise<SessionTransport | undefined> {
+    const room = await this.getRoom(roomId);
     const session = room.sessions.find((it) => it.userId == userId);
     return session?.transports?.find((it) => it.transport.id === transportId);
   }
 
   async exitRoom(roomId: RoomId, userId: bigint) {
-    const room = this.getRoom(roomId);
+    const room = await this.getRoom(roomId);
     const roomSessionIndex = room.sessions.findIndex((it) => it.userId === userId);
     if (roomSessionIndex !== -1) {
       const roomSession = room.sessions[roomSessionIndex];
@@ -144,6 +192,6 @@ export class WebRtcService implements OnModuleInit {
       room.sessions.splice(roomSessionIndex, 1);
     }
 
-    Logger.log(`Exit Room, User: ${userId} Room: ${roomId}`);
+    this.logger.log(`Exit Room, User: ${userId} Room: ${roomId}`);
   }
 }

@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { nanoid } from 'nanoid';
+import { RoomId } from 'src/types';
 
 /**
  * 获取环境变量
@@ -28,3 +29,5 @@ export function loadOrGenerateAppSecret(): string {
 
   return global.appSecret;
 }
+
+export const socketRoomKey = (roomId: RoomId) => `ROOM_${roomId}`;

@@ -1,7 +1,9 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
@@ -15,10 +17,10 @@ import {
   MessageGetRouterRtpCapabilities,
   MessageJoinRoom,
   MessageProduceTransport,
-  RoomId,
 } from 'src/types';
-
-const socketRoomKey = (roomId: RoomId) => `ROOM_${roomId}`;
+import { PrismaClient } from '@prisma/client';
+import { Server as SocketServer } from 'socket.io';
+import { socketRoomKey } from 'src/utils';
 
 @WebSocketGateway(0, {
   cors: {
@@ -26,21 +28,59 @@ const socketRoomKey = (roomId: RoomId) => `ROOM_${roomId}`;
     credentials: true,
   },
 })
-export class EventsGateway implements OnGatewayDisconnect {
-  constructor(private readonly webRtcService: WebRtcService) {}
-  handleDisconnect(client: MictorySocket) {
-    Logger.log(`[${client.id}, User: ${client.user.userId}] disconnect`, 'EventsGateway');
+export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly webRtcService: WebRtcService,
+  ) {}
+
+  private readonly logger = new Logger(EventsGateway.name);
+
+  async afterInit(server: SocketServer) {
+    this.webRtcService.socketServer = server;
+    const clearCount = await this.prisma.user.updateMany({
+      data: {
+        sessionState: 'OFFLINE',
+      },
+    });
+
+    this.logger.log(`EventsGateway Init, Clear All User's SessionState, Count: ${clearCount.count}`);
+  }
+
+  async handleConnection(client: MictorySocket) {
+    this.logger.log(`UserSession Connected, User: ${client.user.userId}`);
+    await this.prisma.user.update({
+      where: {
+        id: client.user.userId,
+      },
+      data: {
+        sessionState: 'ONLINE',
+      },
+    });
+  }
+
+  async handleDisconnect(client: MictorySocket) {
+    this.logger.log(`[${client.id}, User: ${client.user.userId}] disconnect`, 'EventsGateway');
     if (client.mediasoupRoomId) {
       // 关闭连接时退出房间
       this.webRtcService.exitRoom(client.mediasoupRoomId, BigInt(client.user.userId));
       client.leave(socketRoomKey(client.mediasoupRoomId));
       client.mediasoupRoomId = undefined;
     }
+
+    await this.prisma.user.update({
+      where: {
+        id: client.user.userId,
+      },
+      data: {
+        sessionState: 'OFFLINE',
+      },
+    });
   }
 
   @SubscribeMessage('getRouterRtpCapabilities')
-  getRouterRtpCapabilities(@MessageBody() payload: MessageGetRouterRtpCapabilities) {
-    return this.webRtcService.getWorkerByRoomId(payload.roomId).appData.router.rtpCapabilities;
+  async getRouterRtpCapabilities(@MessageBody() payload: MessageGetRouterRtpCapabilities) {
+    return (await this.webRtcService.getWorkerByRoomId(payload.roomId)).appData.router.rtpCapabilities;
   }
 
   @SubscribeMessage('joinRoom')
@@ -61,7 +101,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   @SubscribeMessage('createTransport')
   async createTransport(socket: MictorySocket, payload: MessageCreateTransport) {
     if (!socket.mediasoupRoomId) {
-      Logger.error(`CreateTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      this.logger.error(`CreateTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
       return;
     }
 
@@ -83,14 +123,14 @@ export class EventsGateway implements OnGatewayDisconnect {
   @SubscribeMessage('connectTransport')
   async connectTransport(socket: MictorySocket, payload: MessageConnectTransport) {
     if (!socket.mediasoupRoomId) {
-      Logger.error(`ConnectTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      this.logger.error(`ConnectTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
       return;
     }
 
     const userId = BigInt(socket.user.userId);
-    const sessionTransport = this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
+    const sessionTransport = await this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
 
-    Logger.log(`ConnectTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId}`);
+    this.logger.log(`ConnectTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId}`);
     await sessionTransport?.transport?.connect({ dtlsParameters: payload.dtlsParameters });
 
     return { id: payload.transportId };
@@ -99,12 +139,12 @@ export class EventsGateway implements OnGatewayDisconnect {
   @SubscribeMessage('produceTransport')
   async produceTransport(socket: MictorySocket, payload: MessageProduceTransport) {
     if (!socket.mediasoupRoomId) {
-      Logger.error(`ProduceTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      this.logger.error(`ProduceTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
       return;
     }
 
     const userId = BigInt(socket.user.userId);
-    const sessionTransport = this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
+    const sessionTransport = await this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
 
     const producer = await sessionTransport.transport.produce({
       kind: payload.kind,
@@ -117,12 +157,25 @@ export class EventsGateway implements OnGatewayDisconnect {
     });
 
     sessionTransport.producer = producer;
-    producer.on('@close', () => {
-      Logger.log(`ProducerClosed, Producer: ${producer.id} User: ${userId}`);
+    const room = await this.webRtcService.getRoom(socket.mediasoupRoomId);
+
+    // 如果是声音轨道，则监听该生产者
+    if (producer.kind === 'audio') {
+      await room.activeSpeakerObserver.addProducer({ producerId: producer.id });
+      await room.audioLevelObserver.addProducer({ producerId: producer.id });
+    }
+
+    producer.on('@close', async () => {
+      this.logger.log(`ProducerClosed, Producer: ${producer.id} User: ${userId}`);
       sessionTransport.producer = undefined;
+      // 移除生产者监听
+      if (producer.kind === 'audio') {
+        await room.activeSpeakerObserver.removeProducer({ producerId: producer.id });
+        await room.audioLevelObserver.removeProducer({ producerId: producer.id });
+      }
     });
 
-    Logger.log(
+    this.logger.log(
       `ProduceTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${producer.id}`,
     );
 
@@ -134,12 +187,12 @@ export class EventsGateway implements OnGatewayDisconnect {
   @SubscribeMessage('consumeTransport')
   async consumeTransport(socket: MictorySocket, payload: MessageConsumeTransport) {
     if (!socket.mediasoupRoomId) {
-      Logger.error(`ConsumeTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      this.logger.error(`ConsumeTransport Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
       return;
     }
 
     const userId = BigInt(socket.user.userId);
-    const sessionTransport = this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
+    const sessionTransport = await this.webRtcService.getTransport(socket.mediasoupRoomId, userId, payload.transportId);
 
     const consumer = await sessionTransport.transport.consume({
       producerId: payload.producerId,
@@ -148,11 +201,11 @@ export class EventsGateway implements OnGatewayDisconnect {
 
     // sessionTransport.consumer = consumer;
     // consumer.on('@close', () => {
-    //   Logger.log(`ConsumerClosed, Consumer: ${consumer.id} User: ${userId}`);
+    //   this.logger.log(`ConsumerClosed, Consumer: ${consumer.id} User: ${userId}`);
     //   sessionTransport.consumer = undefined;
     // });
 
-    Logger.log(
+    this.logger.log(
       `ConsumeTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${payload.producerId}`,
     );
 
@@ -167,11 +220,11 @@ export class EventsGateway implements OnGatewayDisconnect {
   @SubscribeMessage('getRoomProducers')
   async getRoomProducers(socket: MictorySocket) {
     if (!socket.mediasoupRoomId) {
-      Logger.error(`GetRoomProducers Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
+      this.logger.error(`GetRoomProducers Fail, socket.mediasoupRoomId is undefined`, 'EventsGateway');
       return;
     }
 
-    const room = this.webRtcService.getRoom(socket.mediasoupRoomId);
+    const room = await this.webRtcService.getRoom(socket.mediasoupRoomId);
     const producers = room.sessions
       .filter((it) => it.userId !== BigInt(socket.user.userId))
       .flatMap((it) => it.transports)

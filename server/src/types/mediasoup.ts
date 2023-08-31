@@ -8,6 +8,8 @@ import type {
   MediaKind,
   RtpCapabilities,
   Producer,
+  ActiveSpeakerObserver,
+  AudioLevelObserver,
 } from 'mediasoup/node/lib/types';
 
 export type RoomId = number | string;
@@ -16,6 +18,8 @@ export type Room = {
   roomId: RoomId;
   workerId: WorkerId;
   sessions: RoomSession[];
+  activeSpeakerObserver: ActiveSpeakerObserver;
+  audioLevelObserver: AudioLevelObserver;
 };
 
 export type WorkerAppData = {
@@ -36,6 +40,7 @@ export type RoomSession = {
 export type SessionTransportDirection = 'Producer' | 'Consumer';
 
 export type SessionTransport = {
+  sessionId: string;
   transport: WebRtcTransport;
   direction: SessionTransportDirection;
   producer?: Producer;
