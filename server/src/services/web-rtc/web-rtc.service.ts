@@ -110,14 +110,16 @@ export class WebRtcService implements OnModuleInit {
           );
 
           // 通知客户端
-          const transport = room.sessions.flatMap((it) => it.transports).find((it) => it.producer.id === producer.id);
-          const session = room.sessions.find((it) => it.id === transport.sessionId);
-          this.socketServer.to(socketRoomKey(roomId)).emit('speak', {
-            producerId: producer.id,
-            userId: session.userId,
-            sessionId: session.id,
-            volume,
-          });
+          const transport = room.sessions.flatMap((it) => it.transports).find((it) => it.producer?.id === producer.id);
+          if (transport) {
+            const session = room.sessions.find((it) => it.id === transport.sessionId);
+            this.socketServer.to(socketRoomKey(roomId)).emit('speak', {
+              producerId: producer.id,
+              userId: session.userId,
+              sessionId: session.id,
+              volume,
+            });
+          }
         });
       });
 
