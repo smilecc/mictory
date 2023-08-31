@@ -55,12 +55,10 @@ export class UserResolver {
     }
 
     // 写入用户表
-    const newUser = await this.prisma.user.create({
-      data: {
-        ...args.data,
-        password,
-        passwordSalt,
-      },
+    const newUser = await this.userService.createUser({
+      ...args.data,
+      password,
+      passwordSalt,
     });
 
     // 生成token

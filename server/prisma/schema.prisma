@@ -44,6 +44,7 @@ model User {
   /// @Validator.MinLength(1)
   nickname      String           @db.VarChar(32)
   /// 昵称编号
+  /// @HideField({ match: 'User@(Create|Update)*Input' })
   nicknameNo    Int
   /// 在线状态
   /// @HideField({ input: true, output: false })
@@ -91,14 +92,17 @@ model Channel {
   /// 频道名
   name        String          @db.VarChar(32)
   /// 拥有者
+  /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   ownerUser   User            @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])
   /// 拥有者ID
   ownerUserId BigInt
   /// 频道用户
+  /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   users       ChannelToUser[]
   /// 房间
   rooms       Room[]
   /// 角色
+  /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   roles       ChannelRole[]
   /// @HideField({ input: true, output: false })
   createdTime DateTime        @default(now())
@@ -115,7 +119,9 @@ model ChannelRole {
   /// 角色名称
   name         String
   /// 颜色
-  color        String
+  color        String?
+  /// 默认角色
+  defaultRole  Boolean         @default(false)
   /// @HideField({ input: true, output: false })
   createdTime  DateTime        @default(now())
   /// @HideField({ input: true, output: false })
@@ -126,12 +132,14 @@ model ChannelRole {
 }
 
 model ChannelToUser {
-  id        BigInt        @id @default(autoincrement())
-  user      User          @relation(fields: [userId], references: [id])
-  userId    BigInt
-  channel   Channel       @relation(fields: [channelId], references: [id])
-  channelId BigInt
-  roles     ChannelRole[]
+  user          User        @relation(fields: [userId], references: [id])
+  userId        BigInt
+  channel       Channel     @relation(fields: [channelId], references: [id])
+  channelId     BigInt
+  channelRole   ChannelRole @relation(fields: [channelRoleId], references: [id])
+  channelRoleId BigInt
+
+  @@id([userId, channelId])
 }
 
 model Room {
