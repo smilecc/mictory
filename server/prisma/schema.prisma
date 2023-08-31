@@ -66,7 +66,7 @@ model User {
   ownedChannels Channel[]        @relation("UserOwnedChannels")
   /// 加入的频道
   /// @HideField({ input: true, output: false })
-  channels      Channel[]
+  channels      ChannelToUser[]
 }
 
 /// 用户昵称表
@@ -76,30 +76,62 @@ model UserNickname {
   nickname    String    @unique @db.VarChar(32)
   /// 昵称编号
   no          Int
+  /// @HideField({ input: true, output: false })
   createdTime DateTime  @default(now())
+  /// @HideField({ input: true, output: false })
   updatedTime DateTime  @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime DateTime?
 }
 
 model Channel {
-  id          BigInt    @id @default(autoincrement())
+  id          BigInt          @id @default(autoincrement())
   /// 频道代号
-  code        String    @unique @default(cuid()) @db.VarChar(32)
+  code        String          @unique @default(cuid()) @db.VarChar(32)
   /// 频道名
-  name        String    @db.VarChar(32)
+  name        String          @db.VarChar(32)
   /// 拥有者
-  ownerUser   User      @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])
+  ownerUser   User            @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])
   /// 拥有者ID
   ownerUserId BigInt
   /// 频道用户
-  users       User[]
+  users       ChannelToUser[]
   /// 房间
   rooms       Room[]
-  createdTime DateTime  @default(now())
-  updatedTime DateTime  @updatedAt
+  /// 角色
+  roles       ChannelRole[]
+  /// @HideField({ input: true, output: false })
+  createdTime DateTime        @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime DateTime        @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime DateTime?
+}
+
+model ChannelRole {
+  id           BigInt          @id @default(autoincrement())
+  channel      Channel         @relation(fields: [channelId], references: [id])
+  channelId    BigInt
+  /// 角色名称
+  name         String
+  /// 颜色
+  color        String
+  /// @HideField({ input: true, output: false })
+  createdTime  DateTime        @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime  DateTime        @updatedAt
+  /// @HideField({ input: true, output: true })
+  deletedTime  DateTime?
+  channelUsers ChannelToUser[]
+}
+
+model ChannelToUser {
+  id        BigInt        @id @default(autoincrement())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    BigInt
+  channel   Channel       @relation(fields: [channelId], references: [id])
+  channelId BigInt
+  roles     ChannelRole[]
 }
 
 model Room {
@@ -108,7 +140,10 @@ model Room {
   channel     Channel   @relation(fields: [channelId], references: [id])
   name        String
   maxMember   Int       @default(50)
+  sort        Int       @default(9999)
+  /// @HideField({ input: true, output: false })
   createdTime DateTime  @default(now())
+  /// @HideField({ input: true, output: false })
   updatedTime DateTime  @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime DateTime?

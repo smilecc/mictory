@@ -19,6 +19,6 @@ export class UserService {
   }
 
   generateSessionToken(user: User): Promise<string> {
-    return this.jwtService.signAsync({ userId: user.id.toString() } as JwtUserClaims);
+    return this.jwtService.signAsync({ userId: parseInt(user.id.toString()) } as JwtUserClaims);
   }
 }

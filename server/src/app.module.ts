@@ -16,6 +16,7 @@ import { loadOrGenerateAppSecret } from './utils';
 import { Request } from 'express';
 import { UserSessionResolver } from './resolvers/user/user-session.resolver';
 import { ConfigModule } from '@nestjs/config';
+import { ChannelResolver } from './resolvers/channel/channel.resolver';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -88,6 +89,7 @@ const JwtDynamicModule = JwtModule.register({
     UserResolver,
     UserService,
     UserSessionResolver,
+    ChannelResolver,
   ],
 })
 export class AppModule {}
