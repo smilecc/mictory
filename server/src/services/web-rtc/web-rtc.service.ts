@@ -13,7 +13,7 @@ import {
 } from 'src/types';
 import { nanoid } from 'nanoid';
 import { Server as SocketServer } from 'socket.io';
-import { socketRoomKey } from 'src/utils';
+import { env, socketRoomKey } from 'src/utils';
 
 @Injectable()
 export class WebRtcService implements OnModuleInit {
@@ -40,8 +40,14 @@ export class WebRtcService implements OnModuleInit {
         {
           protocol: 'tcp',
           port: 55555,
-          ip: '127.0.0.1',
-          // announcedIp: '192.168.1.118',
+          ip: env('APP_IP', '0.0.0.0'),
+          announcedIp: env('APP_ANNOUNCED_IP', '127.0.0.1'),
+        },
+        {
+          protocol: 'udp',
+          port: 55555,
+          ip: env('APP_IP', '0.0.0.0'),
+          announcedIp: env('APP_ANNOUNCED_IP', '127.0.0.1'),
         },
       ],
     });
