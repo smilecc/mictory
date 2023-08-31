@@ -43,11 +43,12 @@ CREATE TABLE `Channel` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Room` (
+CREATE TABLE `ChannelRole` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `channelId` BIGINT NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `maxMember` INTEGER NOT NULL DEFAULT 50,
+    `color` VARCHAR(191) NULL,
+    `defaultRole` BOOLEAN NOT NULL DEFAULT false,
     `createdTime` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedTime` DATETIME(3) NOT NULL,
     `deletedTime` DATETIME(3) NULL,
@@ -56,22 +57,42 @@ CREATE TABLE `Room` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `_ChannelToUser` (
-    `A` BIGINT NOT NULL,
-    `B` BIGINT NOT NULL,
+CREATE TABLE `ChannelToUser` (
+    `userId` BIGINT NOT NULL,
+    `channelId` BIGINT NOT NULL,
+    `channelRoleId` BIGINT NOT NULL,
 
-    UNIQUE INDEX `_ChannelToUser_AB_unique`(`A`, `B`),
-    INDEX `_ChannelToUser_B_index`(`B`)
+    PRIMARY KEY (`userId`, `channelId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Room` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `channelId` BIGINT NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `maxMember` INTEGER NOT NULL DEFAULT 50,
+    `sort` INTEGER NOT NULL DEFAULT 9999,
+    `createdTime` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedTime` DATETIME(3) NOT NULL,
+    `deletedTime` DATETIME(3) NULL,
+
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
 ALTER TABLE `Channel` ADD CONSTRAINT `Channel_ownerUserId_fkey` FOREIGN KEY (`ownerUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `ChannelRole` ADD CONSTRAINT `ChannelRole_channelId_fkey` FOREIGN KEY (`channelId`) REFERENCES `Channel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ChannelToUser` ADD CONSTRAINT `ChannelToUser_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ChannelToUser` ADD CONSTRAINT `ChannelToUser_channelId_fkey` FOREIGN KEY (`channelId`) REFERENCES `Channel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ChannelToUser` ADD CONSTRAINT `ChannelToUser_channelRoleId_fkey` FOREIGN KEY (`channelRoleId`) REFERENCES `ChannelRole`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Room` ADD CONSTRAINT `Room_channelId_fkey` FOREIGN KEY (`channelId`) REFERENCES `Channel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_ChannelToUser` ADD CONSTRAINT `_ChannelToUser_A_fkey` FOREIGN KEY (`A`) REFERENCES `Channel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_ChannelToUser` ADD CONSTRAINT `_ChannelToUser_B_fkey` FOREIGN KEY (`B`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
