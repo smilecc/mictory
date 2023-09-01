@@ -3,6 +3,7 @@ import { autorun } from "mobx";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { HomePage } from "@/pages/Home";
 import { ChannelPage } from "@/pages/channel";
+import { LoginPage } from "@/pages/user/Login";
 
 export const RouteGuard: React.FC<{
   children: React.ReactNode;
@@ -23,7 +24,7 @@ export const RouteGuard: React.FC<{
         //   navigate("/user/login");
         // }
       }),
-    []
+    [],
   );
 
   return <>{props.children}</>;
@@ -37,6 +38,10 @@ const router = createHashRouter([
         <HomePage />
       </RouteGuard>
     ),
+  },
+  {
+    path: "/user/login",
+    element: <LoginPage />,
   },
   {
     path: "/channel",

@@ -34,6 +34,7 @@ export const ChannelPage: React.FC = () => {
         id
         name
         code
+        avatar
         ownerUser {
           ...UserFrag
         }
@@ -60,6 +61,7 @@ export const ChannelPage: React.FC = () => {
       nickname
       nicknameNo
       sessionState
+      avatar
     }    
   `),
   );
