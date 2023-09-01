@@ -46,6 +46,8 @@ model User {
   /// 昵称编号
   /// @HideField({ match: 'User@(Create|Update)*Input' })
   nicknameNo    Int
+  /// 头像
+  avatar        String?
   /// 在线状态
   /// @HideField({ input: true, output: false })
   sessionState  UserSessionState @default(OFFLINE)
@@ -91,6 +93,8 @@ model Channel {
   code        String          @unique @default(cuid()) @db.VarChar(32)
   /// 频道名
   name        String          @db.VarChar(32)
+  /// 头像
+  avatar      String?
   /// 拥有者
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   ownerUser   User            @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])

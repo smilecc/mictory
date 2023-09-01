@@ -12,7 +12,7 @@ import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 
 const storeToken = localStorage.getItem("TOKEN") as string;
-const socket = io("http://106.54.172.71:3000", {
+const socket = io("http://38.147.170.48:3000", {
   auth(cb) {
     console.log("auth cb");
     cb({
