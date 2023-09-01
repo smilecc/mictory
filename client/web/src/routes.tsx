@@ -4,6 +4,7 @@ import { createHashRouter, RouterProvider } from "react-router-dom";
 import { HomePage } from "@/pages/Home";
 import { ChannelPage } from "@/pages/channel";
 import { LoginPage } from "@/pages/user/Login";
+import { UserCreatePage } from "@/pages/user/Create";
 
 export const RouteGuard: React.FC<{
   children: React.ReactNode;
@@ -42,6 +43,10 @@ const router = createHashRouter([
   {
     path: "/user/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/user/create",
+    element: <UserCreatePage />,
   },
   {
     path: "/channel",

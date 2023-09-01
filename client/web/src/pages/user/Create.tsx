@@ -1,30 +1,21 @@
-import { gql } from "@/@generated";
 import { useCommonStore } from "@/stores";
-import { useMutation } from "@apollo/client";
-import { Card, MantineProvider, TextInput, Title, Text, Button } from "@mantine/core";
+import { Button, Card, MantineProvider, TextInput, Title, Text } from "@mantine/core";
 import { useReactive } from "ahooks";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
-const USER_LOGIN = gql(`mutation userLogin($args: UserSessionCreateInput!) {
-  userSessionCreate(args: $args) {
-    userId
-    sessionToken
-  }
-}`);
-
-export const LoginPage: React.FC = () => {
+export const UserCreatePage: React.FC = () => {
   const commonStore = useCommonStore();
   const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
-      account: "",
+      email: "",
+      nickname: "",
       password: "",
     },
   });
 
-  const [mutationUserLogin, { loading: submitting }] = useMutation(USER_LOGIN);
   const state = useReactive({
     submitting: false,
   });
@@ -34,26 +25,14 @@ export const LoginPage: React.FC = () => {
       <MantineProvider theme={{ colorScheme: "light" }}>
         <Card shadow="sm" radius="md" withBorder className="w-96 select-none">
           <Title order={2} className="mb-1">
-            登录到
+            注册到
           </Title>
 
           <Text className="mb-4">Mictory</Text>
           <form
             onSubmit={form.handleSubmit((value) => {
               state.submitting = true;
-              mutationUserLogin({
-                variables: {
-                  args: { ...value },
-                },
-              })
-                .then(({ data }) => {
-                  commonStore.sessionToken = data!.userSessionCreate.sessionToken;
-                  console.log(data?.userSessionCreate);
-                })
-                .catch((e) => {
-                  console.warn(e);
-                });
-              // UserApi.login(value.account, value.password)
+              // UserApi.createUser(value.email, value.nickname, value.password)
               //   .then(({ data }) => {
               //     commonStore.setAccessToken(data.data.accessToken);
               //     return commonStore.loadUserInfo();
@@ -61,7 +40,7 @@ export const LoginPage: React.FC = () => {
               //   .then(() => {
               //     navigate("/");
               //     showNotification({
-              //       message: "登录成功",
+              //       message: "用户注册成功",
               //       color: "green",
               //       icon: <IconCheck />,
               //     });
@@ -72,7 +51,8 @@ export const LoginPage: React.FC = () => {
               //   });
             })}
           >
-            <TextInput label="账号" placeholder="请输入账号" required {...form.register("account")} />
+            <TextInput label="邮箱" placeholder="请输入邮箱" required {...form.register("email")} />
+            <TextInput className="mt-4" label="昵称" placeholder="请输入昵称" required {...form.register("nickname")} />
             <TextInput
               className="mt-4"
               label="密码"
@@ -81,19 +61,19 @@ export const LoginPage: React.FC = () => {
               required
               {...form.register("password")}
             />
-            <Button className="mt-4" fullWidth type="submit" loading={submitting}>
-              登录
+            <Button className="mt-4" fullWidth type="submit" loading={state.submitting}>
+              注册
             </Button>
             <Button
               className="mt-2"
               variant="outline"
               fullWidth
-              loading={submitting}
+              loading={state.submitting}
               onClick={() => {
-                navigate("/user/create");
+                navigate("/user/login");
               }}
             >
-              去注册一个账户
+              返回登录
             </Button>
           </form>
         </Card>

@@ -2,7 +2,7 @@ import { SideAvatar } from "@/components/business";
 import { Button } from "@/components/ui/button";
 import { useCommonStore } from "@/stores";
 import { useMount, useReactive } from "ahooks";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 // import { useLoaderData } from "react-router-dom";
 import { io } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
@@ -10,6 +10,7 @@ import { useSearchParams } from "react-router-dom";
 import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
+import { SocketClientContext } from "@/contexts";
 
 const storeToken = localStorage.getItem("TOKEN") as string;
 const socket = io("http://38.147.170.48:3000", {
@@ -66,11 +67,20 @@ export const ChannelPage: React.FC = () => {
   `),
   );
 
+  const socketClient = useContext(SocketClientContext);
   const [searchParams] = useSearchParams();
   const [token, setToken] = useState<string>(storeToken);
   const state = useReactive({
     streams: [] as MediaStream[],
   });
+
+  useEffect(() => {
+    socketClient.connect();
+
+    return () => {
+      socketClient.close();
+    };
+  }, [socketClient]);
 
   useEffect(() => {
     localStorage.setItem("TOKEN", token);

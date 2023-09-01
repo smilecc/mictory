@@ -38,7 +38,7 @@ export const ThemeWrapper: React.FC<React.PropsWithChildren<unknown>> = (props) 
 
   return (
     <>
-      <MantineProvider theme={{ colorScheme: darkMode as ColorScheme }}>
+      <MantineProvider withNormalizeCSS theme={{ colorScheme: darkMode as ColorScheme }}>
         <ModalsProvider>{props.children}</ModalsProvider>
       </MantineProvider>
     </>
