@@ -30,11 +30,23 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
-  async user(@Args('where') where: UserWhereInput, @Info() info: GraphQLResolveInfo) {
+  async user(
+    @Context('user') user: JwtUserClaims,
+    @Args('where') where: UserWhereInput,
+    @Info() info: GraphQLResolveInfo,
+  ) {
     const select = new PrismaSelect(info).value;
-    // if (where.nickname === "__MY__") {
-    //   return this
-    // }
+
+    // 约定-1为查询当前用户
+    if (where.nicknameNo?.equals === -1) {
+      return this.prisma.user.findFirst({
+        where: {
+          id: user.userId,
+        },
+        ...select,
+      });
+    }
+
     return this.prisma.user.findFirst({ where, ...select });
   }
 
