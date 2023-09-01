@@ -1,9 +1,10 @@
 import React from "react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
 import { cn } from "@/lib/utils";
+import { Avatar, Tooltip } from "@mantine/core";
 
 export interface ISiderAvatarProps {
   active?: boolean;
+  name?: string;
 }
 
 export const SideAvatar: React.FC<ISiderAvatarProps> = (props) => {
@@ -18,9 +19,11 @@ export const SideAvatar: React.FC<ISiderAvatarProps> = (props) => {
         />
       </div>
       <div>
-        <Avatar className="h-12 w-12 select-none rounded-full">
-          <AvatarFallback>璨</AvatarFallback>
-        </Avatar>
+        <Tooltip label={props.name} position="right" color="dark">
+          <Avatar color="cyan" size="3rem" className="rounded-full group-hover:rounded-md">
+            {props.name?.at(0)?.toUpperCase()}
+          </Avatar>
+        </Tooltip>
       </div>
     </div>
   );
