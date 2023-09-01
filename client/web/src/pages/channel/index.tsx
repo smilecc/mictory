@@ -8,6 +8,8 @@ import { io } from "socket.io-client";
 import * as mediasoupClient from "mediasoup-client";
 import { useSearchParams } from "react-router-dom";
 import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
+import { useQuery } from "@apollo/client";
+import { gql } from "@/@generated";
 
 const storeToken = localStorage.getItem("TOKEN") as string;
 const socket = io("http://106.54.172.71:3000", {
@@ -25,6 +27,42 @@ export const ChannelPage: React.FC = () => {
   useMount(() => {
     console.log("mount");
   });
+
+  const { data: channels } = useQuery(
+    gql(`query listChannel {
+      channels(orderBy: { id: desc }) {
+        id
+        name
+        code
+        ownerUser {
+          ...UserFrag
+        }
+        users {
+          role: channelRole {
+            name
+            color
+          }
+          user {
+            ...UserFrag
+          }
+        }
+        rooms {
+          id
+          name
+          maxMember
+          sort
+        }
+      }
+    }
+    
+    fragment UserFrag on User {
+      id
+      nickname
+      nicknameNo
+      sessionState
+    }    
+  `),
+  );
 
   const [searchParams] = useSearchParams();
   const [token, setToken] = useState<string>(storeToken);
@@ -155,6 +193,12 @@ export const ChannelPage: React.FC = () => {
         {/* 侧边栏 */}
         <div className="bg-background pr-2 pt-2">
           <SideAvatar />
+          {channels?.channels?.map((it) => (
+            <div>
+              {it?.name}
+              <SideAvatar />
+            </div>
+          ))}
         </div>
         <div className="flex flex-1 bg-surface2">
           {/* 频道 */}

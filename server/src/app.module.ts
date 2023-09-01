@@ -17,6 +17,7 @@ import { Request } from 'express';
 import { UserSessionResolver } from './resolvers/user/user-session.resolver';
 import { ConfigModule } from '@nestjs/config';
 import { ChannelResolver } from './resolvers/channel/channel.resolver';
+import { RoomResolver } from './resolvers/room/room.resolver';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -99,6 +100,7 @@ const JwtDynamicModule = JwtModule.register({
     UserService,
     UserSessionResolver,
     ChannelResolver,
+    RoomResolver,
   ],
 })
 export class AppModule {}

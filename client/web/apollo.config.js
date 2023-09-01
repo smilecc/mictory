@@ -1,8 +1,8 @@
 module.exports = {
   client: {
     service: {
-      name: "my-graphql-app",
-      url: "http://localhost:3000/graphql",
+      name: "mictory-app",
+      url: "http://38.147.170.48:3000/graphql",
     },
   },
 };
