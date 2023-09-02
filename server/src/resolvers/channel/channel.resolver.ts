@@ -54,6 +54,7 @@ export class ChannelResolver {
               rooms: {
                 create: {
                   name: '默认房间',
+                  channelId: channel.id,
                 },
               },
             },
