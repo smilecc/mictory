@@ -35,11 +35,6 @@ export class ChannelResolver {
       // 创建频道
       const channel = await tx.channel.create({
         data: {
-          rooms: {
-            create: {
-              name: '默认房间',
-            },
-          },
           ...args.data,
           ownerUser: {
             connect: {
@@ -53,6 +48,16 @@ export class ChannelResolver {
       return tx.channel.update({
         ...select,
         data: {
+          categories: {
+            create: {
+              name: 'General',
+              rooms: {
+                create: {
+                  name: '默认房间',
+                },
+              },
+            },
+          },
           users: {
             create: [
               {

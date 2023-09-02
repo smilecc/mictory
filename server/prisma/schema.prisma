@@ -88,16 +88,16 @@ model UserNickname {
 }
 
 model Channel {
-  id          BigInt          @id @default(autoincrement())
+  id          BigInt            @id @default(autoincrement())
   /// 频道代号
-  code        String          @unique @default(cuid()) @db.VarChar(32)
+  code        String            @unique @default(cuid()) @db.VarChar(32)
   /// 频道名
-  name        String          @db.VarChar(32)
+  name        String            @db.VarChar(32)
   /// 头像
   avatar      String?
   /// 拥有者
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
-  ownerUser   User            @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])
+  ownerUser   User              @relation("UserOwnedChannels", fields: [ownerUserId], references: [id])
   /// 拥有者ID
   ownerUserId BigInt
   /// 频道用户
@@ -108,12 +108,31 @@ model Channel {
   /// 角色
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   roles       ChannelRole[]
+  /// 分类列表
+  categories  ChannelCategory[]
   /// @HideField({ input: true, output: false })
-  createdTime DateTime        @default(now())
+  createdTime DateTime          @default(now())
   /// @HideField({ input: true, output: false })
-  updatedTime DateTime        @updatedAt
+  updatedTime DateTime          @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime DateTime?
+}
+
+model ChannelCategory {
+  id          BigInt    @id @default(autoincrement())
+  /// 名称
+  name        String
+  /// 频道ID
+  channelId   BigInt
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  /// @HideField({ input: true, output: false })
+  createdTime DateTime  @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime DateTime  @updatedAt
+  /// @HideField({ input: true, output: true })
+  deletedTime DateTime?
+  /// 房间列表
+  rooms       Room[]
 }
 
 model ChannelRole {
@@ -147,16 +166,25 @@ model ChannelToUser {
 }
 
 model Room {
-  id          BigInt    @id @default(autoincrement())
-  channelId   BigInt
-  channel     Channel   @relation(fields: [channelId], references: [id])
-  name        String
-  maxMember   Int       @default(50)
-  sort        Int       @default(9999)
+  id                BigInt          @id @default(autoincrement())
+  /// 频道ID
+  channelId         BigInt
+  /// 频道
+  channel           Channel         @relation(fields: [channelId], references: [id])
+  /// 频道分类ID
+  channelCategoryId BigInt
+  /// 频道分类
+  channelCategory   ChannelCategory @relation(fields: [channelCategoryId], references: [id])
+  /// 房间名
+  name              String
+  /// 最大成员数量
+  maxMember         Int             @default(50)
+  /// 房间排序
+  sort              Int             @default(9999)
   /// @HideField({ input: true, output: false })
-  createdTime DateTime  @default(now())
+  createdTime       DateTime        @default(now())
   /// @HideField({ input: true, output: false })
-  updatedTime DateTime  @updatedAt
+  updatedTime       DateTime        @updatedAt
   /// @HideField({ input: true, output: true })
-  deletedTime DateTime?
+  deletedTime       DateTime?
 }
