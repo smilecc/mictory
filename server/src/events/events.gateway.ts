@@ -49,14 +49,18 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
 
   async handleConnection(client: MictorySocket) {
     this.logger.log(`UserSession Connected, User: ${client.user.userId}`);
-    await this.prisma.user.update({
-      where: {
-        id: client.user.userId,
-      },
-      data: {
-        sessionState: 'ONLINE',
-      },
-    });
+    try {
+      await this.prisma.user.update({
+        where: {
+          id: client.user.userId,
+        },
+        data: {
+          sessionState: 'ONLINE',
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
   async handleDisconnect(client: MictorySocket) {
