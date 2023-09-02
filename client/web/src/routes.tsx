@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { autorun } from "mobx";
-import { createHashRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider, Navigate } from "react-router-dom";
 import { HomePage } from "@/pages/Home";
-import { ChannelPage } from "@/pages/channel";
-import { LoginPage } from "@/pages/user/Login";
-import { UserCreatePage } from "@/pages/user/Create";
+import { ChannelPage } from "@/pages/channel/channel";
+import { LoginPage } from "@/pages/user/login";
+import { UserCreatePage } from "@/pages/user/create";
+import { MessagePage } from "./pages/channel/message";
 
 export const RouteGuard: React.FC<{
   children: React.ReactNode;
@@ -52,7 +53,15 @@ const router = createHashRouter([
     path: "/channel",
     children: [
       {
-        path: ":channelId",
+        path: "",
+        element: <Navigate to="/channel/@msg" replace />,
+      },
+      {
+        path: "@msg",
+        element: <MessagePage />,
+      },
+      {
+        path: ":channelCode",
         element: (
           <RouteGuard>
             <ChannelPage />
