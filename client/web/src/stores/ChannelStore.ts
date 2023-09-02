@@ -26,6 +26,8 @@ export class ChannelStore {
   // 生产者连接
   sendTransport?: Transport;
 
+  mediaStreams: MediaStream[] = [];
+
   async handleSocketConnect() {
     console.log("SocketClient connected");
 
@@ -46,6 +48,7 @@ export class ChannelStore {
   }
 
   async joinRoom(roomId: number) {
+    this.mediaStreams = [];
     this.mediasoupDevice = new mediasoupClient.Device();
 
     const rtpCapabilities = (await socketClient.emitWithAck("getRouterRtpCapabilities", { roomId })) as RtpCapabilities;
@@ -133,6 +136,10 @@ export class ChannelStore {
     const consumer = await this.recvTransport.consume({
       ...consumerData,
     });
+
+    const ms = new MediaStream();
+    ms.addTrack(consumer.track);
+    this.mediaStreams.push(ms);
 
     console.log("consumeProducer:consumer", consumer.id, "producerId", producerId);
   }

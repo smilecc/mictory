@@ -2,10 +2,11 @@ import { GetChannelDetailQuery } from "@/@generated/graphql";
 import { SocketClientContext } from "@/contexts";
 import { useChannelStore } from "@/stores";
 import { Collapse } from "@mantine/core";
-import { useReactive } from "ahooks";
-import React, { Fragment, useCallback, useContext } from "react";
+import { useDebounceFn, useEventListener, useReactive } from "ahooks";
+import React, { Fragment, useCallback, useContext, useState } from "react";
 import { UserPopover } from "./user-popover";
 import { IconUser } from "@tabler/icons-react";
+import * as _ from "lodash";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
@@ -13,9 +14,29 @@ export const ChannelPanel: React.FC<{
 }> = ({ channel, onShouldRefetch }) => {
   const socketClient = useContext(SocketClientContext);
   const channelStore = useChannelStore();
+  const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
   const state = useReactive({
     closeCategories: [] as number[],
   });
+
+  const { run: stopSpeak } = useDebounceFn(
+    (userId: number) => {
+      setSpeakingUsers((pre) => pre.filter((it) => it !== userId));
+    },
+    { wait: 5000 },
+  );
+
+  useEventListener(
+    "user:speak",
+    _.throttle((e: CustomEvent) => {
+      const userId: number = e.detail.userId;
+      setSpeakingUsers((pre) => [...new Set([...pre, userId])]);
+      stopSpeak(userId);
+    }, 3000),
+    {
+      target: window,
+    },
+  );
 
   const onCategoryTitleClick = useCallback(
     (categoryId: number) => {
@@ -66,9 +87,10 @@ export const ChannelPanel: React.FC<{
                 <div className="pl-5">
                   {room.users.map((user) => (
                     <UserPopover key={user.id} nickname={user.nickname} no={user.nicknameNo}>
-                      {/* ${speakingSessions.includes(user.sessionId) ? "bg-orange-500/25" : ""}`} */}
                       <div
-                        className={`my-1 flex cursor-pointer items-center rounded-md px-3 py-2 text-sm leading-none text-zinc-300 hover:bg-zinc-700`}
+                        className={`my-1 flex cursor-pointer items-center rounded-md px-3 py-2 text-sm leading-none text-zinc-300 hover:bg-zinc-700
+                          ${speakingUsers.includes(user.id) ? "bg-orange-500/25" : ""}
+                        `}
                       >
                         <IconUser size={18} />
                         <span className="ml-1">{user.nickname}</span>
