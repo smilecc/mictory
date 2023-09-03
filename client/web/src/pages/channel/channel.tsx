@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { useCommonStore } from "@/stores";
-import { useMount, useReactive } from "ahooks";
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useReactive } from "ahooks";
+import React, { useContext, useEffect, useMemo } from "react";
 // import { useLoaderData } from "react-router-dom";
-import * as mediasoupClient from "mediasoup-client";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
-import { useLazyQuery, useQuery } from "@apollo/client";
+// import * as mediasoupClient from "mediasoup-client";
+import { useParams } from "react-router-dom";
+// import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
+import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
 import { Card } from "@mantine/core";
 import { ChannelPanel } from "@/components/business";
+import { SocketClientContext } from "@/contexts";
+import _ from "lodash";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -62,11 +63,19 @@ fragment UserFrag on User {
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
   // const commonStore = useCommonStore();
+  const socketClient = useContext(SocketClientContext);
   const params = useParams<{ channelCode: string }>();
-  const { data, refetch: refetchChannelDetail } = useQuery(QUERY_CHANNEL_DETAIL, {
-    pollInterval: 10 * 1000,
+  const {
+    data,
+    refetch: refetchChannelDetail,
+    loading,
+  } = useQuery(QUERY_CHANNEL_DETAIL, {
+    pollInterval: 60 * 1000,
     variables: {
       code: params.channelCode || "",
+    },
+    onCompleted(data) {
+      socketClient.emit("activeChannel", { channelId: _.first(data.channels)?.id });
     },
   });
 
@@ -75,6 +84,21 @@ export const ChannelPage: React.FC = () => {
   const state = useReactive({
     streams: [] as MediaStream[],
   });
+
+  useEffect(() => {
+    socketClient.on("channelNeedReload", () => {
+      console.log("channelNeedReload -> onShouldRefetch");
+      refetchChannelDetail({
+        code: params.channelCode,
+      });
+    });
+
+    return () => {
+      console.log('socketClient.off("channelNeedReload")');
+      socketClient.off("channelNeedReload");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channel?.id, loading]);
 
   useEffect(() => {
     if (params.channelCode) {

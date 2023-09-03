@@ -1,5 +1,4 @@
 import { SideAvatar } from "@/components/business";
-import { useReactive } from "ahooks";
 import React, { Fragment, useContext, useEffect } from "react";
 // import { useLoaderData } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
@@ -45,7 +44,7 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
   const params = useParams<{ channelCode: string }>();
   const socketClient = useContext(SocketClientContext);
   const { data, loading: userChannelLoading } = useQuery(QUERY_USER_CHANNELS, {
-    pollInterval: 10 * 1000,
+    pollInterval: 90 * 1000,
   });
 
   useEffect(() => {
