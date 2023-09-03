@@ -5,6 +5,7 @@ import { reaction } from "mobx";
 import * as React from "react";
 import { MantineProvider, ColorScheme } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
+import { Notifications } from "@mantine/notifications";
 
 export const ThemeWrapper: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const commonStore = useCommonStore();
@@ -39,6 +40,7 @@ export const ThemeWrapper: React.FC<React.PropsWithChildren<unknown>> = (props) 
   return (
     <>
       <MantineProvider withNormalizeCSS theme={{ colorScheme: darkMode as ColorScheme }}>
+        <Notifications />
         <ModalsProvider>{props.children}</ModalsProvider>
       </MantineProvider>
     </>

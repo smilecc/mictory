@@ -1,7 +1,10 @@
 import { gql } from "@/@generated";
 import { useCommonStore } from "@/stores";
+import { NoticeErrorHandler } from "@/utils";
 import { useMutation } from "@apollo/client";
 import { Card, MantineProvider, TextInput, Title, Text, Button } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { IconCheck } from "@tabler/icons-react";
 import { useReactive } from "ahooks";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -49,27 +52,15 @@ export const LoginPage: React.FC = () => {
                 .then(({ data }) => {
                   commonStore.sessionToken = data!.userSessionCreate.sessionToken;
                   console.log(data?.userSessionCreate);
+                  navigate("/channel", { replace: true });
+
+                  notifications.show({
+                    message: "登录成功",
+                    color: "green",
+                    icon: <IconCheck />,
+                  });
                 })
-                .catch((e) => {
-                  console.warn(e);
-                });
-              // UserApi.login(value.account, value.password)
-              //   .then(({ data }) => {
-              //     commonStore.setAccessToken(data.data.accessToken);
-              //     return commonStore.loadUserInfo();
-              //   })
-              //   .then(() => {
-              //     navigate("/");
-              //     showNotification({
-              //       message: "登录成功",
-              //       color: "green",
-              //       icon: <IconCheck />,
-              //     });
-              //   })
-              //   .catch(NoticeErrorHandler)
-              //   .finally(() => {
-              //     state.submitting = false;
-              //   });
+                .catch(NoticeErrorHandler);
             })}
           >
             <TextInput label="账号" placeholder="请输入账号" required {...form.register("account")} />
