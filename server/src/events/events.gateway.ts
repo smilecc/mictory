@@ -11,6 +11,7 @@ import { WebRtcService } from 'src/services';
 import { MictorySocket } from './socket.adapter';
 import { Logger } from '@nestjs/common';
 import {
+  MessageActiveChannel,
   MessageConnectTransport,
   MessageConsumeTransport,
   MessageCreateTransport,
@@ -20,7 +21,7 @@ import {
 } from 'src/types';
 import { PrismaClient } from '@prisma/client';
 import { Server as SocketServer } from 'socket.io';
-import { socketRoomKey } from 'src/utils';
+import { socketChannelKey, socketRoomKey } from 'src/utils';
 
 @WebSocketGateway(0, {
   cors: {
@@ -67,9 +68,11 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     this.logger.log(`[${client.id}, User: ${client.user.userId}] disconnect`, 'EventsGateway');
     if (client.mediasoupRoomId) {
       // 关闭连接时退出房间
-      this.webRtcService.exitRoom(client.mediasoupRoomId, BigInt(client.user.userId));
-      client.leave(socketRoomKey(client.mediasoupRoomId));
-      client.mediasoupRoomId = undefined;
+      await this.webRtcService.exitRoom(client.mediasoupRoomId, BigInt(client.user.userId), client);
+    }
+
+    if (client.mediasoupActiveChannelId) {
+      await client.leave(socketChannelKey(`${client.mediasoupActiveChannelId}`));
     }
 
     await this.prisma.user.update({
@@ -82,6 +85,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     });
   }
 
+  @SubscribeMessage('activeChannel')
+  async activeChannel(@ConnectedSocket() socket: MictorySocket, @MessageBody() payload: MessageActiveChannel) {
+    // 如果此前有激活的频道，且不为已加入房间的频道，则退出
+    if (socket.mediasoupActiveChannelId && socket.mediasoupActiveChannelId != socket.mediasoupChannelId) {
+      await socket.leave(socketChannelKey(`${socket.mediasoupActiveChannelId}`));
+    }
+
+    socket.mediasoupActiveChannelId = payload.channelId;
+    socket.join(socketChannelKey(`${payload.channelId}`));
+  }
+
   @SubscribeMessage('getRouterRtpCapabilities')
   async getRouterRtpCapabilities(@MessageBody() payload: MessageGetRouterRtpCapabilities) {
     return (await this.webRtcService.getWorkerByRoomId(payload.roomId)).appData.router.rtpCapabilities;
@@ -92,13 +106,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     const userId = BigInt(socket.user.userId);
     // 退出之前的房间
     if (socket.mediasoupRoomId) {
-      this.webRtcService.exitRoom(socket.mediasoupRoomId, userId);
-      socket.leave(socketRoomKey(socket.mediasoupRoomId));
+      this.webRtcService.exitRoom(socket.mediasoupRoomId, userId, socket);
     }
 
-    const roomSession = await this.webRtcService.joinRoom(payload.roomId, BigInt(socket.user.userId));
-    socket.join(socketRoomKey(payload.roomId));
-    socket.mediasoupRoomId = roomSession.roomId;
+    const roomSession = await this.webRtcService.joinRoom(payload.roomId, BigInt(socket.user.userId), socket);
     return roomSession;
   }
 

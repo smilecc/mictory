@@ -13,7 +13,9 @@ import {
 } from 'src/types';
 import { nanoid } from 'nanoid';
 import { Server as SocketServer } from 'socket.io';
-import { env, socketRoomKey } from 'src/utils';
+import { env, socketChannelKey, socketRoomKey } from 'src/utils';
+import { MictorySocket } from 'src/events/socket.adapter';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class WebRtcService implements OnModuleInit {
@@ -24,7 +26,10 @@ export class WebRtcService implements OnModuleInit {
 
   private readonly logger = new Logger(WebRtcService.name);
 
-  constructor(private readonly roomManager: RoomManager) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly roomManager: RoomManager,
+  ) {}
 
   async onModuleInit() {
     const worker = await mediasoup.createWorker<WorkerAppData>({
@@ -138,27 +143,49 @@ export class WebRtcService implements OnModuleInit {
     return this.getWorker(room.workerId);
   }
 
-  async joinRoom(roomId: RoomId, userId: bigint): Promise<RoomSession> {
+  async joinRoom(roomId: RoomId, userId: bigint, socket: MictorySocket): Promise<RoomSession> {
     this.logger.log(`Join Room, User: ${userId} Room: ${roomId}`);
-    const room = await this.getRoom(roomId);
-    const worker = this.getWorker(room.workerId);
 
-    const oldSession = room.sessions.find((it) => it.userId == userId);
-    if (oldSession) {
-      return oldSession;
+    // 查询房间信息
+    const roomInfo = await this.prisma.room.findUnique({
+      where: {
+        id: BigInt(roomId),
+      },
+      select: {
+        id: true,
+        channelId: true,
+      },
+    });
+
+    try {
+      const room = await this.getRoom(roomId);
+      const worker = this.getWorker(room.workerId);
+
+      const oldSession = room.sessions.find((it) => it.userId == userId);
+      if (oldSession) {
+        return oldSession;
+      }
+
+      // 创建会话
+      const session: RoomSession = {
+        id: nanoid(),
+        roomId,
+        userId,
+        workerId: worker.appData.id,
+        transports: [],
+      };
+
+      room.sessions.push(session);
+      return session;
+    } finally {
+      socket.join(socketRoomKey(roomId));
+      socket.join(socketChannelKey(`${roomInfo.channelId}`));
+      socket.mediasoupRoomId = roomId;
+      socket.mediasoupChannelId = `${roomInfo.channelId}`;
+
+      socket.broadcast.to(socketRoomKey(roomId)).emit('roomMemberJoin');
+      socket.broadcast.to(socketChannelKey(`${roomInfo.channelId}`)).emit('channelNeedReload');
     }
-
-    // 创建会话
-    const session: RoomSession = {
-      id: nanoid(),
-      roomId,
-      userId,
-      workerId: worker.appData.id,
-      transports: [],
-    };
-
-    room.sessions.push(session);
-    return session;
   }
 
   async createTransport(roomId: RoomId, userId: bigint, transportDirection: SessionTransportDirection) {
@@ -191,7 +218,18 @@ export class WebRtcService implements OnModuleInit {
     return session?.transports?.find((it) => it.transport.id === transportId);
   }
 
-  async exitRoom(roomId: RoomId, userId: bigint) {
+  async exitRoom(roomId: RoomId, userId: bigint, socket: MictorySocket) {
+    // 查询房间信息
+    const roomInfo = await this.prisma.room.findUnique({
+      where: {
+        id: BigInt(roomId),
+      },
+      select: {
+        id: true,
+        channelId: true,
+      },
+    });
+
     const room = await this.getRoom(roomId);
     const roomSessionIndex = room.sessions.findIndex((it) => it.userId === userId);
     if (roomSessionIndex !== -1) {
@@ -200,6 +238,12 @@ export class WebRtcService implements OnModuleInit {
       room.sessions.splice(roomSessionIndex, 1);
     }
 
+    socket.leave(socketRoomKey(socket.mediasoupRoomId));
+    socket.leave(socketChannelKey(`${roomInfo.channelId}`));
+    socket.mediasoupRoomId = undefined;
+    socket.mediasoupChannelId = undefined;
+    socket.broadcast.to(socketRoomKey(roomId)).emit('roomMemberLeave');
+    socket.broadcast.to(socketChannelKey(`${roomInfo.channelId}`)).emit('channelNeedReload');
     this.logger.log(`Exit Room, User: ${userId} Room: ${roomId}`);
   }
 }

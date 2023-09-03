@@ -31,3 +31,4 @@ export function loadOrGenerateAppSecret(): string {
 }
 
 export const socketRoomKey = (roomId: RoomId) => `ROOM_${roomId}`;
+export const socketChannelKey = (channelId: RoomId) => `CHANNEL_${channelId}`;

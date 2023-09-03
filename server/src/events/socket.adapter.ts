@@ -9,6 +9,8 @@ import { env } from 'src/utils';
 export interface MictorySocket extends Socket {
   user: JwtUserClaims;
   mediasoupRoomId?: RoomId;
+  mediasoupChannelId?: RoomId;
+  mediasoupActiveChannelId?: RoomId;
 }
 
 export class MictorySocketAdapter extends IoAdapter {

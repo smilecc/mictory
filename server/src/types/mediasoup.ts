@@ -50,6 +50,10 @@ export type MessageGetRouterRtpCapabilities = {
   roomId: RoomId;
 };
 
+export type MessageActiveChannel = {
+  channelId: RoomId;
+};
+
 export type MessageJoinRoom = {
   roomId: RoomId;
 };
