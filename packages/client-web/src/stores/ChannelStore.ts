@@ -47,6 +47,12 @@ export class ChannelStore {
     socketClient.off("speak");
   }
 
+  async cleanUserState() {
+    this.firstLoading = true;
+    this.user = undefined;
+    this.mediaStreams = [];
+  }
+
   async joinRoom(roomId: number) {
     this.mediaStreams = [];
     this.mediasoupDevice = new mediasoupClient.Device();

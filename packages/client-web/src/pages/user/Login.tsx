@@ -1,11 +1,11 @@
 import { gql } from "@/@generated";
-import { useCommonStore } from "@/stores";
+import { socketClient } from "@/contexts";
+import { useChannelStore, useCommonStore } from "@/stores";
 import { NoticeErrorHandler } from "@/utils";
 import { useMutation } from "@apollo/client";
 import { Card, MantineProvider, TextInput, Title, Text, Button } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconCheck } from "@tabler/icons-react";
-import { useReactive } from "ahooks";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ const USER_LOGIN = gql(`mutation userLogin($args: UserSessionCreateInput!) {
 
 export const LoginPage: React.FC = () => {
   const commonStore = useCommonStore();
+  const channelStore = useChannelStore();
   const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
@@ -28,9 +29,6 @@ export const LoginPage: React.FC = () => {
   });
 
   const [mutationUserLogin, { loading: submitting }] = useMutation(USER_LOGIN);
-  const state = useReactive({
-    submitting: false,
-  });
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-surface2">
@@ -43,7 +41,6 @@ export const LoginPage: React.FC = () => {
           <Text className="mb-4">Mictory</Text>
           <form
             onSubmit={form.handleSubmit((value) => {
-              state.submitting = true;
               mutationUserLogin({
                 variables: {
                   args: { ...value },
@@ -52,6 +49,8 @@ export const LoginPage: React.FC = () => {
                 .then(({ data }) => {
                   commonStore.sessionToken = data!.userSessionCreate.sessionToken;
                   console.log(data?.userSessionCreate);
+                  socketClient.close();
+                  channelStore.cleanUserState();
                   navigate("/channel", { replace: true });
 
                   notifications.show({

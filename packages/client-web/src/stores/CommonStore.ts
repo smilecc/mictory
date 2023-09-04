@@ -24,4 +24,12 @@ export class CommonStore {
   set sessionToken(token: string) {
     this._sessionToken = StoreStorage.save(CommonStore, "sessionToken", token);
   }
+
+  get isLogin() {
+    return !!this._sessionToken;
+  }
+
+  get isNotLogin() {
+    return !this.isLogin;
+  }
 }

@@ -9,7 +9,7 @@ import { Divider, Loader, Transition } from "@mantine/core";
 import { IconMessage2Heart, IconPlus } from "@tabler/icons-react";
 import { useChannelStore } from "@/stores";
 import { Observer } from "mobx-react-lite";
-import { runInAction } from "mobx";
+import { autorun, runInAction } from "mobx";
 
 const QUERY_USER_CHANNELS = gql(`
 query listUserChannel {
@@ -43,9 +43,24 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
   const channelStore = useChannelStore();
   const params = useParams<{ channelCode: string }>();
   const socketClient = useContext(SocketClientContext);
-  const { data, loading: userChannelLoading } = useQuery(QUERY_USER_CHANNELS, {
+  const {
+    data,
+    loading: userChannelLoading,
+    refetch: refetchUserChannel,
+  } = useQuery(QUERY_USER_CHANNELS, {
     pollInterval: 90 * 1000,
   });
+
+  useEffect(
+    () =>
+      autorun(() => {
+        if (channelStore.firstLoading) {
+          refetchUserChannel();
+        }
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   useEffect(() => {
     runInAction(() => {
@@ -56,8 +71,6 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
       channelStore.user = data?.user;
     });
   }, [channelStore, data?.user, userChannelLoading]);
-
-  useEffect(() => {}, [params.channelCode]);
 
   useEffect(() => {
     if (!socketClient.connected) {

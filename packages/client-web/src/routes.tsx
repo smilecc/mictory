@@ -1,30 +1,26 @@
 import React, { useEffect } from "react";
 import { autorun } from "mobx";
-import { createHashRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createHashRouter, RouterProvider, Navigate, useNavigate } from "react-router-dom";
 import { HomePage } from "@/pages/Home";
 import { ChannelPage } from "@/pages/channel/channel";
 import { LoginPage } from "@/pages/user/login";
 import { UserCreatePage } from "@/pages/user/create";
 import { MessagePage } from "./pages/channel/message";
+import { useCommonStore } from "@/stores";
 
 export const RouteGuard: React.FC<{
   children: React.ReactNode;
 }> = (props) => {
-  // const navigate = useNavigate();
-  // const commonStore = useCommonStore();
+  const navigate = useNavigate();
+  const commonStore = useCommonStore();
 
   useEffect(
     () =>
       autorun(() => {
         console.log("autorun");
-        // if (commonStore.connectServers.length === 0) {
-        //   navigate("/user/connect");
-        //   return;
-        // }
-
-        // if (!commonStore.accessToken) {
-        //   navigate("/user/login");
-        // }
+        if (commonStore.isNotLogin) {
+          navigate("/user/login");
+        }
       }),
     [],
   );
@@ -54,11 +50,19 @@ const router = createHashRouter([
     children: [
       {
         path: "",
-        element: <Navigate to="/channel/@msg" replace />,
+        element: (
+          <RouteGuard>
+            <Navigate to="/channel/@msg" replace />
+          </RouteGuard>
+        ),
       },
       {
         path: "@msg",
-        element: <MessagePage />,
+        element: (
+          <RouteGuard>
+            <MessagePage />
+          </RouteGuard>
+        ),
       },
       {
         path: ":channelCode",
