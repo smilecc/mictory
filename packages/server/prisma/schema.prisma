@@ -41,7 +41,7 @@ model User {
   /// @HideField({ match: 'UserWhereInput' })
   username      String           @unique @db.VarChar(32)
   /// 昵称
-  /// @Validator.MinLength(1)
+  /// @Validator.MinLength(1, { message: 'INVAILD_USER_NICKNAME' })
   nickname      String           @db.VarChar(32)
   /// 昵称编号
   /// @HideField({ match: 'User@(Create|Update)*Input' })
@@ -52,7 +52,7 @@ model User {
   /// @HideField({ input: true, output: false })
   sessionState  UserSessionState @default(OFFLINE)
   /// 密码
-  /// @Validator.MinLength(6)
+  /// @Validator.MinLength(6, { message: 'INVAILD_USER_PASSWORD' })
   /// @HideField({ match: 'UserWhereInput' })
   password      String
   /// 密码盐

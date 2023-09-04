@@ -4,10 +4,10 @@ import { nanoid } from 'nanoid';
 import { RoomId } from 'src/types';
 import { UserInputError } from '@nestjs/apollo';
 import { GraphQLErrorOptions } from 'graphql';
-import { MictoryErrorCodes } from '@mictory/common';
+import { MictoryErrorCodes, MictoryErrorToString } from '@mictory/common';
 
 export function CreateMictoryError(error: MictoryErrorCodes, options?: GraphQLErrorOptions): UserInputError {
-  return new UserInputError(MictoryErrorCodes[error], options);
+  return new UserInputError(MictoryErrorToString(error), options);
 }
 
 /**

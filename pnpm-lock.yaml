@@ -22,6 +22,7 @@ importers:
       '@mantine/hooks': ^6.0.19
       '@mantine/modals': ^6.0.19
       '@mantine/notifications': ^6.0.19
+      '@mictory/common': workspace:*
       '@parcel/watcher': ^2.3.0
       '@radix-ui/react-avatar': ^1.0.3
       '@radix-ui/react-icons': ^1.3.0
@@ -44,6 +45,7 @@ importers:
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
       graphql: ^16.8.0
+      i18next: ^23.4.6
       lodash: ^4.17.21
       mediasoup-client: '3'
       mobx: ^6.10.0
@@ -54,6 +56,7 @@ importers:
       react: ^18.2.0
       react-dom: ^18.2.0
       react-hook-form: ^7.45.4
+      react-i18next: ^13.2.2
       react-router-dom: ^6.15.0
       socket.io-client: ^4.7.2
       tailwind-merge: ^1.14.0
@@ -71,6 +74,7 @@ importers:
       '@mantine/hooks': 6.0.19_react@18.2.0
       '@mantine/modals': 6.0.19_ttukj57io3fchg42nfrok6jn3y
       '@mantine/notifications': 6.0.19_ttukj57io3fchg42nfrok6jn3y
+      '@mictory/common': link:../common
       '@radix-ui/react-avatar': 1.0.3_zkisbtryv3xtasf42ecsrjh3ky
       '@radix-ui/react-icons': 1.3.0_react@18.2.0
       '@radix-ui/react-label': 2.0.2_zkisbtryv3xtasf42ecsrjh3ky
@@ -82,6 +86,7 @@ importers:
       class-variance-authority: 0.7.0
       clsx: 2.0.0
       graphql: 16.8.0
+      i18next: 23.4.6
       lodash: 4.17.21
       mediasoup-client: 3.6.100
       mobx: 6.10.2
@@ -89,6 +94,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-hook-form: 7.46.0_react@18.2.0
+      react-i18next: 13.2.2_tdfn4wwtvfybtukrsv2e5gl7pa
       react-router-dom: 6.15.0_biqbaboplfbrettd7655fr4n2y
       socket.io-client: 4.7.2
       tailwind-merge: 1.14.0
@@ -6751,6 +6757,12 @@ packages:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
     dev: true
 
+  /html-parse-stringify/3.0.1:
+    resolution: {integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==}
+    dependencies:
+      void-elements: 3.1.0
+    dev: false
+
   /http-errors/2.0.0:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}
     engines: {node: '>= 0.8'}
@@ -6792,6 +6804,12 @@ packages:
     resolution: {integrity: sha512-nZXjEF2nbo7lIw3mgYjItAfgQXog3OjJogSbKa2CQIIvSGWcKgeJnQlNXip6NglNzYH45nSRiEVimMvYL8DDqQ==}
     engines: {node: '>=14.18.0'}
     dev: true
+
+  /i18next/23.4.6:
+    resolution: {integrity: sha512-jBE8bui969Ygv7TVYp0pwDZB7+he0qsU+nz7EcfdqSh+QvKjEfl9YPRQd/KrGiMhTYFGkeuPaeITenKK/bSFDg==}
+    dependencies:
+      '@babel/runtime': 7.22.15
+    dev: false
 
   /iconv-lite/0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -8907,6 +8925,26 @@ packages:
       react: 18.2.0
     dev: false
 
+  /react-i18next/13.2.2_tdfn4wwtvfybtukrsv2e5gl7pa:
+    resolution: {integrity: sha512-+nFUkbRByFwnrfDcYqvzBuaeZb+nACHx+fAWN/pZMddWOCJH5hoc21+Sa/N/Lqi6ne6/9wC/qRGOoQhJa6IkEQ==}
+    peerDependencies:
+      i18next: '>= 23.2.3'
+      react: '>= 16.8.0'
+      react-dom: '*'
+      react-native: '*'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.22.15
+      html-parse-stringify: 3.0.1
+      i18next: 23.4.6
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
   /react-is/16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
@@ -10408,6 +10446,11 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
+
+  /void-elements/3.1.0:
+    resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
+    engines: {node: '>=0.10.0'}
+    dev: false
 
   /walker/1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}

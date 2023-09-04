@@ -7,6 +7,7 @@ import { ThemeWrapper } from "@/components/theme/theme-wrapper";
 import { ApolloProvider } from "@apollo/client";
 import { SocketClientContext, socketClient, apolloClient } from "@/contexts";
 import { AudioWrapper } from "./components/theme/audio-wrapper";
+import "./i18n";
 
 const stores = getStores();
 

@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server:start": "pnpm run -C packages/server start",
-    "server:dev": "pnpm run -C packages/server start:dev"
+    "common:build": "pnpm run -C packages/common build",
+    "server:start": "pnpm common:build && pnpm run -C packages/server start",
+    "server:dev": "pnpm common:build && pnpm run -C packages/server start:dev",
+    "client-web:dev": "pnpm common:build && pnpm run -C packages/client-web dev"
   },
   "keywords": [],
   "author": "",
