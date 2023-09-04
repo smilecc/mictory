@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 dependencies:
   '@apollo/server':
     specifier: ^4.9.2
@@ -7008,3 +7004,7 @@ packages:
       compress-commons: 4.1.1
       readable-stream: 3.6.2
     dev: false
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false

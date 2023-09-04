@@ -2,6 +2,13 @@ import { Logger } from '@nestjs/common';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { nanoid } from 'nanoid';
 import { RoomId } from 'src/types';
+import { UserInputError } from '@nestjs/apollo';
+import { GraphQLErrorOptions } from 'graphql';
+import { MictoryErrorCodes } from '@mictory/common';
+
+export function CreateMictoryError(error: MictoryErrorCodes, options?: GraphQLErrorOptions): UserInputError {
+  return new UserInputError(MictoryErrorCodes[error], options);
+}
 
 /**
  * 获取环境变量

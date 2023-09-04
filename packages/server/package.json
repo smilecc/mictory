@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "@mictory/server",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -46,7 +46,8 @@
     "prisma-soft-delete-middleware": "^1.1.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "@mictory/common": "workspace:*"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

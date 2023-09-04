@@ -9,11 +9,12 @@ import { nanoid } from 'nanoid';
 import { CreateOneUserArgs } from 'src/@generated/user/create-one-user.args';
 import { UserWhereInput } from 'src/@generated/user/user-where.input';
 import { User } from 'src/@generated/user/user.model';
-import { CreateMictoryError, MictoryErrorCodes } from 'src/enums';
+import { MictoryErrorCodes } from '@mictory/common';
 import { UserSessionCreateInput } from 'src/graphql/types/user-session-create.input';
 import { UserSession } from 'src/graphql/types/user-session.output';
 import { UserService } from 'src/services';
 import { JwtUserClaims } from 'src/types';
+import { CreateMictoryError } from 'src/utils';
 
 @Resolver(() => User)
 export class UserResolver {

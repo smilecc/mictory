@@ -1,0 +1,17 @@
+{
+  "name": "mictory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "server:start": "pnpm run -C packages/server start",
+    "server:dev": "pnpm run -C packages/server start:dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "typescript": "^5.1.3"
+  }
+}
