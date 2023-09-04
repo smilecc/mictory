@@ -37,7 +37,7 @@ model User {
   /// @HideField({ match: 'UserWhereInput' })
   id            BigInt           @id @default(autoincrement())
   /// 用户名
-  /// @Validator.MinLength(3)
+  /// @Validator.MinLength(3, { message: 'INVAILD_USERNAME' })
   /// @HideField({ match: 'UserWhereInput' })
   username      String           @unique @db.VarChar(32)
   /// 昵称

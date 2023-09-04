@@ -1,4 +1,3 @@
-import { UserInputError } from '@nestjs/apollo';
 import { Args, Context, Directive, Info, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaSelect } from '@paljs/plugins';
@@ -10,6 +9,7 @@ import { nanoid } from 'nanoid';
 import { CreateOneUserArgs } from 'src/@generated/user/create-one-user.args';
 import { UserWhereInput } from 'src/@generated/user/user-where.input';
 import { User } from 'src/@generated/user/user.model';
+import { CreateMictoryError, MictoryErrorCodes } from 'src/enums';
 import { UserSessionCreateInput } from 'src/graphql/types/user-session-create.input';
 import { UserSession } from 'src/graphql/types/user-session.output';
 import { UserService } from 'src/services';
@@ -63,7 +63,7 @@ export class UserResolver {
     });
 
     if (usernameCount > 0) {
-      throw new UserInputError('用户名已存在');
+      throw CreateMictoryError(MictoryErrorCodes.USER_EXISTED);
     }
 
     // 写入用户表
@@ -91,11 +91,11 @@ export class UserResolver {
     });
 
     if (!user) {
-      throw new UserInputError('用户不存在或密码错误');
+      throw CreateMictoryError(MictoryErrorCodes.PASSWORD_WRONG);
     }
 
     if (user.password !== this.userService.generatePasswordHash(args.password, user.passwordSalt)) {
-      throw new UserInputError('用户不存在或密码错误');
+      throw CreateMictoryError(MictoryErrorCodes.PASSWORD_WRONG);
     }
 
     return plainToClass(UserSession, {

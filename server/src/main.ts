@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { loadOrGenerateAppSecret } from './utils';
 import { ValidationPipe } from '@nestjs/common';
 import { MictorySocketAdapter } from './events/socket.adapter';
+import * as _ from 'lodash';
+import { UserInputError } from '@nestjs/apollo';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -24,7 +26,22 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      stopAtFirstError: true,
+      exceptionFactory(errors) {
+        const flatErrors = _.flatMapDeep(errors, (error) => error.children);
+        const firstError = _.first(flatErrors);
+        const firstConstraint = _.findKey(firstError.constraints, () => true);
+
+        return new UserInputError(firstError.constraints[firstConstraint], {
+          extensions: {
+            field: firstError.property,
+          },
+        });
+      },
+    }),
+  );
   app.useWebSocketAdapter(new MictorySocketAdapter(app));
   await app.listen(3000);
 }
