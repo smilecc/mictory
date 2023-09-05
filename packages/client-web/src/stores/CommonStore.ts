@@ -5,13 +5,10 @@ import type { ThemeDarkMode } from "@/types";
 export class CommonStore {
   constructor() {
     makeAutoObservable(this);
-
-    this.themeDarkMode = StoreStorage.load(CommonStore, "themeDarkMode", "light");
-    this._sessionToken = StoreStorage.load(CommonStore, "sessionToken", "");
   }
 
-  themeDarkMode: ThemeDarkMode = "light";
-  private _sessionToken: string = "";
+  themeDarkMode: ThemeDarkMode = StoreStorage.load(CommonStore, "themeDarkMode", "dark");
+  private _sessionToken: string = StoreStorage.load(CommonStore, "sessionToken", "");
 
   setThemeDarkMode(darkMode: ThemeDarkMode) {
     this.themeDarkMode = StoreStorage.save(CommonStore, "themeDarkMode", darkMode);

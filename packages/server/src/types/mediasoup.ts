@@ -18,8 +18,8 @@ export type Room = {
   roomId: RoomId;
   workerId: WorkerId;
   sessions: RoomSession[];
-  activeSpeakerObserver: ActiveSpeakerObserver;
-  audioLevelObserver: AudioLevelObserver;
+  activeSpeakerObserver?: ActiveSpeakerObserver;
+  audioLevelObserver?: AudioLevelObserver;
 };
 
 export type WorkerAppData = {
@@ -40,6 +40,7 @@ export type RoomSession = {
 export type SessionTransportDirection = 'Producer' | 'Consumer';
 
 export type SessionTransport = {
+  userId: bigint;
   sessionId: string;
   transport: WebRtcTransport;
   direction: SessionTransportDirection;

@@ -229,6 +229,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
       kind: consumer.kind,
       producerId: consumer.producerId,
       rtpParameters: consumer.rtpParameters,
+      producerUserId: parseInt(`${sessionTransport.userId}`),
     };
   }
 

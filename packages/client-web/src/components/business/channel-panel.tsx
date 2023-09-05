@@ -1,38 +1,37 @@
 import { GetChannelDetailQuery } from "@/@generated/graphql";
-import { SocketClientContext } from "@/contexts";
 import { useChannelStore } from "@/stores";
 import { Collapse } from "@mantine/core";
-import { useDebounceFn, useEventListener, useReactive } from "ahooks";
-import React, { Fragment, useCallback, useContext, useState } from "react";
+import { useEventListener, useReactive } from "ahooks";
+import React, { Fragment, useCallback, useState } from "react";
 import { UserPopover } from "./user-popover";
 import { IconUser } from "@tabler/icons-react";
-import * as _ from "lodash";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
   onShouldRefetch?: () => void;
 }> = ({ channel, onShouldRefetch }) => {
-  const socketClient = useContext(SocketClientContext);
   const channelStore = useChannelStore();
   const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
   const state = useReactive({
     closeCategories: [] as number[],
   });
 
-  const { run: stopSpeak } = useDebounceFn(
-    (userId: number) => {
-      setSpeakingUsers((pre) => pre.filter((it) => it !== userId));
+  // 监听用户说话
+  useEventListener(
+    "user:speak",
+    (e: CustomEvent) => {
+      setSpeakingUsers((pre) => [...new Set([...pre, e.detail.userId])]);
     },
-    { wait: 5000 },
+    {
+      target: window,
+    },
   );
 
   useEventListener(
-    "user:speak",
-    _.throttle((e: CustomEvent) => {
-      const userId: number = e.detail.userId;
-      setSpeakingUsers((pre) => [...new Set([...pre, userId])]);
-      stopSpeak(userId);
-    }, 3000),
+    "user:stop_speak",
+    (e: CustomEvent) => {
+      setSpeakingUsers((pre) => pre.filter((it) => it !== e.detail.userId));
+    },
     {
       target: window,
     },
@@ -61,11 +60,11 @@ export const ChannelPanel: React.FC<{
           </div>
           <Collapse in={!state.closeCategories.includes(it.id)}>
             {it.rooms?.map((room) => (
-              <div key={room.id}>
+              <div key={room.id} className="select-none">
                 <div
                   className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
                   onDoubleClick={async () => {
-                    await channelStore.joinRoom(room.id);
+                    await channelStore.joinRoom(room.id, room.channelId);
 
                     onShouldRefetch?.();
 
@@ -79,6 +78,8 @@ export const ChannelPanel: React.FC<{
                       })
                       .catch(() => {
                         console.error("获取媒体设备失败");
+                        // 创建一个空白媒体流
+                        channelStore.createProducer(new AudioContext().createMediaStreamDestination().stream);
                       });
                   }}
                 >
@@ -103,36 +104,6 @@ export const ChannelPanel: React.FC<{
           </Collapse>
         </Fragment>
       ))}
-      {/* {channel.categories.map((room) => (
-        <div key={room.id}>
-          <div
-            className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
-            onDoubleClick={() => {
-              runInAction(() => {
-                commonStore.session?.joinRoom(room.id.toString());
-                commonStore.joinedServerId = state.serverId;
-              });
-            }}
-          >
-            {room.name}
-          </div>
-          <div>
-            {users
-              .filter((it) => it.online && it.roomId === room.id)
-              .map((user) => (
-                <UserPopover key={user.id} userId={user.userId}>
-                  <div
-                    className={`my-1 flex cursor-pointer items-center rounded-md px-3 py-2 text-sm leading-none text-zinc-300 hover:bg-zinc-700 
-              ${speakingSessions.includes(user.sessionId) ? "bg-orange-500/25" : ""}`}
-                  >
-                    <IconUser size={18} />
-                    <span className="ml-1">{user.userNickname}</span>
-                  </div>
-                </UserPopover>
-              ))}
-          </div>
-        </div>
-      ))} */}
     </div>
   );
 };

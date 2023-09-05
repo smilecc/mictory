@@ -15,6 +15,8 @@ const QUERY_USER_CHANNELS = gql(`
 query listUserChannel {
   user(where: { nicknameNo: { equals: -1 } }) {
     id
+    nickname
+    nicknameNo
     channels {
       channel {
         id
@@ -68,7 +70,7 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
         channelStore.firstLoading = false;
       }
 
-      channelStore.user = data?.user;
+      channelStore.userWithChannels = data?.user;
     });
   }, [channelStore, data?.user, userChannelLoading]);
 

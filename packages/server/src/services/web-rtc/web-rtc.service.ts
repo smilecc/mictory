@@ -100,37 +100,37 @@ export class WebRtcService implements OnModuleInit {
         roomId,
         workerId: worker.appData.id,
         sessions: [],
-        activeSpeakerObserver: await worker.appData.router.createActiveSpeakerObserver(),
-        audioLevelObserver: await worker.appData.router.createAudioLevelObserver({
-          maxEntries: 50,
-          threshold: -50,
-          interval: 2000,
-        }),
+        // activeSpeakerObserver: await worker.appData.router.createActiveSpeakerObserver(),
+        // audioLevelObserver: await worker.appData.router.createAudioLevelObserver({
+        //   maxEntries: 50,
+        //   threshold: -50,
+        //   interval: 2000,
+        // }),
       };
 
-      room.audioLevelObserver.on('volumes', (volumes) => {
-        volumes.forEach(async ({ producer, volume }) => {
-          this.logger.debug(
-            `AudioLevelObserver on:volumes, Producer: ${producer.id} Volume: ${volume} [${volumes.length}]`,
-          );
+      // room.audioLevelObserver.on('volumes', (volumes) => {
+      //   volumes.forEach(async ({ producer, volume }) => {
+      //     this.logger.debug(
+      //       `AudioLevelObserver on:volumes, Producer: ${producer.id} Volume: ${volume} [${volumes.length}]`,
+      //     );
 
-          // 通知客户端
-          const transport = room.sessions.flatMap((it) => it.transports).find((it) => it.producer?.id === producer.id);
-          if (transport) {
-            const session = room.sessions.find((it) => it.id === transport.sessionId);
-            this.socketServer.to(socketRoomKey(roomId)).emit('speak', {
-              producerId: producer.id,
-              userId: session.userId,
-              sessionId: session.id,
-              volume,
-            });
-          }
-        });
-      });
+      //     // 通知客户端
+      //     const transport = room.sessions.flatMap((it) => it.transports).find((it) => it.producer?.id === producer.id);
+      //     if (transport) {
+      //       const session = room.sessions.find((it) => it.id === transport.sessionId);
+      //       this.socketServer.to(socketRoomKey(roomId)).emit('speak', {
+      //         producerId: producer.id,
+      //         userId: session.userId,
+      //         sessionId: session.id,
+      //         volume,
+      //       });
+      //     }
+      //   });
+      // });
 
-      room.audioLevelObserver.on('silence', () => {
-        this.logger.debug(`AudioLevelObserver on:silence`);
-      });
+      // room.audioLevelObserver.on('silence', () => {
+      //   this.logger.debug(`AudioLevelObserver on:silence`);
+      // });
 
       this.rooms.push(room);
     }
@@ -201,6 +201,7 @@ export class WebRtcService implements OnModuleInit {
 
     const session = room.sessions.find((it) => it.userId === userId);
     session.transports.push({
+      userId,
       sessionId: session.id,
       transport,
       direction: transportDirection,

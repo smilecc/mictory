@@ -1,9 +1,12 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { ListUserChannelQuery } from "@/@generated/graphql";
 import { socketClient } from "@/contexts";
 import * as mediasoupClient from "mediasoup-client";
 import type { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/types";
+import * as _ from "lodash";
+import { IGainSetting } from "@/types";
+import { StoreStorage } from "@/lib/store-storage";
 
 export class ChannelStore {
   constructor() {
@@ -15,7 +18,18 @@ export class ChannelStore {
   }
 
   firstLoading: boolean = true;
-  user: ListUserChannelQuery["user"] = undefined;
+  userWithChannels: ListUserChannelQuery["user"] = undefined;
+
+  joinedChannelId?: number = undefined;
+
+  // 当前语音连接状态
+  connectionState: mediasoupClient.types.ConnectionState = "new";
+
+  // 声音增益
+  audioGain: IGainSetting = StoreStorage.load(ChannelStore, "audioGain", {
+    microphone: 100,
+    volume: 100,
+  });
 
   // mediasoup设备
   mediasoupDevice: mediasoupClient.Device;
@@ -27,6 +41,8 @@ export class ChannelStore {
   sendTransport?: Transport;
 
   mediaStreams: MediaStream[] = [];
+
+  watchVolumeUsers: Set<number> = new Set();
 
   async handleSocketConnect() {
     console.log("SocketClient connected");
@@ -49,11 +65,17 @@ export class ChannelStore {
 
   async cleanUserState() {
     this.firstLoading = true;
-    this.user = undefined;
+    this.userWithChannels = undefined;
     this.mediaStreams = [];
   }
 
-  async joinRoom(roomId: number) {
+  /**
+   * 加入房间
+   * @param roomId 房间ID
+   */
+  async joinRoom(roomId: number, channelId: number) {
+    this.connectionState = "new";
+    this.joinedChannelId = channelId;
     this.mediaStreams = [];
     this.mediasoupDevice = new mediasoupClient.Device();
 
@@ -122,11 +144,22 @@ export class ChannelStore {
       callback({ id: produceResp.id });
     });
 
-    sendTransport.on("connectionstatechange", (state) => console.log("send:connectionstatechange", state, roomId));
+    sendTransport.on("connectionstatechange", (state) => {
+      if (channelId === this.joinedChannelId) {
+        runInAction(() => {
+          this.connectionState = state;
+        });
+      }
+
+      console.log("send:connectionstatechange", state, roomId);
+    });
   }
 
-  createTransportAndProducer() {}
-
+  /**
+   * 创建消费者
+   * @param producerId 生产者ID
+   * @returns
+   */
   async createConsumer(producerId: string) {
     if (!this.recvTransport) {
       console.log("消费生产者失败，recvTransport为空", producerId);
@@ -143,23 +176,121 @@ export class ChannelStore {
       ...consumerData,
     });
 
+    const userId: number = consumerData.producerUserId;
     const ms = new MediaStream();
+
+    this.modifyAudioGain(ms, "volume");
+    this.watchMediaStreamVolume(ms, userId);
+
     ms.addTrack(consumer.track);
     this.mediaStreams.push(ms);
 
     console.log("consumeProducer:consumer", consumer.id, "producerId", producerId);
   }
 
+  /**
+   * 创建消费者
+   * @param stream 媒体流
+   * @returns
+   */
   async createProducer(stream: MediaStream) {
     if (!this.sendTransport) {
       console.log("创建生产者失败，sendTransport为空", stream.id, stream);
       return;
     }
 
+    this.modifyAudioGain(stream, "microphone");
+    this.watchMediaStreamVolume(stream, this.userWithChannels?.id);
     const producer = await this.sendTransport.produce({
       track: stream.getTracks()[0],
     });
 
     console.log("createProducer:producer", producer.id);
+  }
+
+  /**
+   * 监听麦克风音量变化
+   * @param stream 媒体流
+   * @param userId 用户ID
+   */
+  watchMediaStreamVolume(stream: MediaStream, userId: number) {
+    this.watchVolumeUsers.add(userId);
+    const audioContext = new AudioContext();
+    const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+    const analyserNode = audioContext.createAnalyser();
+    mediaStreamAudioSourceNode.connect(analyserNode);
+    // 如果是自己说话则使用当前用户会话ID
+    const onStopSpeak = _.debounce(() => {
+      window.dispatchEvent(new CustomEvent("user:stop_speak", { detail: { userId } }));
+    }, 200);
+    const onSpeak = _.throttle(
+      () => {
+        window.dispatchEvent(new CustomEvent("user:speak", { detail: { userId } }));
+        onStopSpeak();
+      },
+      100,
+      {
+        leading: true,
+      },
+    );
+
+    const pcmData = new Float32Array(analyserNode.fftSize);
+    const onFrame = () => {
+      analyserNode.getFloatTimeDomainData(pcmData);
+      let sumSquares = 0.0;
+      for (const amplitude of pcmData) {
+        sumSquares += amplitude * amplitude;
+      }
+      const volume = Math.sqrt(sumSquares / pcmData.length);
+      if (volume > 0.05) {
+        onSpeak();
+      }
+
+      if (this.watchVolumeUsers.has(userId)) {
+        window.requestAnimationFrame(onFrame);
+      }
+    };
+    window.requestAnimationFrame(onFrame);
+  }
+
+  modifyAudioGain(stream: MediaStream, gainKey: keyof IGainSetting) {
+    const getValue = () => {
+      const globalGainValue = this.audioGain?.[gainKey];
+      return typeof globalGainValue === "number" ? globalGainValue / 100 : 1;
+    };
+
+    const ctx = new AudioContext();
+    const gainNode = ctx.createGain();
+    const source = ctx.createMediaStreamSource(stream);
+    if (gainKey === "microphone") {
+      const destination = ctx.createMediaStreamDestination();
+      source.connect(gainNode).connect(destination);
+      stream.removeTrack(stream.getAudioTracks()[0]);
+      stream.addTrack(destination.stream.getAudioTracks()[0]);
+    } else {
+      source.connect(gainNode).connect(ctx.destination);
+    }
+    gainNode.gain.value = getValue();
+
+    const onFrame = () => {
+      gainNode.gain.linearRampToValueAtTime(getValue(), ctx.currentTime);
+
+      if (gainKey === "microphone") {
+        window.requestAnimationFrame(onFrame);
+      }
+      if (gainKey === "volume" && !this.recvTransport?.closed) {
+        window.requestAnimationFrame(onFrame);
+      }
+    };
+    window.requestAnimationFrame(onFrame);
+  }
+
+  get joinedChannel() {
+    console.log("this.joinedChannelId", this.joinedChannelId);
+    if (!this.joinedChannelId) {
+      return undefined;
+    }
+
+    return this.userWithChannels?.channels?.find((it) => it.channel.id === this.joinedChannelId)?.channel;
   }
 }
