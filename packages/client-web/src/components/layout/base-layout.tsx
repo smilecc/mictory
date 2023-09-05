@@ -10,6 +10,7 @@ import { IconMessage2Heart, IconPlus } from "@tabler/icons-react";
 import { useChannelStore } from "@/stores";
 import { Observer } from "mobx-react-lite";
 import { autorun, runInAction } from "mobx";
+import { RouteGuard } from "@/routes";
 
 const QUERY_USER_CHANNELS = gql(`
 query listUserChannel {
@@ -82,57 +83,59 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
   }, [channelStore, socketClient]);
 
   return (
-    <div className="relative h-screen w-screen">
-      {/* 加载覆盖层 */}
-      <Observer>
-        {() => (
-          <Transition mounted={channelStore.firstLoading} transition="fade" duration={200} timingFunction="ease">
-            {(styles) => (
-              <div
-                style={styles}
-                className="absolute inset-x-0 inset-y-0 z-50 flex items-center justify-center bg-surface1"
-              >
-                <Loader variant="dots" size="xl" />
-              </div>
-            )}
-          </Transition>
-        )}
-      </Observer>
-
-      <main className="h-screen">
-        <div className="flex h-full">
-          {/* 侧边栏 */}
-          <div className="bg-background pr-2 pt-2">
-            <SideAvatar name="信息" icon={<IconMessage2Heart />} onClick={() => navigate("/channel/@msg")} />
-            <div className="mb-2 flex justify-center pl-2">
-              <Divider size="sm" className="w-8" />
-            </div>
-            <SideAvatar name="增加频道" icon={<IconPlus />} />
-
-            <Observer>
-              {() => (
-                <>
-                  {data?.user?.channels?.map((it) => (
-                    <Fragment key={it.channel.id}>
-                      <SideAvatar
-                        avatar={it.channel.avatar}
-                        name={it.channel.name}
-                        key={it.channel.id}
-                        active={it.channel.code === params.channelCode}
-                        onClick={() => {
-                          navigate(`/channel/${it.channel.code}`);
-                        }}
-                      />
-                    </Fragment>
-                  ))}
-                </>
+    <RouteGuard>
+      <div className="relative h-screen w-screen">
+        {/* 加载覆盖层 */}
+        <Observer>
+          {() => (
+            <Transition mounted={channelStore.firstLoading} transition="fade" duration={200} timingFunction="ease">
+              {(styles) => (
+                <div
+                  style={styles}
+                  className="absolute inset-x-0 inset-y-0 z-50 flex items-center justify-center bg-surface1"
+                >
+                  <Loader variant="dots" size="xl" />
+                </div>
               )}
-            </Observer>
-          </div>
+            </Transition>
+          )}
+        </Observer>
 
-          {props.children}
-        </div>
-      </main>
-    </div>
+        <main className="h-screen">
+          <div className="flex h-full">
+            {/* 侧边栏 */}
+            <div className="bg-background pr-2 pt-2">
+              <SideAvatar name="信息" icon={<IconMessage2Heart />} onClick={() => navigate("/channel/@msg")} />
+              <div className="mb-2 flex justify-center pl-2">
+                <Divider size="sm" className="w-8" />
+              </div>
+              <SideAvatar name="增加频道" icon={<IconPlus />} />
+
+              <Observer>
+                {() => (
+                  <>
+                    {data?.user?.channels?.map((it) => (
+                      <Fragment key={it.channel.id}>
+                        <SideAvatar
+                          avatar={it.channel.avatar}
+                          name={it.channel.name}
+                          key={it.channel.id}
+                          active={it.channel.code === params.channelCode}
+                          onClick={() => {
+                            navigate(`/channel/${it.channel.code}`);
+                          }}
+                        />
+                      </Fragment>
+                    ))}
+                  </>
+                )}
+              </Observer>
+            </div>
+
+            {props.children}
+          </div>
+        </main>
+      </div>
+    </RouteGuard>
   );
 };

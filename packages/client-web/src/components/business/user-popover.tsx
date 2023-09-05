@@ -63,3 +63,5 @@ export const UserPopover: React.FC<{
     </HoverCard>
   );
 };
+
+export default UserPopover;

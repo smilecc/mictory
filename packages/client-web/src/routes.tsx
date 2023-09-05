@@ -1,11 +1,6 @@
 import React, { useEffect } from "react";
 import { autorun } from "mobx";
 import { createHashRouter, RouterProvider, Navigate, useNavigate } from "react-router-dom";
-import { HomePage } from "@/pages/Home";
-import { ChannelPage } from "@/pages/channel/channel";
-import { LoginPage } from "@/pages/user/login";
-import { UserCreatePage } from "@/pages/user/create";
-import { MessagePage } from "./pages/channel/message";
 import { useCommonStore } from "@/stores";
 
 export const RouteGuard: React.FC<{
@@ -22,6 +17,7 @@ export const RouteGuard: React.FC<{
           navigate("/user/login");
         }
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -31,19 +27,30 @@ export const RouteGuard: React.FC<{
 const router = createHashRouter([
   {
     path: "/",
-    element: (
-      <RouteGuard>
-        <HomePage />
-      </RouteGuard>
-    ),
+    lazy: async () => {
+      const { HomePage } = await import("@/pages/Home");
+      return {
+        Component: HomePage,
+      };
+    },
   },
   {
     path: "/user/login",
-    element: <LoginPage />,
+    lazy: async () => {
+      const { LoginPage } = await import("@/pages/user/login");
+      return {
+        Component: LoginPage,
+      };
+    },
   },
   {
     path: "/user/create",
-    element: <UserCreatePage />,
+    lazy: async () => {
+      const { UserCreatePage } = await import("@/pages/user/create");
+      return {
+        Component: UserCreatePage,
+      };
+    },
   },
   {
     path: "/channel",
@@ -58,23 +65,20 @@ const router = createHashRouter([
       },
       {
         path: "@msg",
-        element: (
-          <RouteGuard>
-            <MessagePage />
-          </RouteGuard>
-        ),
+        lazy: async () => {
+          const { MessagePage } = await import("@/pages/channel/message");
+          return {
+            Component: MessagePage,
+          };
+        },
       },
       {
         path: ":channelCode",
-        element: (
-          <RouteGuard>
-            <ChannelPage />
-          </RouteGuard>
-        ),
-        loader: async (args) => {
-          console.log(args);
-
-          return null;
+        lazy: async () => {
+          const { ChannelPage } = await import("@/pages/channel/channel");
+          return {
+            Component: ChannelPage,
+          };
         },
       },
     ],

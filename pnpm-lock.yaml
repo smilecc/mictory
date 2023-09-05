@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -62,9 +58,6 @@ importers:
       '@tabler/icons-react':
         specifier: ^2.32.0
         version: 2.32.0(react@18.2.0)
-      '@types/lodash':
-        specifier: ^4.14.197
-        version: 4.14.197
       ahooks:
         specifier: ^3.7.8
         version: 3.7.8(react@18.2.0)
@@ -80,7 +73,7 @@ importers:
       i18next:
         specifier: ^23.4.6
         version: 23.4.6
-      lodash:
+      lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
       mediasoup-client:
@@ -129,6 +122,9 @@ importers:
       '@parcel/watcher':
         specifier: ^2.3.0
         version: 2.3.0
+      '@types/lodash-es':
+        specifier: ^4.17.9
+        version: 4.17.9
       '@types/node':
         specifier: ^20.5.0
         version: 20.5.9
@@ -734,7 +730,7 @@ packages:
       '@babel/traverse': 7.22.11
       '@babel/types': 7.22.11
       convert-source-map: 1.9.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -1405,7 +1401,7 @@ packages:
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/parser': 7.22.14
       '@babel/types': 7.22.11
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -1753,7 +1749,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       espree: 9.6.1
       globals: 13.21.0
       ignore: 5.2.4
@@ -2310,7 +2306,7 @@ packages:
       '@types/json-stable-stringify': 1.0.34
       '@whatwg-node/fetch': 0.9.12
       chalk: 4.1.2
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       dotenv: 16.3.1
       graphql: 16.8.0
       graphql-request: 6.1.0(graphql@16.8.0)
@@ -2463,7 +2459,7 @@ packages:
     engines: {node: '>=10.10.0'}
     dependencies:
       '@humanwhocodes/object-schema': 1.2.1
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -4097,8 +4093,15 @@ packages:
       '@types/node': 20.5.9
     dev: false
 
+  /@types/lodash-es@4.17.9:
+    resolution: {integrity: sha512-ZTcmhiI3NNU7dEvWLZJkzG6ao49zOIjEgIE0RgV7wbPxU0f2xT3VSAHw2gmst8swH6V0YkLRGp4qPlX/6I90MQ==}
+    dependencies:
+      '@types/lodash': 4.14.197
+    dev: true
+
   /@types/lodash@4.14.197:
     resolution: {integrity: sha512-BMVOiWs0uNxHVlHBgzTIqJYmj+PgCo4euloGF+5m4okL3rEYzM2EEv78mw8zWSMM57dM7kVIgJ2QDvwHSoCI5g==}
+    dev: true
 
   /@types/long@4.0.2:
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
@@ -4228,7 +4231,7 @@ packages:
       '@typescript-eslint/type-utils': 6.5.0(eslint@8.48.0)(typescript@5.2.2)
       '@typescript-eslint/utils': 6.5.0(eslint@8.48.0)(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 6.5.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       eslint: 8.48.0
       graphemer: 1.4.0
       ignore: 5.2.4
@@ -4254,7 +4257,7 @@ packages:
       '@typescript-eslint/types': 6.5.0
       '@typescript-eslint/typescript-estree': 6.5.0(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 6.5.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       eslint: 8.48.0
       typescript: 5.2.2
     transitivePeerDependencies:
@@ -4281,7 +4284,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.5.0(typescript@5.2.2)
       '@typescript-eslint/utils': 6.5.0(eslint@8.48.0)(typescript@5.2.2)
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       eslint: 8.48.0
       ts-api-utils: 1.0.2(typescript@5.2.2)
       typescript: 5.2.2
@@ -4305,7 +4308,7 @@ packages:
     dependencies:
       '@typescript-eslint/types': 6.5.0
       '@typescript-eslint/visitor-keys': 6.5.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.5.4
@@ -4578,7 +4581,7 @@ packages:
     resolution: {integrity: sha512-o/zjMZRhJxny7OyEF+Op8X+efiELC7k7yOjMzgfzVqOzXqkBkWI79YoTdOtsuWd5BWhAGAuOY/Xa6xpiaWXiNg==}
     engines: {node: '>= 14'}
     dependencies:
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -5599,6 +5602,17 @@ packages:
     dependencies:
       ms: 2.0.0
 
+  /debug@4.3.4:
+    resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+    dependencies:
+      ms: 2.1.2
+
   /debug@4.3.4(supports-color@9.4.0):
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
     engines: {node: '>=6.0'}
@@ -5815,7 +5829,7 @@ packages:
     resolution: {integrity: sha512-CQZqbrpEYnrpGqC07a9dJDz4gePZUgTPMU3NKJPSeQOyw27Tst4Pl3FemKoFGAlHzgZmKjoRmiJvbWfhCXUlIg==}
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       engine.io-parser: 5.2.1
       ws: 8.11.0
       xmlhttprequest-ssl: 2.0.0
@@ -6009,7 +6023,7 @@ packages:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.2.2
@@ -6845,7 +6859,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -6854,7 +6868,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -7833,6 +7847,10 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       p-locate: 5.0.0
+
+  /lodash-es@4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+    dev: false
 
   /lodash.defaults@4.2.0:
     resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==}
@@ -9555,7 +9573,7 @@ packages:
     engines: {node: '>=10.0.0'}
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
       engine.io-client: 6.5.2
       socket.io-parser: 4.2.4
     transitivePeerDependencies:
@@ -9569,7 +9587,7 @@ packages:
     engines: {node: '>=10.0.0'}
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.4(supports-color@9.4.0)
+      debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
 
@@ -10821,3 +10839,7 @@ packages:
   /zod@3.22.2:
     resolution: {integrity: sha512-wvWkphh5WQsJbVk1tbx1l1Ly4yg+XecD+Mq280uBGt9wa5BKSWf4Mhp6GmrkPixhMxmabYY7RbzlwVP32pbGCg==}
     dev: false
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false

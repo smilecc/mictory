@@ -10,8 +10,8 @@ import { BaseLayout } from "@/components/layout/base-layout";
 import { Card, Button, HoverCard, ActionIcon, Slider, Tooltip, Divider } from "@mantine/core";
 import { ChannelPanel } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
-import _ from "lodash";
 import { Observer } from "mobx-react-lite";
+import { first } from "lodash-es";
 import { useChannelStore, useCommonStore } from "@/stores";
 import {
   IconBroadcast,
@@ -86,7 +86,7 @@ export const ChannelPage: React.FC = () => {
       code: params.channelCode || "",
     },
     onCompleted(data) {
-      socketClient.emit("activeChannel", { channelId: _.first(data.channels)?.id });
+      socketClient.emit("activeChannel", { channelId: first(data.channels)?.id });
     },
   });
 

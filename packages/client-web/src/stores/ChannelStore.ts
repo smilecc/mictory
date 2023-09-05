@@ -4,7 +4,7 @@ import { socketClient } from "@/contexts";
 import * as mediasoupClient from "mediasoup-client";
 import type { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/types";
-import * as _ from "lodash";
+import { debounce, throttle } from "lodash-es";
 import { IGainSetting } from "@/types";
 import { StoreStorage } from "@/lib/store-storage";
 
@@ -220,10 +220,10 @@ export class ChannelStore {
     const analyserNode = audioContext.createAnalyser();
     mediaStreamAudioSourceNode.connect(analyserNode);
     // 如果是自己说话则使用当前用户会话ID
-    const onStopSpeak = _.debounce(() => {
+    const onStopSpeak = debounce(() => {
       window.dispatchEvent(new CustomEvent("user:stop_speak", { detail: { userId } }));
     }, 200);
-    const onSpeak = _.throttle(
+    const onSpeak = throttle(
       () => {
         window.dispatchEvent(new CustomEvent("user:speak", { detail: { userId } }));
         onStopSpeak();
