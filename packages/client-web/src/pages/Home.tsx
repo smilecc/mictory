@@ -1,7 +1,5 @@
 import { useCommonStore } from "@/stores";
 import React from "react";
-import { useQuery } from "@apollo/client";
-import { gql } from "@/@generated";
 
 export const HomePage: React.FC = () => {
   const commonStore = useCommonStore();
