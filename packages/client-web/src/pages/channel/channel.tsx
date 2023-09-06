@@ -198,10 +198,10 @@ export const ChannelPage: React.FC = () => {
                         <HoverCard.Target>
                           <ActionIcon
                             onClick={() => {
-                              // const current = commonStore.gainSetting.microphone;
-                              // const history = commonStore.gainSetting.historyMicrophone || 100;
-                              // commonStore.setGainItem("microphone", commonStore.gainSetting.microphone ? 0 : history);
-                              // commonStore.setGainItem("historyMicrophone", current);
+                              const current = channelStore.audioGain.microphone;
+                              const history = channelStore.audioGain.historyMicrophone || 100;
+                              channelStore.setAudioGainItem("microphone", current ? 0 : history);
+                              channelStore.setAudioGainItem("historyMicrophone", current);
                             }}
                           >
                             {channelStore.audioGain.microphone ? (
@@ -216,7 +216,7 @@ export const ChannelPage: React.FC = () => {
                             max={300}
                             labelAlwaysOn
                             value={channelStore.audioGain.microphone}
-                            // onChange={(v) => commonStore.setGainItem("microphone", v)}
+                            onChange={(v) => channelStore.setAudioGainItem("microphone", v)}
                           />
                         </HoverCard.Dropdown>
                       </HoverCard>
@@ -226,10 +226,10 @@ export const ChannelPage: React.FC = () => {
                           <ActionIcon
                             className="ml-1"
                             onClick={() => {
-                              // const current = commonStore.gainSetting.volume;
-                              // const history = commonStore.gainSetting.historyVolume || 100;
-                              // commonStore.setGainItem("volume", commonStore.gainSetting.volume ? 0 : history);
-                              // commonStore.setGainItem("historyVolume", current);
+                              const current = channelStore.audioGain.volume;
+                              const history = channelStore.audioGain.historyVolume || 100;
+                              channelStore.setAudioGainItem("volume", current ? 0 : history);
+                              channelStore.setAudioGainItem("historyVolume", current);
                             }}
                           >
                             {channelStore.audioGain.volume ? <IconVolume size={18} /> : <IconVolumeOff size={18} />}
@@ -240,7 +240,7 @@ export const ChannelPage: React.FC = () => {
                             max={300}
                             labelAlwaysOn
                             value={channelStore.audioGain.volume}
-                            // onChange={(v) => commonStore.setGainItem("volume", v)}
+                            onChange={(v) => channelStore.setAudioGainItem("volume", v)}
                           />
                         </HoverCard.Dropdown>
                       </HoverCard>

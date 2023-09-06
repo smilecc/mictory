@@ -285,6 +285,13 @@ export class ChannelStore {
     window.requestAnimationFrame(onFrame);
   }
 
+  setAudioGainItem(k: keyof IGainSetting, v: number) {
+    this.audioGain = StoreStorage.save(ChannelStore, "audioGain", {
+      ...this.audioGain,
+      [k]: v,
+    });
+  }
+
   get joinedChannel() {
     console.log("this.joinedChannelId", this.joinedChannelId);
     if (!this.joinedChannelId) {
