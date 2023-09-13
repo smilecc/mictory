@@ -59,7 +59,7 @@ export const ChannelPanel: React.FC<{
             {it.name}
           </div>
           <Collapse in={!state.closeCategories.includes(it.id)}>
-            {it.rooms?.map((room) => (
+            {it.rooms?.concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).concat(it.rooms).map((room) => (
               <div key={room.id} className="select-none">
                 <div
                   className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"

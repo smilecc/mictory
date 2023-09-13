@@ -72,6 +72,46 @@
   }
 }
 
+::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track-piece {
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #fafafa;
+}
+
+::-webkit-scrollbar-track:hover::-webkit-scrollbar-thumb {
+  background-color: #d5d5d5;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #e1e1e1;
+  width: 6px;
+  height: 8%;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #d5d5d5;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #c8c8c8;
+}
+
 /* 
 :root {
   --mio-theme-color-white: #fff;

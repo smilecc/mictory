@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
-import { Card, Button, HoverCard, ActionIcon, Slider, Tooltip, Divider } from "@mantine/core";
+import { Button, HoverCard, ActionIcon, Slider, Tooltip, Divider } from "@mantine/core";
 import { ChannelPanel } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
@@ -144,20 +144,24 @@ export const ChannelPage: React.FC = () => {
     <BaseLayout>
       <div className="flex flex-1 bg-surface2">
         {/* 频道 */}
-        <div className="relative w-60 bg-surface1">
-          <Card>{channel?.name}</Card>
-          {channel ? (
-            <ChannelPanel
-              channel={channel}
-              onShouldRefetch={() => {
-                refetchChannelDetail({
-                  code: params.channelCode,
-                });
-              }}
-            />
-          ) : null}
+        <div className="relative flex w-60 flex-col bg-surface1 pt-14">
+          <div className="absolute left-0 right-0 top-0 bg-surface1">
+            <div className="bg-background/20 p-4">{channel?.name}</div>
+          </div>
+          <div className="flex-1 overflow-y-scroll pt-2">
+            {channel ? (
+              <ChannelPanel
+                channel={channel}
+                onShouldRefetch={() => {
+                  refetchChannelDetail({
+                    code: params.channelCode,
+                  });
+                }}
+              />
+            ) : null}
+          </div>
           {/* 底部控制面板 */}
-          <div className="absolute inset-x-0 bottom-0">
+          <div className="">
             {/* 用户信息 */}
             <Observer>
               {() => (
