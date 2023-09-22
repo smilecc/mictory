@@ -104,7 +104,7 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
         <main className="h-screen">
           <div className="flex h-full">
             {/* 侧边栏 */}
-            <div className="bg-background pr-2 pt-2">
+            <div className="box-border h-full overflow-y-auto bg-background pr-2 pt-2">
               <SideAvatar name="信息" icon={<IconMessage2Heart />} onClick={() => navigate("/channel/@msg")} />
               <div className="mb-2 flex justify-center pl-2">
                 <Divider size="sm" className="w-8" />

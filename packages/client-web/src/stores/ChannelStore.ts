@@ -3,10 +3,11 @@ import { ListUserChannelQuery } from "@/@generated/graphql";
 import { socketClient } from "@/contexts";
 import * as mediasoupClient from "mediasoup-client";
 import type { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
-import { Transport } from "mediasoup-client/lib/types";
+import { Producer, Transport } from "mediasoup-client/lib/types";
 import { debounce, throttle } from "lodash-es";
 import { IGainSetting } from "@/types";
 import { StoreStorage } from "@/lib/store-storage";
+import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 
 export class ChannelStore {
   constructor() {
@@ -31,6 +32,17 @@ export class ChannelStore {
     volume: 100,
   });
 
+  // 声音降噪
+  private _audioNoiseSuppression: boolean = StoreStorage.load(ChannelStore, "audioNoiseSuppression", true);
+
+  get audioNoiseSuppression() {
+    return this._audioNoiseSuppression;
+  }
+
+  set audioNoiseSuppression(v: boolean) {
+    this._audioNoiseSuppression = StoreStorage.save(ChannelStore, "audioNoiseSuppression", v);
+  }
+
   // mediasoup设备
   mediasoupDevice: mediasoupClient.Device;
 
@@ -39,6 +51,8 @@ export class ChannelStore {
 
   // 生产者连接
   sendTransport?: Transport;
+
+  producer?: Producer;
 
   mediaStreams: MediaStream[] = [];
 
@@ -153,6 +167,40 @@ export class ChannelStore {
 
       console.log("send:connectionstatechange", state, roomId);
     });
+  }
+
+  /**
+   * 退出房间
+   */
+  async exitRoom() {
+    if (await socketClient.emitWithAck("exitRoom")) {
+      runInAction(() => {
+        this.connectionState = "new";
+        this.joinedChannelId = undefined;
+        this.mediaStreams = [];
+      });
+    }
+  }
+
+  async toggleNoiseSuppression() {
+    // TODO: 还需要在加入房间时获取带降噪的轨道
+    this.audioNoiseSuppression = !this.audioNoiseSuppression;
+
+    const processor = new NoiseSuppressionProcessor("/noise-suppression/");
+    await navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: false,
+      })
+      .then(async (stream) => {
+        const track = stream.getAudioTracks()[0];
+
+        this.producer?.replaceTrack({
+          track: this.audioNoiseSuppression ? await processor.startProcessing(track) : track,
+        });
+      });
+
+    // this.sendTransport.
   }
 
   /**

@@ -74,8 +74,8 @@
 
 ::-webkit-scrollbar {
   background: transparent;
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track-piece {
@@ -86,7 +86,7 @@
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
-  background-color: #fafafa;
+  background-color: var(--surface-4);
 }
 
 ::-webkit-scrollbar-track:hover::-webkit-scrollbar-thumb {

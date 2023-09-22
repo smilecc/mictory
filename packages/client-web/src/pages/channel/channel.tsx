@@ -14,6 +14,8 @@ import { Observer } from "mobx-react-lite";
 import { first } from "lodash-es";
 import { useChannelStore, useCommonStore } from "@/stores";
 import {
+  IconAccessPoint,
+  IconAccessPointOff,
   IconBroadcast,
   IconMicrophone,
   IconMicrophoneOff,
@@ -148,7 +150,7 @@ export const ChannelPage: React.FC = () => {
           <div className="absolute left-0 right-0 top-0 bg-surface1">
             <div className="bg-background/20 p-4">{channel?.name}</div>
           </div>
-          <div className="flex-1 overflow-y-scroll pt-2">
+          <div className="flex-1 overflow-y-auto pt-2">
             {channel ? (
               <ChannelPanel
                 channel={channel}
@@ -177,7 +179,12 @@ export const ChannelPage: React.FC = () => {
                         </div>
                         <div>
                           <Tooltip label="退出语音" position="right" color="dark">
-                            <ActionIcon>
+                            <ActionIcon
+                              onClick={async () => {
+                                await channelStore.exitRoom();
+                                refetchChannelDetail();
+                              }}
+                            >
                               <IconPlugX size="26px" color="red" />
                             </ActionIcon>
                           </Tooltip>
@@ -197,10 +204,25 @@ export const ChannelPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex">
+                      {/* 降噪 */}
+                      <Tooltip label="AI降噪">
+                        <ActionIcon
+                          onClick={() => {
+                            channelStore.toggleNoiseSuppression();
+                          }}
+                        >
+                          {channelStore.audioNoiseSuppression ? (
+                            <IconAccessPoint size={18} />
+                          ) : (
+                            <IconAccessPointOff size={18} />
+                          )}
+                        </ActionIcon>
+                      </Tooltip>
                       {/* 麦克风音量 */}
                       <HoverCard width={200} withArrow openDelay={100}>
                         <HoverCard.Target>
                           <ActionIcon
+                            className="ml-1"
                             onClick={() => {
                               const current = channelStore.audioGain.microphone;
                               const history = channelStore.audioGain.historyMicrophone || 100;
