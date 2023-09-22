@@ -113,6 +113,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     return roomSession;
   }
 
+  @SubscribeMessage('exitRoom')
+  async exitRoom(@ConnectedSocket() socket: MictorySocket) {
+    const userId = BigInt(socket.user.userId);
+    // 退出之前的房间
+    if (socket.mediasoupRoomId) {
+      this.webRtcService.exitRoom(socket.mediasoupRoomId, userId, socket);
+    }
+
+    return true;
+  }
+
   @SubscribeMessage('createTransport')
   async createTransport(socket: MictorySocket, payload: MessageCreateTransport) {
     if (!socket.mediasoupRoomId) {
