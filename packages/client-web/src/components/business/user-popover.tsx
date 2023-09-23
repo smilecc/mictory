@@ -1,7 +1,7 @@
 import { gql } from "@/@generated";
 import { UserSessionState } from "@/@generated/graphql";
 import { useLazyQuery } from "@apollo/client";
-import { Avatar, Group, HoverCard, LoadingOverlay, UnstyledButton, Text } from "@mantine/core";
+import { Avatar, Group, HoverCard, UnstyledButton, Text, Skeleton } from "@mantine/core";
 // import { IUserInfo, UserApi } from "@renderer/api";
 // import { NoticeErrorHandler } from "@renderer/utils";
 import React from "react";
@@ -41,7 +41,15 @@ export const UserPopover: React.FC<{
     >
       <HoverCard.Target>{props.children}</HoverCard.Target>
       <HoverCard.Dropdown>
-        <LoadingOverlay visible={loading} overlayBlur={2} />
+        {loading && (
+          <div className="flex">
+            <Skeleton height={50} width={50} circle />
+            <div className="ml-2 flex flex-col justify-center">
+              <Skeleton height={10} width={80} radius="xl" mb="xs" />
+              <Skeleton height={8} width={50} radius="xl" />
+            </div>
+          </div>
+        )}
         {user && (
           <UnstyledButton>
             <Group>
