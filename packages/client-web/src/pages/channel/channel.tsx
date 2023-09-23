@@ -8,7 +8,7 @@ import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
 import { Button, HoverCard, ActionIcon, Slider, Tooltip, Divider } from "@mantine/core";
-import { ChannelPanel } from "@/components/business";
+import { ChannelPanel, CreateRoomModal } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
 import { first } from "lodash-es";
@@ -81,12 +81,12 @@ fragment UserFrag on User {
 }
 `);
 
-const ChannelMenuItem = React.memo<{ label: string; icon: React.FC }>((props) => {
+const ChannelMenuItem = React.memo<{ label: string; icon: React.FC; onClick?: () => void }>((props) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const IconComponent: any = props.icon;
 
   return (
-    <DropdownMenuItem className="cursor-pointer">
+    <DropdownMenuItem className="cursor-pointer" onClick={props.onClick}>
       <IconComponent size={18} />
       <span className="ml-2">{props.label}</span>
     </DropdownMenuItem>
@@ -116,7 +116,7 @@ export const ChannelPage: React.FC = () => {
   const channel = useMemo(() => data?.channels?.at(0), [data]);
 
   const state = useReactive({
-    streams: [] as MediaStream[],
+    createRoomModalOpen: false,
   });
 
   useEffect(() => {
@@ -165,6 +165,7 @@ export const ChannelPage: React.FC = () => {
 
   return (
     <BaseLayout>
+      <CreateRoomModal opened={state.createRoomModalOpen} onClose={() => (state.createRoomModalOpen = false)} />
       <div className="flex flex-1 bg-surface2">
         {/* 频道 */}
         <div className="relative flex w-60 flex-col bg-surface1 pt-14">
@@ -178,7 +179,11 @@ export const ChannelPage: React.FC = () => {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
-              <ChannelMenuItem label="频道设置" icon={IconSettings} />
+              <ChannelMenuItem
+                label="频道设置"
+                icon={IconSettings}
+                onClick={() => (state.createRoomModalOpen = true)}
+              />
               <ChannelMenuItem label="创建分组" icon={IconPlaylistAdd} />
               <ChannelMenuItem label="创建房间" icon={IconSquareRoundedPlus} />
             </DropdownMenuContent>
@@ -319,20 +324,6 @@ export const ChannelPage: React.FC = () => {
           >
             切换主题
           </Button>
-          {state.streams.map((it) => (
-            <audio
-              key={it.id}
-              controls
-              autoPlay
-              playsInline
-              ref={(audio) => {
-                if (audio) {
-                  console.log("au", audio);
-                  audio.srcObject = it;
-                }
-              }}
-            />
-          ))}
         </div>
       </div>
       <div>3</div>
