@@ -187,8 +187,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
 
     // 如果是声音轨道，则监听该生产者
     if (producer.kind === 'audio') {
-      await room.activeSpeakerObserver.addProducer({ producerId: producer.id });
-      await room.audioLevelObserver.addProducer({ producerId: producer.id });
+      await room.activeSpeakerObserver?.addProducer({ producerId: producer.id });
+      await room.audioLevelObserver?.addProducer({ producerId: producer.id });
     }
 
     producer.on('@close', async () => {
@@ -196,8 +196,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
       sessionTransport.producer = undefined;
       // 移除生产者监听
       if (producer.kind === 'audio') {
-        await room.activeSpeakerObserver.removeProducer({ producerId: producer.id });
-        await room.audioLevelObserver.removeProducer({ producerId: producer.id });
+        await room.activeSpeakerObserver?.removeProducer({ producerId: producer.id });
+        await room.audioLevelObserver?.removeProducer({ producerId: producer.id });
       }
     });
 
@@ -235,7 +235,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     const room = await this.webRtcService.getRoom(socket.mediasoupRoomId);
     const produceTransport = room.sessions
       .flatMap((it) => it.transports)
-      .find((it) => it.transport.id === payload.producerId);
+      .find((it) => it.producer?.id === payload.producerId);
 
     this.logger.log(
       `ConsumeTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${payload.producerId} ProducerUserId: ${produceTransport.userId}`,
