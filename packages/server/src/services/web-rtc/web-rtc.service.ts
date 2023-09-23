@@ -243,8 +243,8 @@ export class WebRtcService implements OnModuleInit {
     socket.leave(socketChannelKey(`${roomInfo.channelId}`));
     socket.mediasoupRoomId = undefined;
     socket.mediasoupChannelId = undefined;
-    socket.broadcast.to(socketRoomKey(roomId)).emit('roomMemberLeave');
-    socket.broadcast.to(socketChannelKey(`${roomInfo.channelId}`)).emit('channelNeedReload');
+    socket.broadcast.to(socketRoomKey(roomId)).emit('roomMemberLeave', { userId });
+    socket.broadcast.to(socketChannelKey(`${roomInfo.channelId}`)).emit('channelNeedReload', { fromUserId: userId });
     this.logger.log(`Exit Room, User: ${userId} Room: ${roomId}`);
   }
 }

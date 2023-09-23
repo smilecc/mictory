@@ -13,7 +13,7 @@ declare global {
 
 global.Object.defineProperty(global.BigInt.prototype, 'toJSON', {
   value: function () {
-    return this.toString();
+    return parseInt(this);
   },
   configurable: true,
   enumerable: false,
