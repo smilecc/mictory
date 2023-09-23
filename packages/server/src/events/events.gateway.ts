@@ -231,8 +231,14 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
     //   sessionTransport.consumer = undefined;
     // });
 
+    // 查询生产者用户ID
+    const room = await this.webRtcService.getRoom(socket.mediasoupRoomId);
+    const produceTransport = room.sessions
+      .flatMap((it) => it.transports)
+      .find((it) => it.transport.id === payload.producerId);
+
     this.logger.log(
-      `ConsumeTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${payload.producerId}`,
+      `ConsumeTransport, User: ${socket.user.userId} TransportId: ${payload?.transportId} ProducerId: ${payload.producerId} ProducerUserId: ${produceTransport.userId}`,
     );
 
     return {
@@ -240,7 +246,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
       kind: consumer.kind,
       producerId: consumer.producerId,
       rtpParameters: consumer.rtpParameters,
-      producerUserId: parseInt(`${sessionTransport.userId}`),
+      producerUserId: parseInt(`${produceTransport.userId}`),
     };
   }
 
