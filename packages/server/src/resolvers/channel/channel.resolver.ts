@@ -3,10 +3,7 @@ import { Resolver, Query, Args, Info, Mutation, Context, Directive } from '@nest
 import { PrismaSelect } from '@paljs/plugins';
 import { PrismaClient } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
-import { Channel } from 'src/@generated/channel/channel.model';
-import { CreateOneChannelArgs } from 'src/@generated/channel/create-one-channel.args';
-import { FindManyChannelArgs } from 'src/@generated/channel/find-many-channel.args';
-import { UpdateOneChannelArgs } from 'src/@generated/channel/update-one-channel.args';
+import { Channel, CreateOneChannelArgs, FindManyChannelArgs, UpdateOneChannelArgs } from 'src/@generated';
 import { ChannelJoinInput } from 'src/graphql/types/channel-join.input';
 import { JwtUserClaims } from 'src/types';
 

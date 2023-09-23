@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient } from '@prisma/client';
 import { createHmac } from 'crypto';
-import { UserCreateInput } from 'src/@generated/user/user-create.input';
-import { User } from 'src/@generated/user/user.model';
+import { User, UserCreateInput } from 'src/@generated';
 import { JwtUserClaims } from 'src/types';
 
 @Injectable()

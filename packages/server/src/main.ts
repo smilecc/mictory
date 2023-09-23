@@ -28,6 +28,7 @@ async function bootstrap() {
   });
   app.useGlobalPipes(
     new ValidationPipe({
+      transform: true,
       stopAtFirstError: true,
       exceptionFactory(errors) {
         const flatErrors = _.flatMapDeep(errors, (error) => error.children);

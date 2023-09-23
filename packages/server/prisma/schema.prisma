@@ -20,6 +20,11 @@ generator nestgraphql {
   decorate_1_name                 = ValidateNested
   decorate_1_from                 = "class-validator"
   decorate_1_arguments            = "[]"
+
+  requireSingleFieldsInWhereUniqueInput = true
+  emitSingle                            = true
+  emitCompiled                          = true
+  purgeOutput                           = true
 }
 
 datasource db {

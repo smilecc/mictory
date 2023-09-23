@@ -1,7 +1,6 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PrismaClient } from '@prisma/client';
-import { Room } from 'src/@generated/room/room.model';
-import { User } from 'src/@generated/user/user.model';
+import { Room, User } from 'src/@generated';
 import { WebRtcService } from 'src/services';
 
 @Resolver(() => Room)
@@ -10,6 +9,9 @@ export class RoomResolver {
     private readonly prisma: PrismaClient,
     private readonly webRtcService: WebRtcService,
   ) {}
+
+  @Mutation(() => Room)
+  async roomCreate() {}
 
   @ResolveField(() => [User])
   async users(@Parent() room: Room) {
