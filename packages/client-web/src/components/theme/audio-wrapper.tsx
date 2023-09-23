@@ -12,13 +12,16 @@ export const AudioWrapper: React.FC<PropsWithChildren> = (props) => {
           <>
             {channelStore.mediaStreams.map((stream) => (
               <audio
-                key={stream.id}
+                id={`stream-${stream.mediaStream.id}`}
+                key={stream.mediaStream.id}
                 autoPlay
                 playsInline
+                // 使用声音增益节点后，需要静音原轨道
+                muted
                 ref={(audio) => {
                   if (audio) {
                     console.log("au", audio);
-                    audio.srcObject = stream;
+                    audio.srcObject = stream.mediaStream;
                   }
                 }}
               />

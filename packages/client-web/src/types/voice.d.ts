@@ -4,3 +4,10 @@ export interface IGainSetting {
   historyMicrophone?: number;
   historyVolume?: number;
 }
+
+export interface IUserMediaStream {
+  mediaStream: MediaStream;
+  userId: number;
+  closed: boolean;
+  isMyself?: boolean;
+}

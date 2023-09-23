@@ -19,10 +19,19 @@ import {
   IconBroadcast,
   IconMicrophone,
   IconMicrophoneOff,
+  IconPlaylistAdd,
   IconPlugX,
+  IconSettings,
+  IconSquareRoundedPlus,
   IconVolume,
   IconVolumeOff,
 } from "@tabler/icons-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -71,6 +80,18 @@ fragment UserFrag on User {
   avatar
 }
 `);
+
+const ChannelMenuItem = React.memo<{ label: string; icon: React.FC }>((props) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const IconComponent: any = props.icon;
+
+  return (
+    <DropdownMenuItem className="cursor-pointer">
+      <IconComponent size={18} />
+      <span className="ml-2">{props.label}</span>
+    </DropdownMenuItem>
+  );
+});
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
@@ -147,9 +168,21 @@ export const ChannelPage: React.FC = () => {
       <div className="flex flex-1 bg-surface2">
         {/* 频道 */}
         <div className="relative flex w-60 flex-col bg-surface1 pt-14">
-          <div className="absolute left-0 right-0 top-0 bg-surface1">
-            <div className="bg-background/20 p-4">{channel?.name}</div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div
+                className="absolute left-0 right-0 top-0 cursor-pointer bg-surface1"
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <div className="bg-background/20 p-4">{channel?.name}</div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40">
+              <ChannelMenuItem label="频道设置" icon={IconSettings} />
+              <ChannelMenuItem label="创建分组" icon={IconPlaylistAdd} />
+              <ChannelMenuItem label="创建房间" icon={IconSquareRoundedPlus} />
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="flex-1 overflow-y-auto pt-2">
             {channel ? (
               <ChannelPanel

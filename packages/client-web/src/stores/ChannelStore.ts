@@ -5,7 +5,7 @@ import * as mediasoupClient from "mediasoup-client";
 import type { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Producer, Transport } from "mediasoup-client/lib/types";
 import { debounce, throttle } from "lodash-es";
-import { IGainSetting } from "@/types";
+import { IGainSetting, IUserMediaStream } from "@/types";
 import { StoreStorage } from "@/lib/store-storage";
 import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 
@@ -14,8 +14,8 @@ export class ChannelStore {
     makeAutoObservable(this);
 
     this.mediasoupDevice = new mediasoupClient.Device();
-    socketClient.on("connect", this.handleSocketConnect);
-    socketClient.on("disconnect", this.handleSocketDisconnect);
+    socketClient.on("connect", () => this.handleSocketConnect());
+    socketClient.on("disconnect", () => this.handleSocketDisconnect());
   }
 
   firstLoading: boolean = true;
@@ -52,9 +52,11 @@ export class ChannelStore {
   // 生产者连接
   sendTransport?: Transport;
 
+  // 当前生产者
   producer?: Producer;
 
-  mediaStreams: MediaStream[] = [];
+  // 媒体流
+  mediaStreams: IUserMediaStream[] = [];
 
   watchVolumeUsers: Set<number> = new Set();
 
@@ -63,6 +65,22 @@ export class ChannelStore {
 
     socketClient.on("newProducer", (producer) => {
       console.log("ChannelStore:newProducer", producer);
+      this.createConsumer(producer.producerId);
+    });
+
+    socketClient.on("roomMemberLeave", (data) => {
+      const userId: number = data.userId;
+      console.log("roomMemberLeave", data);
+
+      // 清除音量监听
+      this.watchVolumeUsers.delete(userId);
+
+      // 设置用户媒体流关闭
+      const userMediaStream = this.mediaStreams.find((it) => it.userId === userId);
+      if (userMediaStream) {
+        userMediaStream.closed = true;
+        console.log("设置userMediaStream.closed", userMediaStream);
+      }
     });
 
     socketClient.on("speak", (speaker) => {
@@ -74,12 +92,25 @@ export class ChannelStore {
     console.log("SocketClient disconnected");
 
     socketClient.off("newProducer");
+    socketClient.off("roomMemberLeave");
     socketClient.off("speak");
   }
 
   async cleanUserState() {
     this.firstLoading = true;
     this.userWithChannels = undefined;
+
+    this.clearRoomState();
+  }
+
+  clearRoomState() {
+    this.watchVolumeUsers.clear();
+    this.mediaStreams.forEach((it) => {
+      it.closed = true;
+    });
+
+    this.connectionState = "new";
+    this.joinedChannelId = undefined;
     this.mediaStreams = [];
   }
 
@@ -88,9 +119,8 @@ export class ChannelStore {
    * @param roomId 房间ID
    */
   async joinRoom(roomId: number, channelId: number) {
-    this.connectionState = "new";
+    this.clearRoomState();
     this.joinedChannelId = channelId;
-    this.mediaStreams = [];
     this.mediasoupDevice = new mediasoupClient.Device();
 
     const rtpCapabilities = (await socketClient.emitWithAck("getRouterRtpCapabilities", { roomId })) as RtpCapabilities;
@@ -174,10 +204,11 @@ export class ChannelStore {
    */
   async exitRoom() {
     if (await socketClient.emitWithAck("exitRoom")) {
+      this.recvTransport?.close();
+      this.sendTransport?.close();
+
       runInAction(() => {
-        this.connectionState = "new";
-        this.joinedChannelId = undefined;
-        this.mediaStreams = [];
+        this.clearRoomState();
       });
     }
   }
@@ -226,12 +257,21 @@ export class ChannelStore {
 
     const userId: number = consumerData.producerUserId;
     const ms = new MediaStream();
-
-    this.modifyAudioGain(ms, "volume");
-    this.watchMediaStreamVolume(ms, userId);
-
     ms.addTrack(consumer.track);
-    this.mediaStreams.push(ms);
+
+    const userMediaStream: IUserMediaStream = {
+      mediaStream: ms,
+      userId: userId,
+      closed: false,
+    };
+
+    runInAction(() => {
+      this.mediaStreams.push(userMediaStream);
+      const item = this.mediaStreams.find((it) => it.mediaStream.id === userMediaStream.mediaStream.id);
+
+      this.modifyAudioGain(item!, "volume");
+      this.watchMediaStreamVolume(ms, userId);
+    });
 
     console.log("consumeProducer:consumer", consumer.id, "producerId", producerId);
   }
@@ -247,7 +287,15 @@ export class ChannelStore {
       return;
     }
 
-    this.modifyAudioGain(stream, "microphone");
+    this.modifyAudioGain(
+      {
+        mediaStream: stream,
+        userId: 0,
+        closed: false,
+      },
+      "microphone",
+    );
+
     this.watchMediaStreamVolume(stream, this.userWithChannels?.id);
     const producer = await this.sendTransport.produce({
       track: stream.getTracks()[0],
@@ -262,6 +310,8 @@ export class ChannelStore {
    * @param userId 用户ID
    */
   watchMediaStreamVolume(stream: MediaStream, userId: number) {
+    console.log("watchMediaStreamVolume", userId);
+
     this.watchVolumeUsers.add(userId);
     const audioContext = new AudioContext();
     const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
@@ -271,6 +321,7 @@ export class ChannelStore {
     const onStopSpeak = debounce(() => {
       window.dispatchEvent(new CustomEvent("user:stop_speak", { detail: { userId } }));
     }, 200);
+
     const onSpeak = throttle(
       () => {
         window.dispatchEvent(new CustomEvent("user:speak", { detail: { userId } }));
@@ -301,7 +352,8 @@ export class ChannelStore {
     window.requestAnimationFrame(onFrame);
   }
 
-  modifyAudioGain(stream: MediaStream, gainKey: keyof IGainSetting) {
+  modifyAudioGain(userStream: IUserMediaStream, gainKey: keyof IGainSetting) {
+    const stream = userStream.mediaStream;
     const getValue = () => {
       const globalGainValue = this.audioGain?.[gainKey];
       return typeof globalGainValue === "number" ? globalGainValue / 100 : 1;
@@ -323,10 +375,11 @@ export class ChannelStore {
     const onFrame = () => {
       gainNode.gain.linearRampToValueAtTime(getValue(), ctx.currentTime);
 
-      if (gainKey === "microphone") {
+      if (gainKey === "microphone" && this.joinedChannelId) {
         window.requestAnimationFrame(onFrame);
       }
-      if (gainKey === "volume" && !this.recvTransport?.closed) {
+
+      if (gainKey === "volume" && !userStream.closed) {
         window.requestAnimationFrame(onFrame);
       }
     };
