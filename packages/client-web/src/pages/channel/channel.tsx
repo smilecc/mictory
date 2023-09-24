@@ -279,7 +279,7 @@ export const ChannelPage: React.FC = () => {
                     <div className="flex">
                       {/* 降噪 */}
                       <Tooltip
-                        label={`AI降噪: ${channelStore.audioNoiseSuppression ? "已开启" : "已关闭"}`}
+                        label={`AI降噪 - ${channelStore.audioNoiseSuppression ? "已开启" : "已关闭"}`}
                         color="dark"
                       >
                         <ActionIcon

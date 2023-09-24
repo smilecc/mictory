@@ -65,6 +65,9 @@ export class ChannelStore {
   // 降噪处理器
   noiseProcessor = new NoiseSuppressionProcessor("/noise-suppression/");
 
+  // 当前用户的音频流
+  myAudioMediaStream?: IUserMediaStream;
+
   async handleSocketConnect() {
     console.log("SocketClient connected");
 
@@ -122,6 +125,9 @@ export class ChannelStore {
 
   async getUserAudioMedia() {
     try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      console.log(devices);
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
@@ -259,6 +265,22 @@ export class ChannelStore {
     this.producer?.replaceTrack({
       track: stream.getAudioTracks()[0],
     });
+
+    if (this.myAudioMediaStream) {
+      // 将之前的媒体流设置为已关闭
+      const userId = this.myAudioMediaStream.userId;
+      this.myAudioMediaStream.closed = true;
+
+      // 创建新的流对象
+      this.myAudioMediaStream = {
+        mediaStream: stream,
+        userId,
+        closed: false,
+      };
+
+      this.modifyAudioGain(this.myAudioMediaStream, "microphone");
+      this.watchMediaStreamVolume(this.myAudioMediaStream);
+    }
   }
 
   /**
@@ -290,14 +312,15 @@ export class ChannelStore {
       mediaStream: ms,
       userId: userId,
       closed: false,
+      isMyself: true,
     };
 
     runInAction(() => {
       this.mediaStreams.push(userMediaStream);
-      const item = this.mediaStreams.find((it) => it.mediaStream.id === userMediaStream.mediaStream.id);
+      const item = this.mediaStreams.find((it) => it.mediaStream.id === userMediaStream.mediaStream.id)!;
 
-      this.modifyAudioGain(item!, "volume");
-      this.watchMediaStreamVolume(ms, userId);
+      this.modifyAudioGain(item, "volume");
+      this.watchMediaStreamVolume(item);
     });
 
     console.log("consumeProducer:consumer", consumer.id, "producerId", producerId);
@@ -314,21 +337,21 @@ export class ChannelStore {
       return;
     }
 
-    this.modifyAudioGain(
-      {
-        mediaStream: stream,
-        userId: 0,
-        closed: false,
-      },
-      "microphone",
-    );
+    this.myAudioMediaStream = {
+      mediaStream: stream,
+      userId: this.userWithChannels?.id,
+      closed: false,
+      isMyself: true,
+    };
 
-    this.watchMediaStreamVolume(stream, this.userWithChannels?.id);
-    const producer = await this.sendTransport.produce({
+    this.modifyAudioGain(this.myAudioMediaStream, "microphone");
+    this.watchMediaStreamVolume(this.myAudioMediaStream);
+
+    this.producer = await this.sendTransport.produce({
       track: stream.getTracks()[0],
     });
 
-    console.log("createProducer:producer", producer.id);
+    console.log("createProducer:producer", this.producer.id);
   }
 
   /**
@@ -336,7 +359,9 @@ export class ChannelStore {
    * @param stream 媒体流
    * @param userId 用户ID
    */
-  watchMediaStreamVolume(stream: MediaStream, userId: number) {
+  watchMediaStreamVolume(userStream: IUserMediaStream) {
+    const stream = userStream.mediaStream;
+    const userId = userStream.userId;
     console.log("watchMediaStreamVolume", userId);
 
     this.watchVolumeUsers.add(userId);
@@ -372,7 +397,7 @@ export class ChannelStore {
         onSpeak();
       }
 
-      if (this.watchVolumeUsers.has(userId)) {
+      if (this.watchVolumeUsers.has(userId) && !userStream.closed) {
         window.requestAnimationFrame(onFrame);
       }
     };
