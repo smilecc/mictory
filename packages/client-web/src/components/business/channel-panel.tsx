@@ -5,6 +5,14 @@ import { useEventListener, useReactive } from "ahooks";
 import React, { Fragment, useCallback, useState } from "react";
 import { UserPopover } from "./user-popover";
 import { IconUser } from "@tabler/icons-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "../ui/context-menu";
+import { DropdownMenuLabel } from "../ui/dropdown-menu";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
@@ -52,39 +60,53 @@ export const ChannelPanel: React.FC<{
     <div className="px-2">
       {channel.categories?.map((it) => (
         <Fragment key={it.id}>
-          <div
-            className="mb-1 cursor-pointer select-none pl-2 text-xs text-foreground/50 transition-colors hover:text-foreground/70"
-            onClick={() => onCategoryTitleClick(it.id)}
-          >
-            {it.name}
-          </div>
+          <ContextMenu>
+            <ContextMenuTrigger>
+              <div
+                className="mb-1 mt-2 cursor-pointer select-none pl-2 text-xs text-foreground/50 transition-colors hover:text-foreground/70"
+                onClick={() => onCategoryTitleClick(it.id)}
+              >
+                {it.name}
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <DropdownMenuLabel>{it.name}</DropdownMenuLabel>
+              <ContextMenuSeparator />
+              <ContextMenuItem>编辑分组</ContextMenuItem>
+              <ContextMenuItem className="text-red-500">删除分组</ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
           <Collapse in={!state.closeCategories.includes(it.id)}>
+            {/* 房间列表 */}
             {it.rooms?.map((room) => (
               <div key={room.id} className="select-none">
-                <div
-                  className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
-                  onDoubleClick={async () => {
-                    await channelStore.joinRoom(room.id, room.channelId);
+                <ContextMenu>
+                  <ContextMenuTrigger>
+                    <div
+                      className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
+                      onDoubleClick={async () => {
+                        await channelStore.joinRoom(room.id, room.channelId);
 
-                    onShouldRefetch?.();
+                        onShouldRefetch?.();
 
-                    navigator.mediaDevices
-                      .getUserMedia({
-                        audio: true,
-                        video: false,
-                      })
-                      .then((stream) => {
+                        // 创建消费者
+                        const stream = await channelStore.getUserAudioMedia();
                         channelStore.createProducer(stream);
-                      })
-                      .catch(() => {
-                        console.error("获取媒体设备失败");
-                        // 创建一个空白媒体流
-                        channelStore.createProducer(new AudioContext().createMediaStreamDestination().stream);
-                      });
-                  }}
-                >
-                  {room.name}
-                </div>
+                      }}
+                    >
+                      {room.name}
+                    </div>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <DropdownMenuLabel>{room.name}</DropdownMenuLabel>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem>邀请</ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem>编辑房间</ContextMenuItem>
+                    <ContextMenuItem className="text-red-500">删除房间</ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+
                 <div className="pl-5">
                   {room.users.map((user) => (
                     <UserPopover key={user.id} nickname={user.nickname} no={user.nicknameNo}>

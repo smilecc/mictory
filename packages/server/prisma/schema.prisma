@@ -113,7 +113,7 @@ model Channel {
   /// 角色
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   roles       ChannelRole[]
-  /// 分类列表
+  /// 分组列表
   categories  ChannelCategory[]
   /// @HideField({ input: true, output: false })
   createdTime DateTime          @default(now())
@@ -176,9 +176,9 @@ model Room {
   channelId         BigInt
   /// 频道
   channel           Channel         @relation(fields: [channelId], references: [id])
-  /// 频道分类ID
+  /// 频道分组ID
   channelCategoryId BigInt
-  /// 频道分类
+  /// 频道分组
   channelCategory   ChannelCategory @relation(fields: [channelCategoryId], references: [id])
   /// 房间名
   name              String

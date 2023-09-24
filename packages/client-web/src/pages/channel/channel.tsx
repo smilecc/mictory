@@ -8,7 +8,7 @@ import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
 import { Button, HoverCard, ActionIcon, Slider, Tooltip, Divider } from "@mantine/core";
-import { ChannelPanel, CreateRoomModal } from "@/components/business";
+import { ChannelPanel, CreateChannelCategoryModal, CreateRoomModal } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
 import { first } from "lodash-es";
@@ -117,6 +117,7 @@ export const ChannelPage: React.FC = () => {
 
   const state = useReactive({
     createRoomModalOpen: false,
+    createCategoryModalOpen: false,
   });
 
   useEffect(() => {
@@ -165,16 +166,36 @@ export const ChannelPage: React.FC = () => {
 
   return (
     <BaseLayout>
-      {/* 创建房间 */}
-      <CreateRoomModal
-        categories={channel?.categories || []}
-        opened={state.createRoomModalOpen}
-        onClose={() => (state.createRoomModalOpen = false)}
-        onOk={() => {
-          state.createRoomModalOpen = false;
-          refetchChannelDetail();
-        }}
-      />
+      {channel && (
+        <>
+          {/* 创建房间 */}
+          <CreateRoomModal
+            channelId={channel.id}
+            categories={channel?.categories || []}
+            opened={state.createRoomModalOpen}
+            onClose={() => (state.createRoomModalOpen = false)}
+            onOk={() => {
+              state.createRoomModalOpen = false;
+              refetchChannelDetail({
+                code: params.channelCode,
+              });
+            }}
+          />
+
+          {/* 创建类目 */}
+          <CreateChannelCategoryModal
+            channelId={channel.id}
+            opened={state.createCategoryModalOpen}
+            onClose={() => (state.createCategoryModalOpen = false)}
+            onOk={() => {
+              state.createCategoryModalOpen = false;
+              refetchChannelDetail({
+                code: params.channelCode,
+              });
+            }}
+          />
+        </>
+      )}
 
       <div className="flex flex-1 bg-surface2">
         {/* 频道 */}
@@ -190,7 +211,11 @@ export const ChannelPage: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
               <ChannelMenuItem label="频道设置" icon={IconSettings} />
-              <ChannelMenuItem label="创建分组" icon={IconPlaylistAdd} />
+              <ChannelMenuItem
+                label="创建分组"
+                icon={IconPlaylistAdd}
+                onClick={() => (state.createCategoryModalOpen = true)}
+              />
               <ChannelMenuItem
                 label="创建房间"
                 icon={IconSquareRoundedPlus}
@@ -253,7 +278,10 @@ export const ChannelPage: React.FC = () => {
                     </div>
                     <div className="flex">
                       {/* 降噪 */}
-                      <Tooltip label="AI降噪">
+                      <Tooltip
+                        label={`AI降噪: ${channelStore.audioNoiseSuppression ? "已开启" : "已关闭"}`}
+                        color="dark"
+                      >
                         <ActionIcon
                           onClick={() => {
                             channelStore.toggleNoiseSuppression();

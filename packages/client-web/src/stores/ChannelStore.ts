@@ -23,6 +23,8 @@ export class ChannelStore {
 
   joinedChannelId?: number = undefined;
 
+  joinedRoomId?: number = undefined;
+
   // 当前语音连接状态
   connectionState: mediasoupClient.types.ConnectionState = "new";
 
@@ -59,6 +61,9 @@ export class ChannelStore {
   mediaStreams: IUserMediaStream[] = [];
 
   watchVolumeUsers: Set<number> = new Set();
+
+  // 降噪处理器
+  noiseProcessor = new NoiseSuppressionProcessor("/noise-suppression/");
 
   async handleSocketConnect() {
     console.log("SocketClient connected");
@@ -110,8 +115,36 @@ export class ChannelStore {
     });
 
     this.connectionState = "new";
+    this.joinedRoomId = undefined;
     this.joinedChannelId = undefined;
     this.mediaStreams = [];
+  }
+
+  async getUserAudioMedia() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+
+      // 终止上次的降噪
+      if (this.noiseProcessor.isProcessing()) {
+        this.noiseProcessor.stopProcessing();
+      }
+
+      // 根据情况开启降噪
+      if (this.audioNoiseSuppression) {
+        const track = stream.getAudioTracks()[0];
+        stream.removeTrack(track);
+        stream.addTrack(await this.noiseProcessor.startProcessing(track));
+      }
+
+      return stream;
+    } catch {
+      console.error("获取媒体设备失败");
+      // 创建一个空白媒体流
+      return new AudioContext().createMediaStreamDestination().stream;
+    }
   }
 
   /**
@@ -119,7 +152,12 @@ export class ChannelStore {
    * @param roomId 房间ID
    */
   async joinRoom(roomId: number, channelId: number) {
+    if (this.joinedRoomId) {
+      await this.exitRoom();
+    }
+
     this.clearRoomState();
+    this.joinedRoomId = roomId;
     this.joinedChannelId = channelId;
     this.mediasoupDevice = new mediasoupClient.Device();
 
@@ -214,24 +252,13 @@ export class ChannelStore {
   }
 
   async toggleNoiseSuppression() {
-    // TODO: 还需要在加入房间时获取带降噪的轨道
     this.audioNoiseSuppression = !this.audioNoiseSuppression;
+    console.log("切换麦克风降噪", this.audioNoiseSuppression);
+    const stream = await this.getUserAudioMedia();
 
-    const processor = new NoiseSuppressionProcessor("/noise-suppression/");
-    await navigator.mediaDevices
-      .getUserMedia({
-        audio: true,
-        video: false,
-      })
-      .then(async (stream) => {
-        const track = stream.getAudioTracks()[0];
-
-        this.producer?.replaceTrack({
-          track: this.audioNoiseSuppression ? await processor.startProcessing(track) : track,
-        });
-      });
-
-    // this.sendTransport.
+    this.producer?.replaceTrack({
+      track: stream.getAudioTracks()[0],
+    });
   }
 
   /**
@@ -375,7 +402,7 @@ export class ChannelStore {
     const onFrame = () => {
       gainNode.gain.linearRampToValueAtTime(getValue(), ctx.currentTime);
 
-      if (gainKey === "microphone" && this.joinedChannelId) {
+      if (gainKey === "microphone" && this.joinedChannelId && !userStream.closed) {
         window.requestAnimationFrame(onFrame);
       }
 

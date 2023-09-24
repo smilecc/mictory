@@ -2,6 +2,7 @@ import { gql } from "@/@generated";
 import { useMutation } from "@apollo/client";
 import { Button, Modal, ModalProps, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import React from "react";
 
 const CREATE_ROOM_MUTATION =
@@ -12,9 +13,9 @@ const CREATE_ROOM_MUTATION =
 }`);
 
 export const CreateRoomModal: React.FC<
-  { categories: { id: number; name: string }[]; onOk?: () => void } & ModalProps
+  { channelId: number; categories: { id: number; name: string }[]; onOk?: () => void } & ModalProps
 > = (props) => {
-  const { categories, onOk, ...otherProps } = props;
+  const { channelId, categories, onOk, ...otherProps } = props;
   const form = useForm({
     initialValues: {
       name: "",
@@ -30,7 +31,7 @@ export const CreateRoomModal: React.FC<
         onSubmit={form.onSubmit((data) => {
           mutationCreateRoom({
             variables: {
-              where: { id: 1 },
+              where: { id: channelId },
               data: {
                 rooms: {
                   create: [
@@ -45,6 +46,11 @@ export const CreateRoomModal: React.FC<
               },
             },
           }).then(() => {
+            notifications.show({
+              color: "green",
+              title: "房间创建成功",
+              message: "^ᴗ^",
+            });
             onOk?.();
           });
         })}
