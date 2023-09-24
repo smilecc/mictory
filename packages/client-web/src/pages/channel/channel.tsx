@@ -7,15 +7,13 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
-import { Button, ActionIcon, Slider, Tooltip, Divider, Radio } from "@mantine/core";
+import { Button, ActionIcon, Slider, Tooltip, Divider, Radio, Switch } from "@mantine/core";
 import { ChannelPanel, CreateChannelCategoryModal, CreateRoomModal } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
 import { first } from "lodash-es";
 import { useChannelStore, useCommonStore } from "@/stores";
 import {
-  IconAccessPoint,
-  IconAccessPointOff,
   IconBroadcast,
   IconMicrophone,
   IconMicrophoneOff,
@@ -281,7 +279,7 @@ export const ChannelPage: React.FC = () => {
                   ) : null}
 
                   <div className="flex items-center justify-between">
-                    <div className="w-36 cursor-pointer">
+                    <div className="w-32 cursor-pointer">
                       <div className="overflow-hidden text-ellipsis text-sm text-foreground/80">
                         {channelStore.userWithChannels?.nickname}
                       </div>
@@ -290,7 +288,6 @@ export const ChannelPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex">
-                      <NoiseButton />
                       <MicrophoneButton />
                       <VolumeButton />
                       {/* 用户设置 */}
@@ -326,27 +323,6 @@ export const ChannelPage: React.FC = () => {
   );
 };
 
-// 降噪按钮
-const NoiseButton: React.FC = () => {
-  const channelStore = useChannelStore();
-
-  return (
-    <Observer>
-      {() => (
-        <Tooltip label={`AI降噪 - ${channelStore.audioNoiseSuppression ? "已开启" : "已关闭"}`} color="dark">
-          <ActionIcon
-            onClick={() => {
-              channelStore.toggleNoiseSuppression();
-            }}
-          >
-            {channelStore.audioNoiseSuppression ? <IconAccessPoint size={18} /> : <IconAccessPointOff size={18} />}
-          </ActionIcon>
-        </Tooltip>
-      )}
-    </Observer>
-  );
-};
-
 // 麦克风按钮
 const MicrophoneButton: React.FC = () => {
   const commonStore = useCommonStore();
@@ -370,7 +346,7 @@ const MicrophoneButton: React.FC = () => {
               </ActionIcon>
             </Tooltip>
           </ContextMenuTrigger>
-          <ContextMenuContent className="w-80">
+          <ContextMenuContent className="w-80 select-none">
             <ContextMenuLabel>音频输入设置</ContextMenuLabel>
             <ContextMenuSeparator />
             {commonStore.mediaDeviceInfos
@@ -386,6 +362,17 @@ const MicrophoneButton: React.FC = () => {
                 </ContextMenuItem>
               ))}
             <ContextMenuSeparator />
+
+            <Switch
+              checked={channelStore.audioNoiseSuppression}
+              onChange={() => channelStore.toggleNoiseSuppression()}
+              labelPosition="left"
+              radius="sm"
+              className="p-2"
+              label="AI降噪"
+              onLabel="已开启"
+              offLabel="已关闭"
+            />
 
             <ContextMenuLabel className="text-xs">输入音量</ContextMenuLabel>
             <div className="p-2 pt-0">
@@ -424,7 +411,7 @@ const VolumeButton: React.FC = () => {
               </ActionIcon>
             </Tooltip>
           </ContextMenuTrigger>
-          <ContextMenuContent className="w-64">
+          <ContextMenuContent className="w-80 select-none">
             <ContextMenuLabel>音频输出设置</ContextMenuLabel>
             <ContextMenuSeparator />
             <ContextMenuItem>Test</ContextMenuItem>
