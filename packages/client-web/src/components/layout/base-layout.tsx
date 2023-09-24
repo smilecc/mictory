@@ -1,4 +1,4 @@
-import { SideAvatar } from "@/components/business";
+import { SettingModal, SideAvatar } from "@/components/business";
 import React, { Fragment, useContext, useEffect } from "react";
 // import { useLoaderData } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
@@ -100,6 +100,8 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
             </Transition>
           )}
         </Observer>
+
+        <SettingModal />
 
         <main className="h-screen">
           <div className="flex h-full">

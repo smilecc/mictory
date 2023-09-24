@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
-import { Button, HoverCard, ActionIcon, Slider, Tooltip, Divider } from "@mantine/core";
+import { Button, ActionIcon, Slider, Tooltip, Divider, Radio } from "@mantine/core";
 import { ChannelPanel, CreateChannelCategoryModal, CreateRoomModal } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
@@ -32,6 +32,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -119,6 +127,11 @@ export const ChannelPage: React.FC = () => {
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
   });
+
+  useEffect(() => {
+    commonStore.loadMediaDevices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     socketClient.on("channelNeedReload", () => {
@@ -277,75 +290,19 @@ export const ChannelPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex">
-                      {/* 降噪 */}
-                      <Tooltip
-                        label={`AI降噪 - ${channelStore.audioNoiseSuppression ? "已开启" : "已关闭"}`}
-                        color="dark"
-                      >
+                      <NoiseButton />
+                      <MicrophoneButton />
+                      <VolumeButton />
+                      {/* 用户设置 */}
+                      <Tooltip label="用户设置" color="dark">
                         <ActionIcon
                           onClick={() => {
-                            channelStore.toggleNoiseSuppression();
+                            commonStore.settingModalOpen = true;
                           }}
                         >
-                          {channelStore.audioNoiseSuppression ? (
-                            <IconAccessPoint size={18} />
-                          ) : (
-                            <IconAccessPointOff size={18} />
-                          )}
+                          <IconSettings size={18} />
                         </ActionIcon>
                       </Tooltip>
-                      {/* 麦克风音量 */}
-                      <HoverCard width={200} withArrow openDelay={100}>
-                        <HoverCard.Target>
-                          <ActionIcon
-                            className="ml-1"
-                            onClick={() => {
-                              const current = channelStore.audioGain.microphone;
-                              const history = channelStore.audioGain.historyMicrophone || 100;
-                              channelStore.setAudioGainItem("microphone", current ? 0 : history);
-                              channelStore.setAudioGainItem("historyMicrophone", current);
-                            }}
-                          >
-                            {channelStore.audioGain.microphone ? (
-                              <IconMicrophone size={18} />
-                            ) : (
-                              <IconMicrophoneOff size={18} />
-                            )}
-                          </ActionIcon>
-                        </HoverCard.Target>
-                        <HoverCard.Dropdown>
-                          <Slider
-                            max={300}
-                            labelAlwaysOn
-                            value={channelStore.audioGain.microphone}
-                            onChange={(v) => channelStore.setAudioGainItem("microphone", v)}
-                          />
-                        </HoverCard.Dropdown>
-                      </HoverCard>
-                      {/* 播放音量 */}
-                      <HoverCard width={200} withArrow openDelay={100}>
-                        <HoverCard.Target>
-                          <ActionIcon
-                            className="ml-1"
-                            onClick={() => {
-                              const current = channelStore.audioGain.volume;
-                              const history = channelStore.audioGain.historyVolume || 100;
-                              channelStore.setAudioGainItem("volume", current ? 0 : history);
-                              channelStore.setAudioGainItem("historyVolume", current);
-                            }}
-                          >
-                            {channelStore.audioGain.volume ? <IconVolume size={18} /> : <IconVolumeOff size={18} />}
-                          </ActionIcon>
-                        </HoverCard.Target>
-                        <HoverCard.Dropdown>
-                          <Slider
-                            max={300}
-                            labelAlwaysOn
-                            value={channelStore.audioGain.volume}
-                            onChange={(v) => channelStore.setAudioGainItem("volume", v)}
-                          />
-                        </HoverCard.Dropdown>
-                      </HoverCard>
                     </div>
                   </div>
                 </div>
@@ -366,5 +323,124 @@ export const ChannelPage: React.FC = () => {
       </div>
       <div>3</div>
     </BaseLayout>
+  );
+};
+
+// 降噪按钮
+const NoiseButton: React.FC = () => {
+  const channelStore = useChannelStore();
+
+  return (
+    <Observer>
+      {() => (
+        <Tooltip label={`AI降噪 - ${channelStore.audioNoiseSuppression ? "已开启" : "已关闭"}`} color="dark">
+          <ActionIcon
+            onClick={() => {
+              channelStore.toggleNoiseSuppression();
+            }}
+          >
+            {channelStore.audioNoiseSuppression ? <IconAccessPoint size={18} /> : <IconAccessPointOff size={18} />}
+          </ActionIcon>
+        </Tooltip>
+      )}
+    </Observer>
+  );
+};
+
+// 麦克风按钮
+const MicrophoneButton: React.FC = () => {
+  const commonStore = useCommonStore();
+  const channelStore = useChannelStore();
+
+  return (
+    <Observer>
+      {() => (
+        <ContextMenu dir="ltr">
+          <ContextMenuTrigger>
+            <Tooltip label={channelStore.audioGain.microphone ? "麦克风静音" : "取消静音"} color="dark">
+              <ActionIcon
+                onClick={() => {
+                  const current = channelStore.audioGain.microphone;
+                  const history = channelStore.audioGain.historyMicrophone || 100;
+                  channelStore.setAudioGainItem("microphone", current ? 0 : history);
+                  channelStore.setAudioGainItem("historyMicrophone", current);
+                }}
+              >
+                {channelStore.audioGain.microphone ? <IconMicrophone size={18} /> : <IconMicrophoneOff size={18} />}
+              </ActionIcon>
+            </Tooltip>
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-80">
+            <ContextMenuLabel>音频输入设置</ContextMenuLabel>
+            <ContextMenuSeparator />
+            {commonStore.mediaDeviceInfos
+              .filter((it) => it.kind === "audioinput")
+              .map((it) => (
+                <ContextMenuItem key={it.deviceId} title={it.label}>
+                  <Radio
+                    classNames={{ label: "!cursor-pointer truncate w-64" }}
+                    label={it.label}
+                    value={it.deviceId}
+                    // checked
+                  />
+                </ContextMenuItem>
+              ))}
+            <ContextMenuSeparator />
+
+            <ContextMenuLabel className="text-xs">输入音量</ContextMenuLabel>
+            <div className="p-2 pt-0">
+              <Slider
+                max={300}
+                value={channelStore.audioGain.microphone}
+                onChange={(v) => channelStore.setAudioGainItem("microphone", v)}
+              />
+            </div>
+          </ContextMenuContent>
+        </ContextMenu>
+      )}
+    </Observer>
+  );
+};
+
+// 麦克风按钮
+const VolumeButton: React.FC = () => {
+  const channelStore = useChannelStore();
+
+  return (
+    <Observer>
+      {() => (
+        <ContextMenu dir="ltr">
+          <ContextMenuTrigger>
+            <Tooltip label={channelStore.audioGain.volume ? "音量静音" : "取消静音"} color="dark">
+              <ActionIcon
+                onClick={() => {
+                  const current = channelStore.audioGain.volume;
+                  const history = channelStore.audioGain.historyVolume || 100;
+                  channelStore.setAudioGainItem("volume", current ? 0 : history);
+                  channelStore.setAudioGainItem("historyVolume", current);
+                }}
+              >
+                {channelStore.audioGain.volume ? <IconVolume size={18} /> : <IconVolumeOff size={18} />}
+              </ActionIcon>
+            </Tooltip>
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-64">
+            <ContextMenuLabel>音频输出设置</ContextMenuLabel>
+            <ContextMenuSeparator />
+            <ContextMenuItem>Test</ContextMenuItem>
+            <ContextMenuSeparator />
+
+            <ContextMenuLabel className="text-xs">输出音量</ContextMenuLabel>
+            <div className="p-2 pt-0">
+              <Slider
+                max={300}
+                value={channelStore.audioGain.volume}
+                onChange={(v) => channelStore.setAudioGainItem("volume", v)}
+              />
+            </div>
+          </ContextMenuContent>
+        </ContextMenu>
+      )}
+    </Observer>
   );
 };

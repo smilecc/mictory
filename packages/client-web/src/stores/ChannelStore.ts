@@ -125,9 +125,6 @@ export class ChannelStore {
 
   async getUserAudioMedia() {
     try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log(devices);
-
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
@@ -262,9 +259,11 @@ export class ChannelStore {
     console.log("切换麦克风降噪", this.audioNoiseSuppression);
     const stream = await this.getUserAudioMedia();
 
-    this.producer?.replaceTrack({
-      track: stream.getAudioTracks()[0],
-    });
+    if (!this.producer?.closed) {
+      this.producer?.replaceTrack({
+        track: stream.getAudioTracks()[0],
+      });
+    }
 
     if (this.myAudioMediaStream) {
       // 将之前的媒体流设置为已关闭
