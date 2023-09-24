@@ -165,7 +165,17 @@ export const ChannelPage: React.FC = () => {
 
   return (
     <BaseLayout>
-      <CreateRoomModal opened={state.createRoomModalOpen} onClose={() => (state.createRoomModalOpen = false)} />
+      {/* 创建房间 */}
+      <CreateRoomModal
+        categories={channel?.categories || []}
+        opened={state.createRoomModalOpen}
+        onClose={() => (state.createRoomModalOpen = false)}
+        onOk={() => {
+          state.createRoomModalOpen = false;
+          refetchChannelDetail();
+        }}
+      />
+
       <div className="flex flex-1 bg-surface2">
         {/* 频道 */}
         <div className="relative flex w-60 flex-col bg-surface1 pt-14">
@@ -179,13 +189,13 @@ export const ChannelPage: React.FC = () => {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
+              <ChannelMenuItem label="频道设置" icon={IconSettings} />
+              <ChannelMenuItem label="创建分组" icon={IconPlaylistAdd} />
               <ChannelMenuItem
-                label="频道设置"
-                icon={IconSettings}
+                label="创建房间"
+                icon={IconSquareRoundedPlus}
                 onClick={() => (state.createRoomModalOpen = true)}
               />
-              <ChannelMenuItem label="创建分组" icon={IconPlaylistAdd} />
-              <ChannelMenuItem label="创建房间" icon={IconSquareRoundedPlus} />
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="flex-1 overflow-y-auto pt-2">
