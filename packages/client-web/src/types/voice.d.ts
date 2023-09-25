@@ -8,6 +8,11 @@ export interface IGainSetting {
 export interface IMediaDeviceSetting {
   inputDeviceId: string;
   outputDeviceId: string;
+  autoGainControl: boolean;
+  echoCancellation: boolean;
+  noiseSuppression: boolean;
+  sampleRate?: number;
+  sampleSize?: number;
 }
 
 export interface IUserMediaStream {

@@ -76,6 +76,9 @@ export class ChannelStore {
   audioDevice: IMediaDeviceSetting = StoreStorage.load(ChannelStore, "audioDevice", {
     inputDeviceId: "",
     outputDeviceId: "",
+    autoGainControl: true,
+    echoCancellation: true,
+    noiseSuppression: true,
   });
 
   setAudioDevice(k: keyof IMediaDeviceSetting, v: string) {
@@ -181,9 +184,15 @@ export class ChannelStore {
 
   async getUserAudioMedia() {
     try {
+      const { autoGainControl, echoCancellation, noiseSuppression, sampleRate, sampleSize } = this.audioDevice;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           deviceId: this.audioDevice.inputDeviceId,
+          autoGainControl,
+          echoCancellation,
+          noiseSuppression,
+          sampleRate,
+          sampleSize,
         },
         video: false,
       });
