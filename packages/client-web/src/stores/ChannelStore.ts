@@ -5,9 +5,10 @@ import * as mediasoupClient from "mediasoup-client";
 import type { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Producer, Transport } from "mediasoup-client/lib/types";
 import { debounce, throttle } from "lodash-es";
-import { IGainSetting, IUserMediaStream } from "@/types";
+import { IGainSetting, IMediaDeviceSetting, IUserMediaStream } from "@/types";
 import { StoreStorage } from "@/lib/store-storage";
 import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
+import _ from "lodash-es";
 
 export class ChannelStore {
   constructor() {
@@ -68,6 +69,61 @@ export class ChannelStore {
   // 当前用户的音频流
   myAudioMediaStream?: IUserMediaStream;
 
+  // 用户设备列表
+  mediaDeviceInfos: MediaDeviceInfo[] = [];
+
+  // 用户音频设备
+  audioDevice: IMediaDeviceSetting = StoreStorage.load(ChannelStore, "audioDevice", {
+    inputDeviceId: "",
+    outputDeviceId: "",
+  });
+
+  setAudioDevice(k: keyof IMediaDeviceSetting, v: string) {
+    this.audioDevice = StoreStorage.save(ChannelStore, "audioDevice", {
+      ...this.audioDevice,
+      [k]: v,
+    });
+  }
+
+  async loadMediaDevices() {
+    const mediaDeviceInfos = await navigator.mediaDevices.enumerateDevices();
+    runInAction(() => {
+      this.mediaDeviceInfos = mediaDeviceInfos;
+      const defaultIds = ["default", "communications"];
+      console.log("媒体设备列表", this.mediaDeviceInfos);
+
+      const audioInputDevices = mediaDeviceInfos.filter((it) => it.kind === "audioinput");
+      const audioOutputDevices = mediaDeviceInfos.filter((it) => it.kind === "audiooutput");
+
+      // 旧设备不存在，读取默认值
+      if (
+        audioInputDevices.length > 0 &&
+        !audioInputDevices.find((it) => it.deviceId === this.audioDevice.inputDeviceId)
+      ) {
+        const defaultDeviceId = audioInputDevices.find((it) => defaultIds.includes(it.deviceId))?.deviceId;
+        const firstDevice = _.first(audioInputDevices);
+
+        this.setAudioDevice("inputDeviceId", defaultDeviceId || firstDevice!.deviceId);
+      }
+
+      if (
+        audioOutputDevices.length > 0 &&
+        !audioOutputDevices.find((it) => it.deviceId === this.audioDevice.outputDeviceId)
+      ) {
+        const defaultDeviceId = audioOutputDevices.find((it) => defaultIds.includes(it.deviceId))?.deviceId;
+        const firstDevice = _.first(audioOutputDevices);
+
+        this.setAudioDevice("outputDeviceId", defaultDeviceId || firstDevice!.deviceId);
+      }
+    });
+  }
+
+  // 设置输入媒体设备
+  async setInputMediaDevice(deviceId: string) {
+    this.setAudioDevice("inputDeviceId", deviceId);
+    await this.reloadAudioMediaDevice();
+  }
+
   async handleSocketConnect() {
     console.log("SocketClient connected");
 
@@ -126,7 +182,9 @@ export class ChannelStore {
   async getUserAudioMedia() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: {
+          deviceId: this.audioDevice.inputDeviceId,
+        },
         video: false,
       });
 
@@ -257,14 +315,13 @@ export class ChannelStore {
   async toggleNoiseSuppression() {
     this.audioNoiseSuppression = !this.audioNoiseSuppression;
     console.log("切换麦克风降噪", this.audioNoiseSuppression);
+    await this.reloadAudioMediaDevice();
+  }
+
+  async reloadAudioMediaDevice() {
     const stream = await this.getUserAudioMedia();
 
-    if (!this.producer?.closed) {
-      this.producer?.replaceTrack({
-        track: stream.getAudioTracks()[0],
-      });
-    }
-
+    console.log("this.myAudioMediaStream", this.myAudioMediaStream);
     if (this.myAudioMediaStream) {
       // 将之前的媒体流设置为已关闭
       const userId = this.myAudioMediaStream.userId;
@@ -275,11 +332,23 @@ export class ChannelStore {
         mediaStream: stream,
         userId,
         closed: false,
+        ready: false,
       };
 
       this.modifyAudioGain(this.myAudioMediaStream, "microphone");
       this.watchMediaStreamVolume(this.myAudioMediaStream);
+
+      this.myAudioMediaStream!.ready = true;
     }
+
+    if (!this.producer?.closed) {
+      console.log("replaceTrack");
+      this.producer?.replaceTrack({
+        track: stream.getAudioTracks()[0],
+      });
+    }
+
+    return this.myAudioMediaStream!.mediaStream;
   }
 
   /**
@@ -312,6 +381,7 @@ export class ChannelStore {
       userId: userId,
       closed: false,
       isMyself: true,
+      ready: false,
     };
 
     runInAction(() => {
@@ -320,6 +390,8 @@ export class ChannelStore {
 
       this.modifyAudioGain(item, "volume");
       this.watchMediaStreamVolume(item);
+
+      item.ready = true;
     });
 
     console.log("consumeProducer:consumer", consumer.id, "producerId", producerId);
@@ -341,15 +413,17 @@ export class ChannelStore {
       userId: this.userWithChannels?.id,
       closed: false,
       isMyself: true,
+      ready: false,
     };
 
     this.modifyAudioGain(this.myAudioMediaStream, "microphone");
     this.watchMediaStreamVolume(this.myAudioMediaStream);
 
     this.producer = await this.sendTransport.produce({
-      track: stream.getTracks()[0],
+      track: this.myAudioMediaStream.mediaStream.getTracks()[0],
     });
 
+    this.myAudioMediaStream!.ready = true;
     console.log("createProducer:producer", this.producer.id);
   }
 
@@ -419,7 +493,9 @@ export class ChannelStore {
       stream.removeTrack(stream.getAudioTracks()[0]);
       stream.addTrack(destination.stream.getAudioTracks()[0]);
     } else {
-      source.connect(gainNode).connect(ctx.destination);
+      const destination = ctx.createMediaStreamDestination();
+      source.connect(gainNode).connect(destination);
+      userStream.actualStream = destination.stream;
     }
     gainNode.gain.value = getValue();
 

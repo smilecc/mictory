@@ -5,9 +5,16 @@ export interface IGainSetting {
   historyVolume?: number;
 }
 
+export interface IMediaDeviceSetting {
+  inputDeviceId: string;
+  outputDeviceId: string;
+}
+
 export interface IUserMediaStream {
   mediaStream: MediaStream;
+  actualStream?: MediaStream;
   userId: number;
   closed: boolean;
+  ready: boolean;
   isMyself?: boolean;
 }

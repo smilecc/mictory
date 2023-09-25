@@ -127,7 +127,7 @@ export const ChannelPage: React.FC = () => {
   });
 
   useEffect(() => {
-    commonStore.loadMediaDevices();
+    channelStore.loadMediaDevices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -325,8 +325,9 @@ export const ChannelPage: React.FC = () => {
 
 // 麦克风按钮
 const MicrophoneButton: React.FC = () => {
-  const commonStore = useCommonStore();
   const channelStore = useChannelStore();
+
+  console.log(channelStore);
 
   return (
     <Observer>
@@ -349,18 +350,24 @@ const MicrophoneButton: React.FC = () => {
           <ContextMenuContent className="w-80 select-none">
             <ContextMenuLabel>音频输入设置</ContextMenuLabel>
             <ContextMenuSeparator />
-            {commonStore.mediaDeviceInfos
-              .filter((it) => it.kind === "audioinput")
-              .map((it) => (
-                <ContextMenuItem key={it.deviceId} title={it.label}>
-                  <Radio
-                    classNames={{ label: "!cursor-pointer truncate w-64" }}
-                    label={it.label}
-                    value={it.deviceId}
-                    // checked
-                  />
-                </ContextMenuItem>
-              ))}
+            <Radio.Group
+              value={channelStore.audioDevice.inputDeviceId}
+              onChange={(v) => {
+                channelStore.setInputMediaDevice(v);
+              }}
+            >
+              {channelStore.mediaDeviceInfos
+                .filter((it) => it.kind === "audioinput")
+                .map((it) => (
+                  <ContextMenuItem key={it.deviceId} title={it.label}>
+                    <Radio
+                      classNames={{ label: "!cursor-pointer truncate w-64" }}
+                      label={it.label}
+                      value={it.deviceId}
+                    />
+                  </ContextMenuItem>
+                ))}
+            </Radio.Group>
             <ContextMenuSeparator />
 
             <Switch
@@ -414,7 +421,26 @@ const VolumeButton: React.FC = () => {
           <ContextMenuContent className="w-80 select-none">
             <ContextMenuLabel>音频输出设置</ContextMenuLabel>
             <ContextMenuSeparator />
-            <ContextMenuItem>Test</ContextMenuItem>
+            <Radio.Group
+              value={channelStore.audioDevice.outputDeviceId}
+              onChange={(v) => {
+                console.log(v);
+                channelStore.setAudioDevice("outputDeviceId", v);
+                // channelStore.setInputMediaDevice(v);
+              }}
+            >
+              {channelStore.mediaDeviceInfos
+                .filter((it) => it.kind === "audiooutput")
+                .map((it) => (
+                  <ContextMenuItem key={it.deviceId} title={it.label}>
+                    <Radio
+                      classNames={{ label: "!cursor-pointer truncate w-64" }}
+                      label={it.label}
+                      value={it.deviceId}
+                    />
+                  </ContextMenuItem>
+                ))}
+            </Radio.Group>
             <ContextMenuSeparator />
 
             <ContextMenuLabel className="text-xs">输出音量</ContextMenuLabel>

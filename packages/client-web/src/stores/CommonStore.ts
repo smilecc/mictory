@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { StoreStorage } from "@/lib/store-storage";
 import type { ThemeDarkMode } from "@/types";
 
@@ -29,15 +29,5 @@ export class CommonStore {
 
   get isNotLogin() {
     return !this.isLogin;
-  }
-
-  mediaDeviceInfos: MediaDeviceInfo[] = [];
-
-  async loadMediaDevices() {
-    const mediaDeviceInfos = await navigator.mediaDevices.enumerateDevices();
-    runInAction(() => {
-      this.mediaDeviceInfos = mediaDeviceInfos;
-      console.log("媒体设备列表", this.mediaDeviceInfos);
-    });
   }
 }
