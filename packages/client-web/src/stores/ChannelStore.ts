@@ -348,7 +348,7 @@ export class ChannelStore {
       });
     }
 
-    return this.myAudioMediaStream!.mediaStream;
+    return this.myAudioMediaStream?.mediaStream || stream;
   }
 
   /**
