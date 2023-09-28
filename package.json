@@ -8,6 +8,7 @@
     "server:start": "pnpm common:build && pnpm run -C packages/server start",
     "server:dev": "pnpm common:build && pnpm run -C packages/server start:dev",
     "web:dev": "pnpm common:build && pnpm run -C packages/client-web dev",
+    "web:build": "pnpm common:build && pnpm run -C packages/client-web build",
     "web:gql-watch": "pnpm run -C packages/client-web gql:watch",
     "web:gql-gen": "pnpm run -C packages/client-web gql:gen"
   },

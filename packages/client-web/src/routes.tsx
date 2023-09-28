@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { autorun } from "mobx";
-import { createHashRouter, RouterProvider, Navigate, useNavigate } from "react-router-dom";
+import { createHashRouter, RouterProvider, Navigate, useNavigate, RouteObject } from "react-router-dom";
 import { useCommonStore } from "@/stores";
 
 export const RouteGuard: React.FC<{
@@ -23,6 +23,15 @@ export const RouteGuard: React.FC<{
 
   return <>{props.children}</>;
 };
+
+const settingRoutes: RouteObject[] = [
+  {
+    path: "setting/audio",
+    lazy: async () => ({
+      Component: (await import("@/pages/setting/audio")).default,
+    }),
+  },
+];
 
 const router = createHashRouter([
   {
@@ -71,6 +80,7 @@ const router = createHashRouter([
             Component: MessagePage,
           };
         },
+        children: [...settingRoutes],
       },
       {
         path: ":channelCode",
@@ -80,6 +90,7 @@ const router = createHashRouter([
             Component: ChannelPage,
           };
         },
+        children: [...settingRoutes],
       },
     ],
   },

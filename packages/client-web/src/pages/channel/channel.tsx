@@ -2,7 +2,7 @@ import { useReactive } from "ahooks";
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 // import { useLoaderData } from "react-router-dom";
 // import * as mediasoupClient from "mediasoup-client";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 // import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
@@ -101,6 +101,7 @@ const ChannelMenuItem = React.memo<{ label: string; icon: React.FC; onClick?: ()
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
+  const navigate = useNavigate();
   const commonStore = useCommonStore();
   const channelStore = useChannelStore();
   const socketClient = useContext(SocketClientContext);
@@ -295,6 +296,7 @@ export const ChannelPage: React.FC = () => {
                         <ActionIcon
                           onClick={() => {
                             commonStore.settingModalOpen = true;
+                            navigate("setting/audio");
                           }}
                         >
                           <IconSettings size={18} />

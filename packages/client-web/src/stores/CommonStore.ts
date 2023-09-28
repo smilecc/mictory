@@ -7,7 +7,7 @@ export class CommonStore {
     makeAutoObservable(this);
   }
 
-  settingModalOpen: boolean = false;
+  settingModalOpen: boolean = true;
   themeDarkMode: ThemeDarkMode = StoreStorage.load(CommonStore, "themeDarkMode", "dark");
   private _sessionToken: string = StoreStorage.load(CommonStore, "sessionToken", "");
 

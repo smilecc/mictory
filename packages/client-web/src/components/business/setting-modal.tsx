@@ -1,9 +1,17 @@
 import { useCommonStore } from "@/stores";
 import { Modal, NavLink } from "@mantine/core";
 import { Observer } from "mobx-react-lite";
+import { useMemo } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+
+const SETTING_REG = /(.+)\/setting\/(.+)/;
 
 export const SettingModal: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const commonStore = useCommonStore();
+
+  const settingLocation = useMemo(() => `/setting/${SETTING_REG.exec(location.pathname)?.[2]}`, [location.pathname]);
 
   return (
     <Observer>
@@ -11,7 +19,10 @@ export const SettingModal: React.FC = () => {
         <Modal
           opened={commonStore.settingModalOpen}
           title="设置"
-          onClose={() => (commonStore.settingModalOpen = false)}
+          onClose={() => {
+            commonStore.settingModalOpen = false;
+            navigate(location.pathname.replace(settingLocation, ""));
+          }}
           fullScreen
           radius={0}
           transitionProps={{ transition: "fade", duration: 200 }}
@@ -22,6 +33,9 @@ export const SettingModal: React.FC = () => {
                 <NavLink label="语音设置" />
                 <NavLink label="高级设置" />
               </NavLink>
+            </div>
+            <div className="flex-1">
+              <Outlet />
             </div>
           </div>
         </Modal>
