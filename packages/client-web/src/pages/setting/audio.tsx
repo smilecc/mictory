@@ -1,10 +1,11 @@
+import { Title } from "@mantine/core";
 import React from "react";
 
 const SettingAudio: React.FC = () => {
   return (
-    <>
-      <div>1</div>
-    </>
+    <div>
+      <Title order={2}>语音设置</Title>
+    </div>
   );
 };
 
