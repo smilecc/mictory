@@ -70,7 +70,7 @@ export const SettingModal: React.FC = () => {
                 </NavLink>
               ))}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 pl-8">
               <Outlet />
             </div>
           </div>

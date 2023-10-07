@@ -79,16 +79,31 @@ export class ChannelStore {
     autoGainControl: true,
     echoCancellation: true,
     noiseSuppression: true,
+    sampleRate: 48000,
   });
 
-  setAudioDevice(k: keyof IMediaDeviceSetting, v: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async setAudioDevice(k: keyof IMediaDeviceSetting, v: any) {
+    console.log("修改声音设备设置", k, v);
     this.audioDevice = StoreStorage.save(ChannelStore, "audioDevice", {
       ...this.audioDevice,
       [k]: v,
     });
+
+    // 若修改的不是输出设备，则重新加载媒体设备
+    if (k !== "outputDeviceId") {
+      await this.reloadAudioMediaDevice();
+    }
   }
 
   async loadMediaDevices() {
+    if (!navigator.mediaDevices.ondevicechange) {
+      navigator.mediaDevices.ondevicechange = () => {
+        console.log("用户设备发生变化");
+        this.loadMediaDevices();
+      };
+    }
+
     const mediaDeviceInfos = await navigator.mediaDevices.enumerateDevices();
     runInAction(() => {
       this.mediaDeviceInfos = mediaDeviceInfos;
@@ -323,8 +338,8 @@ export class ChannelStore {
 
   async toggleNoiseSuppression() {
     this.audioNoiseSuppression = !this.audioNoiseSuppression;
+    await this.setAudioDevice("noiseSuppression", this.audioNoiseSuppression);
     console.log("切换麦克风降噪", this.audioNoiseSuppression);
-    await this.reloadAudioMediaDevice();
   }
 
   async reloadAudioMediaDevice() {
