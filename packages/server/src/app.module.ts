@@ -18,6 +18,7 @@ import { UserSessionResolver } from './resolvers/user/user-session.resolver';
 import { ConfigModule } from '@nestjs/config';
 import { ChannelResolver } from './resolvers/channel/channel.resolver';
 import { RoomResolver } from './resolvers/room/room.resolver';
+import { ChatResolver } from './resolvers/chat/chat.resolver';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -101,6 +102,7 @@ const JwtDynamicModule = JwtModule.register({
     UserSessionResolver,
     ChannelResolver,
     RoomResolver,
+    ChatResolver,
   ],
 })
 export class AppModule {}

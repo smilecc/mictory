@@ -75,6 +75,9 @@ model User {
   /// 加入的频道
   /// @HideField({ input: true, output: false })
   channels      ChannelToUser[]
+
+  fromChast   Chat[] @relation("fromUserChats")
+  targetChats Chat[] @relation("targetUserChats")
 }
 
 /// 用户昵称表
@@ -192,4 +195,49 @@ model Room {
   updatedTime       DateTime        @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime       DateTime?
+
+  /// 房间对话
+  chats Chat[]
+}
+
+enum ChatTarget {
+  ROOM
+  USER
+}
+
+enum ChatType {
+  USER
+  SYSTEM
+}
+
+enum ChatMessageType {
+  TEXT
+  IMAGE
+}
+
+/// 聊天表
+model Chat {
+  id           BigInt     @id @default(autoincrement())
+  /// 对话目标
+  target       ChatTarget
+  /// 消息类型
+  type         ChatType   @default(USER)
+  /// 用户ID
+  user         User?      @relation("fromUserChats", fields: [userId], references: [id])
+  userId       BigInt?
+  /// 房间
+  room         Room?      @relation(fields: [roomId], references: [id])
+  roomId       BigInt?
+  /// 目标用户
+  targetUser   User?      @relation("targetUserChats", fields: [targetUserId], references: [id])
+  targetUserId BigInt?
+  /// 消息内容
+  message      Json
+
+  /// @HideField({ input: true, output: false })
+  createdTime DateTime  @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime DateTime  @updatedAt
+  /// @HideField({ input: true, output: true })
+  deletedTime DateTime?
 }
