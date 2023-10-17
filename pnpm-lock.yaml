@@ -251,6 +251,9 @@ importers:
       graphql-scalars:
         specifier: ^1.22.2
         version: 1.22.2(graphql@16.8.0)
+      graphql-type-json:
+        specifier: ^0.3.2
+        version: 0.3.2(graphql@16.8.0)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -7178,6 +7181,14 @@ packages:
     dependencies:
       graphql: 16.8.0
       tslib: 2.6.2
+
+  /graphql-type-json@0.3.2(graphql@16.8.0):
+    resolution: {integrity: sha512-J+vjof74oMlCWXSvt0DOf2APEdZOCdubEvGDUAlqH//VBYcOYsGgRW7Xzorr44LvkjiuvecWc8fChxuZZbChtg==}
+    peerDependencies:
+      graphql: '>=0.8.0'
+    dependencies:
+      graphql: 16.8.0
+    dev: false
 
   /graphql-ws@5.14.0(graphql@16.8.0):
     resolution: {integrity: sha512-itrUTQZP/TgswR4GSSYuwWUzrE/w5GhbwM2GX3ic2U7aw33jgEsayfIlvaj7/GcIvZgNMzsPTrE5hqPuFUiE5g==}

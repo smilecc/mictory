@@ -22,6 +22,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.2",
     "@graphql-tools/utils": "^10.0.5",
+    "@mictory/common": "workspace:*",
     "@nestjs/apollo": "^12.0.7",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
@@ -39,6 +40,7 @@
     "class-validator": "^0.14.0",
     "graphql": "^16.8.0",
     "graphql-scalars": "^1.22.2",
+    "graphql-type-json": "^0.3.2",
     "lodash": "^4.17.21",
     "mediasoup": "^3.12.10",
     "nanoid": "^3.3.6",
@@ -46,8 +48,7 @@
     "prisma-soft-delete-middleware": "^1.1.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "socket.io": "^4.7.2",
-    "@mictory/common": "workspace:*"
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
