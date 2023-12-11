@@ -1,3 +1,4 @@
+import { UserInputError } from '@nestjs/apollo';
 import { Logger } from '@nestjs/common';
 import { Resolver, Query, Args, Info, Mutation, Context, Directive } from '@nestjs/graphql';
 import { PrismaSelect } from '@paljs/plugins';
@@ -101,10 +102,20 @@ export class ChannelResolver {
     @Args('data') args: ChannelJoinInput,
     @Info() info: GraphQLResolveInfo,
   ) {
+    const channel = await this.prisma.channel.findFirst({
+      where: {
+        code: args.code,
+      },
+    });
+
+    if (!channel) {
+      throw new UserInputError('加入频道失败，频道不存在');
+    }
+
     const select = new PrismaSelect(info).value;
     const defaultRole = await this.prisma.channelRole.findFirst({
       where: {
-        channelId: args.channelId,
+        channelId: channel.id,
         defaultRole: true,
       },
     });
@@ -112,7 +123,7 @@ export class ChannelResolver {
     return this.prisma.channel.update({
       ...select,
       where: {
-        id: args.channelId,
+        id: channel.id,
       },
       data: {
         users: {
@@ -120,7 +131,7 @@ export class ChannelResolver {
             where: {
               userId_channelId: {
                 userId: user.userId,
-                channelId: args.channelId,
+                channelId: channel.id,
               },
             },
             create: {

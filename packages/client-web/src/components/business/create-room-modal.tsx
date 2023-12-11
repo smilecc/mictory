@@ -66,8 +66,20 @@ export const CreateRoomModal: React.FC<
             value: `${it.id}`,
           }))}
           {...form.getInputProps("categoryId")}
+          classNames={{
+            input: "mt-2",
+          }}
         />
-        <TextInput mb="md" label="房间名" placeholder="请输入房间名" required {...form.getInputProps("name")} />
+        <TextInput
+          mb="md"
+          label="房间名"
+          placeholder="请输入房间名"
+          required
+          {...form.getInputProps("name")}
+          classNames={{
+            input: "mt-2",
+          }}
+        />
 
         <div className="flex justify-end pt-1">
           <Button loading={submitting} type="submit">

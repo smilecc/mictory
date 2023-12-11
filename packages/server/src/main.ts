@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { loadOrGenerateAppSecret } from './utils';
-import { ValidationPipe } from '@nestjs/common';
+import { env, loadOrGenerateAppSecret } from './utils';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { MictorySocketAdapter } from './events/socket.adapter';
 import * as _ from 'lodash';
 import { UserInputError } from '@nestjs/apollo';
@@ -21,11 +21,10 @@ global.Object.defineProperty(global.BigInt.prototype, 'toJSON', {
 });
 
 async function bootstrap() {
-  loadOrGenerateAppSecret();
-
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -43,8 +42,13 @@ async function bootstrap() {
       },
     }),
   );
+
   app.useWebSocketAdapter(new MictorySocketAdapter(app));
-  await app.listen(3000);
+  const APP_PORT = env('APP_PORT', '3000');
+
+  Logger.log(`App started, listen port: ${APP_PORT}`, 'bootstrap');
+  await app.listen(APP_PORT);
 }
 
+loadOrGenerateAppSecret();
 bootstrap();

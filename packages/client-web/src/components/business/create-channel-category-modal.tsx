@@ -1,6 +1,6 @@
 import { gql } from "@/@generated";
 import { useMutation } from "@apollo/client";
-import { Button, Modal, ModalProps, TextInput } from "@mantine/core";
+import { Button, Input, Modal, ModalProps, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import React from "react";
@@ -49,7 +49,9 @@ export const CreateChannelCategoryModal: React.FC<{ channelId: number; onOk?: ()
           });
         })}
       >
-        <TextInput mb="md" label="分组名" placeholder="请输入分组名" required {...form.getInputProps("name")} />
+        <Input.Wrapper label="分组名">
+          <TextInput className="mt-2" placeholder="请输入分组名" required {...form.getInputProps("name")} />
+        </Input.Wrapper>
 
         <div className="flex justify-end pt-1">
           <Button loading={submitting} type="submit">

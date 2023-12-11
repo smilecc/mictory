@@ -45,7 +45,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
       },
     });
 
-    this.logger.log(`EventsGateway Init, Clear All User's SessionState, Count: ${clearCount.count}`);
+    this.logger.log(`EventsGateway Init, Clean all user SessionState, Count: ${clearCount.count}`);
   }
 
   async handleConnection(client: MictorySocket) {

@@ -1,4 +1,4 @@
-import { SettingModal, SideAvatar } from "@/components/business";
+import { JoinChannelModal, SettingModal, SideAvatar } from "@/components/business";
 import React, { Fragment, useContext, useEffect } from "react";
 // import { useLoaderData } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,6 +11,7 @@ import { useChannelStore } from "@/stores";
 import { Observer } from "mobx-react-lite";
 import { autorun, runInAction } from "mobx";
 import { RouteGuard } from "@/routes";
+import { useReactive } from "ahooks";
 
 const QUERY_USER_CHANNELS = gql(`
 query listUserChannel {
@@ -46,6 +47,11 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
   const channelStore = useChannelStore();
   const params = useParams<{ channelCode: string }>();
   const socketClient = useContext(SocketClientContext);
+
+  const state = useReactive({
+    openJoinChannelModal: false,
+  });
+
   const {
     data,
     loading: userChannelLoading,
@@ -102,6 +108,13 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
         </Observer>
 
         <SettingModal />
+        <JoinChannelModal
+          opened={state.openJoinChannelModal}
+          onClose={() => {
+            refetchUserChannel();
+            state.openJoinChannelModal = false;
+          }}
+        />
 
         <main className="h-screen">
           <div className="flex h-full">
@@ -111,7 +124,7 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
               <div className="mb-2 flex justify-center pl-2">
                 <Divider size="sm" className="w-8" />
               </div>
-              <SideAvatar name="增加频道" icon={<IconPlus />} />
+              <SideAvatar name="添加频道" icon={<IconPlus />} onClick={() => (state.openJoinChannelModal = true)} />
 
               <Observer>
                 {() => (

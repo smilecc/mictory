@@ -32,7 +32,7 @@ export function loadOrGenerateAppSecret(): string {
     global.appSecret = readFileSync(secretPath).toString();
   }
 
-  Logger.log(`AppSecret: ${global.appSecret}`);
+  Logger.log(`AppSecret: ${global.appSecret}`, 'utils');
 
   return global.appSecret;
 }

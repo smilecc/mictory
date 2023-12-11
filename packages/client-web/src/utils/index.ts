@@ -3,7 +3,7 @@ import { notifications } from "@mantine/notifications";
 import { i18n } from "@/i18n";
 
 export function NoticeErrorHandler(e: ApolloError) {
-  console.log(JSON.stringify(e));
+  console.error(JSON.stringify(e));
   if (e.graphQLErrors) {
     notifications.show({
       color: "red",
