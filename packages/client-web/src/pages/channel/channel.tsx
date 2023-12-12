@@ -38,6 +38,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { sleep } from "@/utils";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -132,12 +133,22 @@ export const ChannelPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    socketClient.on("channelNeedReload", () => {
-      console.log("channelNeedReload -> onShouldRefetch");
-      refetchChannelDetail({
+  const sleepFetchChannelDetail = useCallback(
+    async (time: number) => {
+      await sleep(time);
+      await refetchChannelDetail({
         code: params.channelCode,
       });
+    },
+    [params.channelCode, refetchChannelDetail],
+  );
+
+  useEffect(() => {
+    socketClient.on("channelNeedReload", async () => {
+      console.log("channelNeedReload -> onShouldRefetch");
+      // 积极加载2次
+      await sleepFetchChannelDetail(100);
+      await sleepFetchChannelDetail(1000);
     });
 
     return () => {

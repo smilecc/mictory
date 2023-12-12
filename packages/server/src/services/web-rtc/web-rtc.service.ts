@@ -78,6 +78,10 @@ export class WebRtcService implements OnModuleInit {
     });
   }
 
+  getRooms() {
+    return this.rooms;
+  }
+
   getWorker(workerId: WorkerId): MediasoupWorker {
     return this.workers.find((it) => it.appData.id === workerId);
   }
@@ -93,11 +97,18 @@ export class WebRtcService implements OnModuleInit {
   }
 
   async getRoom(roomId: RoomId): Promise<Room> {
-    let room = this.rooms.find((it) => it.roomId === roomId);
+    let room: Room = this.rooms.find((it) => it.roomId === roomId);
     if (!room) {
       const worker = this.getNextWorker();
+      const dbRoom = await this.prisma.room.findUnique({
+        where: {
+          id: Number(roomId),
+        },
+      });
+
       room = {
         roomId,
+        channelId: dbRoom.channelId,
         workerId: worker.appData.id,
         sessions: [],
         // activeSpeakerObserver: await worker.appData.router.createActiveSpeakerObserver(),

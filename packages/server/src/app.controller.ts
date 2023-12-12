@@ -1,13 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { WebRtcService } from './services';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly webRtcService: WebRtcService) {}
 
-  @Get()
-  getHello(): string {
-    console.log('233');
-    return this.appService.getHello();
+  @Get('/debug/rooms')
+  getHello() {
+    return this.webRtcService.getRooms();
   }
 }

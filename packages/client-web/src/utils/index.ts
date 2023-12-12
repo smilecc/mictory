@@ -13,3 +13,7 @@ export function NoticeErrorHandler(e: ApolloError) {
     });
   }
 }
+
+export function sleep(time: number) {
+  return new Promise<void>((r) => setTimeout(r, time));
+}

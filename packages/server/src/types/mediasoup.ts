@@ -16,6 +16,7 @@ export type RoomId = number | string;
 export type WorkerId = number | string;
 export type Room = {
   roomId: RoomId;
+  channelId: bigint;
   workerId: WorkerId;
   sessions: RoomSession[];
   activeSpeakerObserver?: ActiveSpeakerObserver;
