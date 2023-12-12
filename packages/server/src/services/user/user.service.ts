@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaClient } from '@prisma/client';
 import { createHmac } from 'crypto';
 import { User, UserCreateInput } from 'src/@generated';
+import { RoomManager } from 'src/manager';
+import { TxManager } from 'src/manager/tx.manager';
 import { JwtUserClaims } from 'src/types';
 
 @Injectable()
@@ -10,6 +12,8 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly jwtService: JwtService,
+    private readonly txManager: TxManager,
+    private readonly roomManager: RoomManager,
   ) {}
 
   private readonly logger = new Logger(UserService.name);
@@ -32,7 +36,7 @@ export class UserService {
     this.logger.log(`CreateUser, User: ${JSON.stringify(user)}`);
     // 写入用户表
     const nickname = user.nickname.trim();
-    return this.prisma.$transaction(async (tx) => {
+    return this.txManager.run(async (tx) => {
       const newUser = await tx.user.create({
         data: {
           ...user,
@@ -53,6 +57,11 @@ export class UserService {
           nickname,
           no: 1000,
         },
+      });
+
+      // 创建用户默认频道
+      await this.roomManager.createChannel(newUser.id, {
+        name: `${newUser.nickname}的频道`,
       });
 
       return tx.user.update({

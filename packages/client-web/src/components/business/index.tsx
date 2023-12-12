@@ -6,3 +6,4 @@ export * from "./create-room-modal";
 export * from "./create-channel-category-modal";
 export * from "./setting-modal";
 export * from "./join-channel-modal";
+export * from "./channel-users";

@@ -30,14 +30,16 @@ export class UserResolver {
 
   @Query(() => User, { nullable: true })
   async user(
-    @Context('user') user: JwtUserClaims,
     @Args('where') where: UserWhereInput,
     @Info() info: GraphQLResolveInfo,
+    @Context('user') user?: JwtUserClaims,
   ) {
     const select = new PrismaSelect(info).value;
 
     // 约定-1为查询当前用户
     if (where.nicknameNo?.equals === -1) {
+      if (!user?.userId) return null;
+
       return this.prisma.user.findFirst({
         where: {
           id: user.userId,

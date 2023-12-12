@@ -6,11 +6,17 @@ import { PrismaClient } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
 import { Channel, CreateOneChannelArgs, FindManyChannelArgs, UpdateOneChannelArgs } from 'src/@generated';
 import { ChannelJoinInput } from 'src/graphql/types/channel-join.input';
+import { RoomManager } from 'src/manager';
+import { TxManager } from 'src/manager/tx.manager';
 import { JwtUserClaims } from 'src/types';
 
 @Resolver(() => Channel)
 export class ChannelResolver {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly txManager: TxManager,
+    private readonly roomManager: RoomManager,
+  ) {}
 
   private readonly logger = new Logger(ChannelResolver.name);
 
@@ -22,59 +28,8 @@ export class ChannelResolver {
 
   @Directive('@auth')
   @Mutation(() => Channel)
-  async channelCreate(
-    @Context('user') user: JwtUserClaims,
-    @Args() args: CreateOneChannelArgs,
-    @Info() info: GraphQLResolveInfo,
-  ) {
-    this.logger.log(`ChannelCreate, User: ${user.userId} Channel: ${JSON.stringify(args)}`);
-    const select = new PrismaSelect(info).value;
-    return this.prisma.$transaction(async (tx) => {
-      // 创建频道
-      const channel = await tx.channel.create({
-        data: {
-          ...args.data,
-          ownerUser: {
-            connect: {
-              id: user.userId,
-            },
-          },
-        },
-      });
-
-      // 创建默认角色和初始用户
-      return tx.channel.update({
-        ...select,
-        data: {
-          categories: {
-            create: {
-              name: 'General',
-              rooms: {
-                create: {
-                  name: '默认房间',
-                  channelId: channel.id,
-                },
-              },
-            },
-          },
-          users: {
-            create: [
-              {
-                user: { connect: { id: user.userId } },
-                // 创建者作为管理员
-                channelRole: { create: { name: '管理员', channelId: channel.id } },
-              },
-            ],
-          },
-          roles: {
-            create: [{ name: '成员', defaultRole: true }],
-          },
-        },
-        where: {
-          id: channel.id,
-        },
-      });
-    });
+  async channelCreate(@Context('user') user: JwtUserClaims, @Args() args: CreateOneChannelArgs) {
+    return this.roomManager.createChannel(user.userId, args.data);
   }
 
   @Mutation(() => Channel)

@@ -19,6 +19,9 @@ import { ConfigModule } from '@nestjs/config';
 import { ChannelResolver } from './resolvers/channel/channel.resolver';
 import { RoomResolver } from './resolvers/room/room.resolver';
 import { ChatResolver } from './resolvers/chat/chat.resolver';
+import { TxManager } from './manager/tx.manager';
+import { ClsModule } from 'nestjs-cls';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 prisma.$use(
@@ -86,6 +89,17 @@ const JwtDynamicModule = JwtModule.register({
         },
       }),
     }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator() {
+          return randomUUID().replaceAll('-', '');
+        },
+        // setup(_cls, _req: Request) {},
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -103,6 +117,7 @@ const JwtDynamicModule = JwtModule.register({
     ChannelResolver,
     RoomResolver,
     ChatResolver,
+    TxManager,
   ],
 })
 export class AppModule {}

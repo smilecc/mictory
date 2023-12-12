@@ -8,7 +8,7 @@ import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
 import { Button, ActionIcon, Slider, Tooltip, Divider, Radio, Switch } from "@mantine/core";
-import { ChannelPanel, CreateChannelCategoryModal, CreateRoomModal } from "@/components/business";
+import { ChannelPanel, ChannelUsers, CreateChannelCategoryModal, CreateRoomModal } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
 import { first } from "lodash-es";
@@ -48,7 +48,11 @@ query getChannelDetail($code: String!) {
     code
     avatar
     ownerUser {
-      ...UserFrag
+      id
+      nickname
+      nicknameNo
+      sessionState
+      avatar
     }
     users {
       role: channelRole {
@@ -56,7 +60,11 @@ query getChannelDetail($code: String!) {
         color
       }
       user {
-        ...UserFrag
+        id
+        nickname
+        nicknameNo
+        sessionState
+        avatar
       }
     }
     categories {
@@ -77,14 +85,6 @@ query getChannelDetail($code: String!) {
       }
     }
   }
-}
-
-fragment UserFrag on User {
-  id
-  nickname
-  nicknameNo
-  sessionState
-  avatar
 }
 `);
 
@@ -331,7 +331,9 @@ export const ChannelPage: React.FC = () => {
           </Button>
         </div>
       </div>
-      <div>3</div>
+      <div className="w-72 break-words bg-surface1">
+        <ChannelUsers users={channel?.users || []} />
+      </div>
     </BaseLayout>
   );
 };
