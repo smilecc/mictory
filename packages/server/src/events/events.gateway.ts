@@ -59,6 +59,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
           sessionState: 'ONLINE',
         },
       });
+
+      client.emit('channelNeedReload');
     } catch (e) {
       this.logger.error(e);
     }
