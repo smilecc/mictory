@@ -133,6 +133,7 @@ export const ChannelPage: React.FC = () => {
   const state = useReactive({
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
+    selectedRoomId: 0,
   });
 
   useEffect(() => {
@@ -257,6 +258,9 @@ export const ChannelPage: React.FC = () => {
             {channel ? (
               <ChannelPanel
                 channel={channel}
+                onRoomClick={(roomId) => {
+                  state.selectedRoomId = roomId;
+                }}
                 onShouldRefetch={() => {
                   refetchChannelDetail({
                     code: params.channelCode,
@@ -337,7 +341,7 @@ export const ChannelPage: React.FC = () => {
             切换主题
           </Button> */}
 
-          {channelStore.joinedRoomId && <ChatPannel type={ChatTarget.Room} roomId={channelStore.joinedRoomId} />}
+          {state.selectedRoomId && <ChatPannel type={ChatTarget.Room} roomId={state.selectedRoomId} />}
         </div>
       </div>
       <div className="w-72 break-words bg-surface1">

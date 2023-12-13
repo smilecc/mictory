@@ -17,7 +17,8 @@ import { DropdownMenuLabel } from "../ui/dropdown-menu";
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
   onShouldRefetch?: () => void;
-}> = ({ channel, onShouldRefetch }) => {
+  onRoomClick?: (roomId: number) => void;
+}> = ({ channel, onShouldRefetch, onRoomClick }) => {
   const channelStore = useChannelStore();
   const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
   const state = useReactive({
@@ -84,7 +85,11 @@ export const ChannelPanel: React.FC<{
                   <ContextMenuTrigger>
                     <div
                       className="cursor-pointer rounded-md p-3 font-bold leading-none text-zinc-300 hover:bg-zinc-700"
+                      onClick={() => {
+                        onRoomClick?.(room.id);
+                      }}
                       onDoubleClick={async () => {
+                        onRoomClick?.(room.id);
                         await channelStore.joinRoom(room.id, room.channelId);
 
                         onShouldRefetch?.();

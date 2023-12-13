@@ -36,12 +36,13 @@ const settingRoutes: RouteObject[] = [
 const router = createHashRouter([
   {
     path: "/",
-    lazy: async () => {
-      const { HomePage } = await import("@/pages/Home");
-      return {
-        Component: HomePage,
-      };
-    },
+    Component: () => <Navigate to="/channel" replace />,
+    // lazy: async () => {
+    //   const { HomePage } = await import("@/pages/Home");
+    //   return {
+    //     Component: HomePage,
+    //   };
+    // },
   },
   {
     path: "/user/login",
