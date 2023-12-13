@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { flip, offset, UseVirtualFloatingOptions } from "@udecode/plate-floating";
 import {
   FloatingLinkUrlInput,

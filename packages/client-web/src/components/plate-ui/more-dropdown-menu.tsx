@@ -1,4 +1,3 @@
-import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';
 import { focusEditor, toggleMark, useEditorState } from '@udecode/plate-common';

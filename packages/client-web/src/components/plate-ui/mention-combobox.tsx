@@ -1,16 +1,10 @@
-import React from 'react';
-import { ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
-import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
-import {
-  ELEMENT_MENTION,
-  getMentionOnSelectItem,
-  MentionPlugin,
-} from '@udecode/plate-mention';
+import { ComboboxProps, Data, NoData } from "@udecode/plate-combobox";
+import { getPluginOptions, useEditorRef } from "@udecode/plate-common";
+import { ELEMENT_MENTION, getMentionOnSelectItem, MentionPlugin } from "@udecode/plate-mention";
 
-import { Combobox } from './combobox';
+import { Combobox } from "./combobox";
 
-export interface MentionComboboxProps<TData extends Data = NoData>
-  extends Partial<ComboboxProps<TData>> {
+export interface MentionComboboxProps<TData extends Data = NoData> extends Partial<ComboboxProps<TData>> {
   pluginKey?: string;
 }
 

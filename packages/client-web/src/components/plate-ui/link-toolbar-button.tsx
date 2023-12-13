@@ -1,4 +1,3 @@
-import React from "react";
 import { useLinkToolbarButton, useLinkToolbarButtonState } from "@udecode/plate-link";
 
 import { Icons } from "@/components/icons";
