@@ -27,7 +27,7 @@ const UsersPannel: React.FC<{ title: string; users: Users }> = ({ title, users }
         {title} - {users.length}
       </div>
       {users.map((user) => (
-        <UserPopover nickname={user.user.nickname} no={user.user.nicknameNo}>
+        <UserPopover nickname={user.user.nickname} no={user.user.nicknameNo} key={user.user.id}>
           <div className="flex items-center rounded-md px-3 py-1.5 text-zinc-300 hover:bg-zinc-700">
             <img
               src={user.user.avatar || "/img/default-avatar.jpg"}

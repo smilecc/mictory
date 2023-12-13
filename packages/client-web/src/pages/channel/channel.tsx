@@ -2,19 +2,13 @@ import { useReactive } from "ahooks";
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 // import { useLoaderData } from "react-router-dom";
 // import * as mediasoupClient from "mediasoup-client";
-import { useNavigate, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 // import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { BaseLayout } from "@/components/layout/base-layout";
 import { ActionIcon, Slider, Tooltip, Divider, Radio, Switch } from "@mantine/core";
-import {
-  ChannelPanel,
-  ChannelUsers,
-  ChatPannel,
-  CreateChannelCategoryModal,
-  CreateRoomModal,
-} from "@/components/business";
+import { ChannelPanel, ChannelUsers, CreateChannelCategoryModal, CreateRoomModal } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { Observer } from "mobx-react-lite";
 import { first } from "lodash-es";
@@ -45,7 +39,6 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { sleep } from "@/utils";
-import { ChatTarget } from "@/@generated/graphql";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -114,6 +107,7 @@ export const ChannelPage: React.FC = () => {
   const channelStore = useChannelStore();
   const socketClient = useContext(SocketClientContext);
   const params = useParams<{ channelCode: string }>();
+
   const {
     data,
     refetch: refetchChannelDetail,
@@ -133,7 +127,6 @@ export const ChannelPage: React.FC = () => {
   const state = useReactive({
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
-    selectedRoomId: 0,
   });
 
   useEffect(() => {
@@ -259,7 +252,7 @@ export const ChannelPage: React.FC = () => {
               <ChannelPanel
                 channel={channel}
                 onRoomClick={(roomId) => {
-                  state.selectedRoomId = roomId;
+                  navigate(`/channel/${channel.code}/${roomId}`);
                 }}
                 onShouldRefetch={() => {
                   refetchChannelDetail({
@@ -332,16 +325,7 @@ export const ChannelPage: React.FC = () => {
           </div>
         </div>
         <div className="flex-1">
-          {/* <Button
-            variant="secondary"
-            onClick={() => {
-              commonStore.setThemeDarkMode(commonStore.themeDarkMode === "dark" ? "light" : "dark");
-            }}
-          >
-            切换主题
-          </Button> */}
-
-          {state.selectedRoomId && <ChatPannel type={ChatTarget.Room} roomId={state.selectedRoomId} />}
+          <Outlet />
         </div>
       </div>
       <div className="w-72 break-words bg-surface1">

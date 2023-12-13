@@ -91,7 +91,18 @@ const router = createHashRouter([
             Component: ChannelPage,
           };
         },
-        children: [...settingRoutes],
+        children: [
+          ...settingRoutes,
+          {
+            path: ":roomId",
+            lazy: async () => {
+              const { RoomPage } = await import("@/pages/channel/room");
+              return {
+                Component: RoomPage,
+              };
+            },
+          },
+        ],
       },
     ],
   },

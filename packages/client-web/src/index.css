@@ -3,48 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  @import url("@radix-ui/colors/tomatoDark.css");
-  @import url("@radix-ui/colors/mauveDark.css");
-
-  .dark-editor {
-    --accentBase: var(--tomato1);
-    --accentBgSubtle: var(--tomato2);
-    --accentBg: var(--tomato3);
-    --accentBgHover: var(--tomato4);
-    --accentBgActive: var(--tomato5);
-    --accentLine: var(--tomato6);
-    --accentBorder: var(--tomato7);
-    --accentBorderHover: var(--tomato8);
-    --accentSolid: var(--tomato9);
-    --accentSolidHover: var(--tomato10);
-    --accentText: var(--tomato11);
-    --accentTextContrast: var(--tomato12);
-
-    --basePageBg: white;
-    --baseBase: var(--mauve1);
-    --baseBgSubtle: var(--mauve2);
-    --baseBg: var(--mauve3);
-    --baseBgHover: var(--mauve4);
-    --baseBgActive: var(--mauve5);
-    --baseLine: var(--mauve6);
-    --baseBorder: var(--mauve7);
-    --baseBorderHover: var(--mauve8);
-    --baseSolid: var(--mauve9);
-    --baseSolidHover: var(--mauve10);
-    --baseText: var(--mauve11);
-    --baseTextContrast: var(--mauve12);
-
-    color: var(--baseText);
-    /* background: var(--basePageBg); */
-
-    --spacing-3: 10px 0 !important;
-  }
-
-  .dark-editor p {
-    margin: 0;
-    line-height: 22px;
-  }
-
   :root {
     --spacing-3: 0px !important;
 
