@@ -12,17 +12,15 @@ import "./i18n";
 const stores = getStores();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <ApolloProvider client={apolloClient}>
-      <StoreContext.Provider value={stores}>
-        <SocketClientContext.Provider value={socketClient}>
-          <ThemeWrapper>
-            <AudioWrapper>
-              <Routes />
-            </AudioWrapper>
-          </ThemeWrapper>
-        </SocketClientContext.Provider>
-      </StoreContext.Provider>
-    </ApolloProvider>
-  </React.StrictMode>,
+  <ApolloProvider client={apolloClient}>
+    <StoreContext.Provider value={stores}>
+      <SocketClientContext.Provider value={socketClient}>
+        <ThemeWrapper>
+          <AudioWrapper>
+            <Routes />
+          </AudioWrapper>
+        </ThemeWrapper>
+      </SocketClientContext.Provider>
+    </StoreContext.Provider>
+  </ApolloProvider>,
 );

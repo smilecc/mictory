@@ -8,6 +8,7 @@ import {
   PlateLeaf,
   createPluginFactory,
   Value,
+  PlateEditor,
 } from "@udecode/plate-common";
 import { createParagraphPlugin, ELEMENT_PARAGRAPH } from "@udecode/plate-paragraph";
 import {
@@ -83,6 +84,7 @@ import { FloatingToolbarButtons } from "@/components/plate-ui/floating-toolbar-b
 import { withPlaceholders } from "@/components/plate-ui/placeholder";
 import { EmojiCombobox } from "@/components/plate-ui/emoji-combobox";
 import { TooltipProvider } from "../plate-ui/tooltip";
+import { ForwardedRef } from "react";
 
 const plugins = createPlugins(
   [
@@ -276,11 +278,16 @@ const createMictoryPlugin = createPluginFactory<{ onEnterPress?: (v: ChatValue) 
 export const ChatEditor: React.FC<{
   onEnterPress?: (v: ChatValue) => Promise<void>;
   onChange?: (v: ChatValue) => void;
-}> = ({ onEnterPress, onChange }) => {
+  editorRef?: ForwardedRef<PlateEditor>;
+}> = ({ onEnterPress, onChange, editorRef }) => {
   return (
     <TooltipProvider disableHoverableContent delayDuration={500} skipDelayDuration={0}>
-      <Plate plugins={[createMictoryPlugin({ options: { onEnterPress } }), ...plugins]} onChange={onChange}>
-        <Editor />
+      <Plate
+        plugins={[createMictoryPlugin({ options: { onEnterPress } }), ...plugins]}
+        onChange={onChange}
+        editorRef={editorRef}
+      >
+        <Editor className="px-3 py-2" />
 
         <FloatingToolbar>
           <FloatingToolbarButtons />
@@ -301,7 +308,7 @@ export const ChatEditor: React.FC<{
 export const ChatPreview: React.FC<{ value: ChatValue }> = ({ value }) => {
   return (
     <Plate plugins={plugins} readOnly initialValue={value}>
-      <Editor />
+      <Editor className="text-sm text-gray-200" />
     </Plate>
   );
 };
