@@ -1,5 +1,4 @@
 import { Args, Context, Directive, Info, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaSelect } from '@paljs/plugins';
 import { PrismaClient } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
@@ -11,20 +10,20 @@ import { MictoryErrorCodes } from '@mictory/common';
 import { UserSessionCreateInput } from 'src/graphql/types/user-session-create.input';
 import { UserSession } from 'src/graphql/types/user-session.output';
 import { UserService } from 'src/services';
-import { JwtUserClaims } from 'src/types';
 import { CreateMictoryError } from 'src/utils';
+import { CTX_USER } from 'src/consts';
+import { RequestUser } from 'src/modules/auth.module';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly prisma: PrismaClient,
-    private readonly jwtService: JwtService,
   ) {}
 
-  @Directive('@auth')
+  @Directive('@user')
   @Query(() => GraphQLBigInt)
-  async test(@Context('user') user: JwtUserClaims) {
+  async test(@Context(CTX_USER) user: RequestUser) {
     return user.userId;
   }
 
@@ -32,7 +31,7 @@ export class UserResolver {
   async user(
     @Args('where') where: UserWhereInput,
     @Info() info: GraphQLResolveInfo,
-    @Context('user') user?: JwtUserClaims,
+    @Context(CTX_USER) user: RequestUser,
   ) {
     const select = new PrismaSelect(info).value;
 

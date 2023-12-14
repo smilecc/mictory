@@ -5,10 +5,11 @@ import { PrismaSelect } from '@paljs/plugins';
 import { PrismaClient } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
 import { Channel, CreateOneChannelArgs, FindManyChannelArgs, UpdateOneChannelArgs } from 'src/@generated';
+import { CTX_USER } from 'src/consts';
 import { ChannelJoinInput } from 'src/graphql/types/channel-join.input';
 import { RoomManager } from 'src/manager';
 import { TxManager } from 'src/manager/tx.manager';
-import { JwtUserClaims } from 'src/types';
+import { RequestUser } from 'src/modules/auth.module';
 
 @Resolver(() => Channel)
 export class ChannelResolver {
@@ -26,15 +27,16 @@ export class ChannelResolver {
     return this.prisma.channel.findMany({ ...args, ...select });
   }
 
-  @Directive('@auth')
+  @Directive('@user')
   @Mutation(() => Channel)
-  async channelCreate(@Context('user') user: JwtUserClaims, @Args() args: CreateOneChannelArgs) {
+  async channelCreate(@Context(CTX_USER) user: RequestUser, @Args() args: CreateOneChannelArgs) {
     return this.roomManager.createChannel(user.userId, args.data);
   }
 
+  @Directive('@user')
   @Mutation(() => Channel)
   async channelUpdate(
-    @Context('user') user: JwtUserClaims,
+    @Context(CTX_USER) user: RequestUser,
     @Args() args: UpdateOneChannelArgs,
     @Info() info: GraphQLResolveInfo,
   ) {
@@ -51,9 +53,10 @@ export class ChannelResolver {
     });
   }
 
+  @Directive('@user')
   @Mutation(() => Channel)
   async channelJoin(
-    @Context('user') user: JwtUserClaims,
+    @Context(CTX_USER) user: RequestUser,
     @Args('data') args: ChannelJoinInput,
     @Info() info: GraphQLResolveInfo,
   ) {

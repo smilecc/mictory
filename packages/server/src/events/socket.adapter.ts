@@ -2,9 +2,10 @@ import { Server as SocketServer, Socket } from 'socket.io';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JwtUserClaims, RoomId } from 'src/types';
+import { RoomId } from 'src/types';
 import { instrument } from '@socket.io/admin-ui';
-import { env } from 'src/utils';
+import { appEnv } from 'src/utils';
+import { JwtUserClaims, RequestUserType } from 'src/modules/auth.module';
 
 export interface MictorySocket extends Socket {
   user: JwtUserClaims;
@@ -26,9 +27,10 @@ export class MictorySocketAdapter extends IoAdapter {
       const jwtService = this.app.get(JwtService);
       const token = socket.handshake.auth.token;
       try {
-        if (env('APP_ENV', 'prod') === 'dev' && socket.handshake.auth.debugUser) {
+        if (appEnv() === 'dev' && socket.handshake.auth.debugUser) {
           socket.user = {
-            userId: parseInt(socket.handshake.auth.debugUser),
+            userId: BigInt(socket.handshake.auth.debugUser),
+            type: RequestUserType.USER,
           };
 
           return next();

@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { last, first } from "lodash-es";
 import { useReactive } from "ahooks";
 import { ChatEditor, ChatPreview, ChatValue } from "./chat-editor";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export type ChatPannelRoomProps = {
   type: ChatTarget.Room;
@@ -95,13 +96,15 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
         },
       })
         .then((data) => {
-          const chats = (data.data?.chats || []).sort((a, b) => a.id - b.id);
-          setChats((pre) => (type === "old" ? chats.concat(pre) : pre.concat(chats)));
+          const chats = (data.data?.chats || []).sort((a, b) => b.id - a.id);
+          setChats((pre) => (type === "new" ? chats.concat(pre) : pre.concat(chats)));
 
-          const oldCursor: number = first(chats)?.id || -1;
-          const newCursor: number = last(chats)?.id || -1;
+          const newCursor: number = first(chats)?.id || -1;
+          const oldCursor: number = last(chats)?.id || -1;
 
-          if ((oldCursor < state.oldCursor && oldCursor !== -1) || state.oldCursor === 0) {
+          if (type === "old" && oldCursor === -1) {
+            state.oldCursor = -1;
+          } else if ((oldCursor < state.oldCursor && oldCursor !== -1) || state.oldCursor === 0) {
             state.oldCursor = oldCursor;
           }
 
@@ -144,25 +147,29 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
 
   return (
     <div className="relative box-content h-full w-full">
-      <div className="h-[calc(100%-4.5rem)] overflow-auto" ref={chatViewRef}>
-        <button onClick={() => loadNext("old")}>old</button>
-        <br />
-        <button onClick={() => loadNext("new")}>new</button>
-        <br />
-
-        <div>
-          {state.lock ? "true" : "false"} - {state.oldCursor} - {state.newCursor}
-        </div>
-        <div>
-          {chats.map((chat) => (
-            <div key={chat.id}>
-              <div>
-                {chat.id} - {chat.user?.nickname}
+      <div className="flex h-[calc(100%-4.5rem)] flex-col-reverse overflow-auto" ref={chatViewRef} id="aaa">
+        {chatViewRef.current && (
+          <InfiniteScroll
+            next={() => loadNext("old")}
+            hasMore={state.oldCursor !== -1}
+            className="flex flex-col-reverse !overflow-hidden"
+            loader={<h4>Loading...</h4>}
+            endMessage={<h4>到头了</h4>}
+            dataLength={chats.length}
+            scrollableTarget={chatViewRef.current as unknown as React.ReactNode}
+            scrollThreshold="400px"
+            inverse
+          >
+            {chats.map((chat) => (
+              <div key={chat.id}>
+                <div>
+                  {chat.id} - {chat.user?.nickname}
+                </div>
+                <ChatPreview value={chat.message} />
               </div>
-              <ChatPreview value={chat.message} />
-            </div>
-          ))}
-        </div>
+            ))}
+          </InfiniteScroll>
+        )}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 m-0 border-0 bg-surface1 p-3">

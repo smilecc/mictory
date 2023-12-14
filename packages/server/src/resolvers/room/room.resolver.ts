@@ -1,7 +1,9 @@
-import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Context, Directive, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PrismaClient } from '@prisma/client';
 import { Room, User } from 'src/@generated';
+import { CTX_USER } from 'src/consts';
 import { RoomCreateInput } from 'src/graphql/types/room-create.input';
+import { RequestUser } from 'src/modules/auth.module';
 import { WebRtcService } from 'src/services';
 
 @Resolver(() => Room)
@@ -11,8 +13,9 @@ export class RoomResolver {
     private readonly webRtcService: WebRtcService,
   ) {}
 
+  @Directive('@user')
   @Mutation(() => Room)
-  async roomCreate(@Args('data') data: RoomCreateInput) {
+  async roomCreate(@Context(CTX_USER) user: RequestUser, @Args('data') data: RoomCreateInput) {
     return this.prisma.room.create({
       data: {
         name: data.name,

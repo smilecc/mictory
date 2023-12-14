@@ -5,7 +5,7 @@ import { createHmac } from 'crypto';
 import { User, UserCreateInput } from 'src/@generated';
 import { RoomManager } from 'src/manager';
 import { TxManager } from 'src/manager/tx.manager';
-import { JwtUserClaims } from 'src/types';
+import { JwtUserClaims, RequestUserType } from 'src/modules/auth.module';
 
 @Injectable()
 export class UserService {
@@ -29,7 +29,12 @@ export class UserService {
   }
 
   generateSessionToken(user: User): Promise<string> {
-    return this.jwtService.signAsync({ userId: parseInt(user.id.toString()) } as JwtUserClaims);
+    const claims: JwtUserClaims = {
+      userId: user.id,
+      type: RequestUserType.USER,
+    };
+
+    return this.jwtService.signAsync(claims);
   }
 
   async createUser(user: UserCreateInput): Promise<User> {
