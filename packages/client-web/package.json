@@ -65,6 +65,7 @@
     "@udecode/plate-select": "^27.0.0",
     "@udecode/plate-selection": "^27.0.0",
     "ahooks": "^3.7.8",
+    "axios": "^1.6.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
@@ -91,6 +92,7 @@
     "style-mod": "^4.1.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
+    "tailwindcss-scoped-preflight": "^2.0.2",
     "zod": "^3.22.2"
   },
   "devDependencies": {

@@ -83,7 +83,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   const editContent = editState.isEditing ? (
     input
   ) : (
-    <div className="box-content flex h-9 items-center gap-1">
+    <div className="twp box-content flex h-9 items-center gap-1">
       <button type="button" className={buttonVariants({ variant: "ghost", size: "sm" })} {...editButtonProps}>
         Edit link
       </button>

@@ -1,10 +1,11 @@
 import { StoreStorage } from "@/lib/store-storage";
 import { CommonStore } from "@/stores/CommonStore";
+import { API_HOST } from "@/utils";
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
-  uri: "http://localhost:3000/graphql",
+  uri: `${API_HOST}/graphql`,
 });
 
 const authLink = setContext((_, { headers }) => {

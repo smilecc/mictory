@@ -1,3 +1,4 @@
 src/@generated/
 .env
 .secret
+files

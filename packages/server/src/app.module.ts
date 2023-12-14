@@ -17,6 +17,8 @@ import { AuthModule } from './modules/auth.module';
 import { PrismaModule } from './modules/prisma.module';
 import { LoggerModule } from './modules/logger.module';
 import { GraphQlModule } from './modules/graph-ql.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -37,6 +39,9 @@ import { GraphQlModule } from './modules/graph-ql.module';
         },
         // setup(_cls, _req: Request) {},
       },
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'files'),
     }),
   ],
   controllers: [AppController],

@@ -8,10 +8,11 @@ import { ChatEditor, ChatPreview, ChatValue } from "./chat-editor";
 import InfiniteScroll from "react-infinite-scroll-component";
 import dayjs from "dayjs";
 import { UserPopover } from ".";
-import { ActionIcon, Popover, Skeleton } from "@mantine/core";
+import { ActionIcon, FileButton, Popover, Skeleton } from "@mantine/core";
 import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
-import { IconMoodSmileBeam } from "@tabler/icons-react";
-import { PlateEditor } from "@udecode/plate-common";
+import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
+import { PlateEditor, nanoid } from "@udecode/plate-common";
+import { API_HOST, ApiAxios } from "@/utils";
 
 export type ChatPannelRoomProps = {
   type: ChatTarget.Room;
@@ -203,12 +204,41 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
         )}
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 m-0 border-0 bg-surface1 px-3 py-2">
+      <div className="absolute bottom-0 left-0 right-0 m-0 border-0 bg-surface1 py-2 pl-3 pr-2">
         {state.sending && <div className="absolute -top-4 left-8 select-none text-xs text-gray-300">消息发送中...</div>}
-        <div className="flex items-end rounded-lg bg-surface5 px-3">
+        <div className="flex items-end rounded-lg bg-surface5 pl-3">
+          <FileButton
+            accept="image/png,image/jpeg,image/gif"
+            onChange={(file) => {
+              if (file) {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                state.sending = true;
+                ApiAxios.post<{ name: string }>("/file/upload", formData).then(({ data }) => {
+                  sendMessage([
+                    {
+                      id: nanoid(),
+                      url: `${API_HOST}/${data.name}`,
+                      type: "img",
+                      width: 300,
+                      children: [{ text: "" }],
+                    },
+                  ]);
+                });
+              }
+            }}
+          >
+            {(props) => (
+              <ActionIcon className="pb-4" {...props}>
+                <IconPhoto size={26} className="text-gray-400" />
+              </ActionIcon>
+            )}
+          </FileButton>
+
           <Popover width={200} position="bottom" withArrow shadow="md">
             <Popover.Target>
-              <ActionIcon className="pb-4">
+              <ActionIcon className="ml-2 pb-4">
                 <IconMoodSmileBeam size={26} className="text-gray-400" />
               </ActionIcon>
             </Popover.Target>
@@ -236,10 +266,9 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
             </Popover.Dropdown>
           </Popover>
 
-          <div className="flex-1">
+          <div className="twp flex-1">
             <ChatEditor onEnterPress={sendMessage} editorRef={chatEditorRef} />
           </div>
-          {/* <div className="pb-3">1</div> */}
         </div>
       </div>
     </div>

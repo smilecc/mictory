@@ -1,4 +1,5 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
+const { scopedPreflightStyles } = require("tailwindcss-scoped-preflight");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -78,8 +79,11 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-  corePlugins: {
-    preflight: false,
-  },
+  plugins: [
+    require("tailwindcss-animate"),
+    scopedPreflightStyles({
+      cssSelector: ".twp", // or .tailwind-preflight or even [data-twp=true] - any valid CSS selector of your choice
+      mode: "matched only", // it's the default
+    }),
+  ],
 };
