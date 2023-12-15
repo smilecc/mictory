@@ -32,7 +32,7 @@ export class AppController {
 
     await writeFile(filePath, file.buffer);
 
-    return { name: `${date}/${fileName}` };
+    return { name: `/files/${date}/${fileName}` };
   }
 
   @Get('/debug/rooms')

@@ -3,7 +3,17 @@ import { notifications } from "@mantine/notifications";
 import { i18n } from "@/i18n";
 import axios from "axios";
 
-export const API_HOST = import.meta.env.VITE_API_HOST || "http://localhost:3000";
+export const API_HOST = (() => {
+  if (import.meta.env.VITE_API_HOST) {
+    return import.meta.env.VITE_API_HOST;
+  } else if (import.meta.env.DEV) {
+    return "http://localhost:3000";
+  }
+
+  return "/api";
+})();
+
+console.log("API_HOST", API_HOST);
 
 export function NoticeErrorHandler(e: ApolloError) {
   console.error(JSON.stringify(e));

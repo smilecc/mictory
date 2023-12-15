@@ -219,7 +219,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
                   sendMessage([
                     {
                       id: nanoid(),
-                      url: `/${data.name}`,
+                      url: data.name,
                       type: "img",
                       width: 300,
                       children: [{ text: "" }],

@@ -15,9 +15,10 @@ services:
     build:
       context: ./
       dockerfile: ./docker/server/Dockerfile
+      args:
+        API_HOST: /api
     environment:
       APP_ENV: prod
-      VITE_API_HOST: http://localhost:8999/api
       APP_SECRET_PATH: /app/config/secret
       DATABASE_URL: mysql://root:root@mictory-db:3306/mic
     volumes:
@@ -29,7 +30,6 @@ services:
     depends_on:
       mictory-db:
         condition: service_healthy
-        restart: true
     links:
       - mictory-db
 

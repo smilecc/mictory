@@ -1,5 +1,7 @@
 FROM node:18
 
+ENV VITE_API_HOST $API_HOST
+
 ADD ./ /app
 WORKDIR /app
 
