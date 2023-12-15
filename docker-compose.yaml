@@ -1,12 +1,49 @@
 version: "3.7"
 services:
-  db:
+  mictory-nginx:
+    image: nginx:1.25.3
+    volumes:
+      - ./data/files:/www/files
+      - ./data/client-web:/www/web
+      - ./docker/nginx/templates:/etc/nginx/templates
+    ports:
+      - 8999:80
+    links:
+      - mictory-server
+
+  mictory-server:
+    build:
+      context: ./
+      dockerfile: ./docker/server/Dockerfile
+    environment:
+      APP_ENV: prod
+      VITE_API_HOST: http://localhost:8999/api
+      APP_SECRET_PATH: /app/config/secret
+      DATABASE_URL: mysql://root:root@mictory-db:3306/mic
+    volumes:
+      - ./data/files:/app/packages/server/files
+      - ./data/config:/app/config
+      - ./data/client-web:/app/client-web-dist
+    ports:
+      - 55555:55555
+    depends_on:
+      mictory-db:
+        condition: service_healthy
+        restart: true
+    links:
+      - mictory-db
+
+  mictory-db:
     image: mysql:8.1.0
     restart: always
     environment:
       - MYSQL_DATABASE=mic
       - MYSQL_ROOT_PASSWORD=root
-    ports:
-      - 13306:3306
     volumes:
-      - ./temp/db-data:/var/lib/mysql
+      - ./data/db:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 50

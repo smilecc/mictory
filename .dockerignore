@@ -1,0 +1,5 @@
+data
+docker
+node_modules
+.secret
+.env

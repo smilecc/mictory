@@ -12,7 +12,7 @@ import { ActionIcon, FileButton, Popover, Skeleton } from "@mantine/core";
 import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
 import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
 import { PlateEditor, nanoid } from "@udecode/plate-common";
-import { API_HOST, ApiAxios } from "@/utils";
+import { ApiAxios } from "@/utils";
 
 export type ChatPannelRoomProps = {
   type: ChatTarget.Room;
@@ -219,7 +219,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
                   sendMessage([
                     {
                       id: nanoid(),
-                      url: `${API_HOST}/${data.name}`,
+                      url: `/${data.name}`,
                       type: "img",
                       width: 300,
                       children: [{ text: "" }],

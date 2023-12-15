@@ -19,6 +19,7 @@ import { LoggerModule } from './modules/logger.module';
 import { GraphQlModule } from './modules/graph-ql.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { appEnv } from './utils';
 
 @Module({
   imports: [
@@ -40,9 +41,13 @@ import { join } from 'path';
         // setup(_cls, _req: Request) {},
       },
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'files'),
-    }),
+    ...(appEnv() === 'dev'
+      ? [
+          ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'files'),
+          }),
+        ]
+      : []),
   ],
   controllers: [AppController],
   providers: [
