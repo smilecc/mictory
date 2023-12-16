@@ -106,7 +106,7 @@ export const ChannelPage: React.FC = () => {
     onCompleted(data) {
       channelStore.activeChannelId = first(data.channels)?.id;
       socketClient.emit("activeChannel", { channelId: channelStore.activeChannelId });
-      console.log("channelStore.activeChannelId", channelStore.activeChannelId);
+      console.log("activeChannel", channelStore.activeChannelId);
     },
   });
 

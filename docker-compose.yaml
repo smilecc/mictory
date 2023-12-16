@@ -41,6 +41,8 @@ services:
       - MYSQL_ROOT_PASSWORD=root
     volumes:
       - ./data/db:/var/lib/mysql
+    ports:
+      - 13306:3306
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
       start_period: 5s
