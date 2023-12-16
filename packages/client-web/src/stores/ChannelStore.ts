@@ -22,6 +22,7 @@ export class ChannelStore {
   firstLoading: boolean = true;
   userWithChannels: ListUserChannelQuery["user"] = undefined;
 
+  activeChannelId?: number = undefined;
   joinedChannelId?: number = undefined;
 
   joinedRoomId?: number = undefined;
@@ -143,7 +144,11 @@ export class ChannelStore {
   }
 
   async handleSocketConnect() {
-    console.log("SocketClient connected");
+    console.log("SocketClient connected", this.activeChannelId);
+
+    if (this.activeChannelId) {
+      socketClient.emit("activeChannel", { channelId: this.activeChannelId });
+    }
 
     socketClient.on("newProducer", (producer) => {
       console.log("ChannelStore:newProducer", producer);

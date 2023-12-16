@@ -1,5 +1,10 @@
 data
 docker
 node_modules
-.secret
-.env
+packages/client-web/.env
+packages/client-web/node_modules
+packages/server/node_modules
+packages/server/dist
+packages/server/files
+packages/server/.secret
+packages/server/.env

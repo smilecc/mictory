@@ -251,7 +251,12 @@ export class WebRtcService implements OnModuleInit {
     }
 
     socket.leave(socketRoomKey(socket.mediasoupRoomId));
-    socket.leave(socketChannelKey(`${roomInfo.channelId}`));
+    // 如果频道ID和当前激活的ID不相同，则退出频道
+    console.log(socket.mediasoupChannelId.toString(), socket.mediasoupActiveChannelId.toString());
+    if (socket.mediasoupChannelId.toString() !== socket.mediasoupActiveChannelId.toString()) {
+      socket.leave(socketChannelKey(`${socket.mediasoupChannelId}`));
+    }
+
     socket.mediasoupRoomId = undefined;
     socket.mediasoupChannelId = undefined;
     socket.broadcast.to(socketRoomKey(roomId)).emit('roomMemberLeave', { userId });

@@ -4,7 +4,9 @@ import React from "react";
 export const MessagePage: React.FC = () => {
   return (
     <BaseLayout>
-      <div>msg</div>
+      <div>
+        
+      </div>
     </BaseLayout>
   );
 };
