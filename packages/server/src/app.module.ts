@@ -20,6 +20,7 @@ import { GraphQlModule } from './modules/graph-ql.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { appEnv } from './utils';
+import { ChatManager } from './manager/chat.manager';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { appEnv } from './utils';
     RoomResolver,
     ChatResolver,
     TxManager,
+    ChatManager,
   ],
 })
 export class AppModule {}

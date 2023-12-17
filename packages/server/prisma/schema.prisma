@@ -37,6 +37,12 @@ enum UserSessionState {
   OFFLINE
 }
 
+enum UserType {
+  USER
+  SYSTEM
+  ADMIN
+}
+
 /// 用户表
 model User {
   /// @HideField({ match: 'UserWhereInput' })
@@ -75,9 +81,36 @@ model User {
   /// 加入的频道
   /// @HideField({ input: true, output: false })
   channels      ChannelToUser[]
+  /// 用户类型
+  type          UserType         @default(USER)
 
-  fromChast   Chat[] @relation("fromUserChats")
-  targetChats Chat[] @relation("targetUserChats")
+  fromChats   Chat[]       @relation("fromUserChats")
+  targetChats Chat[]       @relation("targetUserChats")
+  friendsA    UserFriend[] @relation("UserFriendA")
+  friendsB    UserFriend[] @relation("UserFriendB")
+}
+
+model UserFriend {
+  /// @HideField({ match: 'UserWhereInput' })
+  id          BigInt   @id @default(autoincrement())
+  /// @HideField({ input: true, output: false })
+  createdTime DateTime @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime DateTime @updatedAt
+
+  userA       User    @relation("UserFriendA", fields: [userAId], references: [id])
+  userAId     BigInt
+  /// 用户A是否同意
+  userAAccept Boolean @default(false)
+
+  userB        User     @relation("UserFriendB", fields: [userBId], references: [id])
+  userBId      BigInt
+  /// 用户B是否同意
+  userBAccept  Boolean  @default(false)
+  /// 最后聊天时间
+  lastChatTime DateTime @default(now())
+
+  @@unique([userAId, userBId])
 }
 
 /// 用户昵称表
@@ -223,8 +256,8 @@ model Chat {
   /// 消息类型
   type         ChatType   @default(USER)
   /// 用户ID
-  user         User?      @relation("fromUserChats", fields: [userId], references: [id])
-  userId       BigInt?
+  user         User       @relation("fromUserChats", fields: [userId], references: [id])
+  userId       BigInt
   /// 房间
   room         Room?      @relation(fields: [roomId], references: [id])
   roomId       BigInt?

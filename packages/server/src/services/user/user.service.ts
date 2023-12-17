@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { createHmac } from 'crypto';
 import { User, UserCreateInput } from 'src/@generated';
 import { RoomManager } from 'src/manager';
+import { ChatManager } from 'src/manager/chat.manager';
 import { TxManager } from 'src/manager/tx.manager';
 import { JwtUserClaims, RequestUserType } from 'src/modules/auth.module';
 
@@ -14,6 +15,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly txManager: TxManager,
     private readonly roomManager: RoomManager,
+    private readonly chatManager: ChatManager,
   ) {}
 
   private readonly logger = new Logger(UserService.name);
@@ -67,6 +69,15 @@ export class UserService {
       // 创建用户默认频道
       await this.roomManager.createChannel(newUser.id, {
         name: `${newUser.nickname}的频道`,
+      });
+
+      // 发送系统消息
+      await this.chatManager.sendSystem({
+        target: 'USER',
+        targetUser: {
+          connect: { id: newUser.id },
+        },
+        message: [{ type: 'p', children: [{ text: 'Welcome!🥳🥳🥳' }] }],
       });
 
       return tx.user.update({

@@ -40,6 +40,11 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
   async afterInit(server: SocketServer) {
     this.webRtcService.socketServer = server;
     const clearCount = await this.prisma.user.updateMany({
+      where: {
+        type: {
+          not: 'SYSTEM',
+        },
+      },
       data: {
         sessionState: 'OFFLINE',
       },

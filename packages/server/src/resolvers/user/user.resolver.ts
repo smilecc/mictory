@@ -13,6 +13,7 @@ import { UserService } from 'src/services';
 import { CreateMictoryError } from 'src/utils';
 import { CTX_USER } from 'src/consts';
 import { RequestUser } from 'src/modules/auth.module';
+import { UserFriend } from 'src/@generated';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -102,5 +103,25 @@ export class UserResolver {
       userId: user.id,
       sessionToken: await this.userService.generateSessionToken(user),
     } as UserSession);
+  }
+
+  @Directive('@user')
+  @Query(() => [UserFriend], { description: '用户好友列表' })
+  async userFriends(@Context(CTX_USER) user: RequestUser) {
+    return this.prisma.userFriend.findMany({
+      where: {
+        OR: [
+          {
+            userAId: user.userId,
+          },
+          {
+            userBId: user.userId,
+          },
+        ],
+      },
+      orderBy: {
+        lastChatTime: 'desc',
+      },
+    });
   }
 }

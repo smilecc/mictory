@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  db:
+    image: mysql:8.1.0
+    restart: always
+    environment:
+      - MYSQL_DATABASE=mic
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - 3306:3306
+    volumes:
+      - ../../data/db:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 50
