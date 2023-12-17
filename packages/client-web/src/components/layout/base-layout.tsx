@@ -1,7 +1,7 @@
 import { JoinChannelModal, SettingModal, SideAvatar } from "@/components/business";
 import React, { Fragment, useContext, useEffect } from "react";
 // import { useLoaderData } from "react-router-dom";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import { SocketClientContext } from "@/contexts";
@@ -44,6 +44,7 @@ fragment UserFrag on User {
 
 export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const channelStore = useChannelStore();
   const params = useParams<{ channelCode: string }>();
   const socketClient = useContext(SocketClientContext);
@@ -120,7 +121,12 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
           <div className="flex h-full">
             {/* 侧边栏 */}
             <div className="box-border h-full overflow-y-auto bg-background pr-2 pt-2">
-              <SideAvatar name="信息" icon={<IconMessage2Heart />} onClick={() => navigate("/channel/@msg")} />
+              <SideAvatar
+                name="信息"
+                active={location.pathname === "/channel/@msg"}
+                icon={<IconMessage2Heart />}
+                onClick={() => navigate("/channel/@msg")}
+              />
               <div className="mb-2 flex justify-center pl-2">
                 <Divider size="sm" className="w-8" />
               </div>
