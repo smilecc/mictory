@@ -8,7 +8,7 @@ import { ChatEditor, ChatPreview, ChatValue } from "./chat-editor";
 import InfiniteScroll from "react-infinite-scroll-component";
 import dayjs from "dayjs";
 import { UserPopover } from ".";
-import { ActionIcon, FileButton, Popover, Skeleton } from "@mantine/core";
+import { ActionIcon, Divider, FileButton, Popover, Skeleton } from "@mantine/core";
 import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
 import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
 import { PlateEditor, nanoid } from "@udecode/plate-common";
@@ -191,7 +191,11 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
             hasMore={state.oldCursor !== -1}
             className="flex flex-col-reverse !overflow-hidden"
             loader={<ChatLoader />}
-            endMessage={<h4>到头了</h4>}
+            endMessage={
+              <div className="select-none px-2 py-4">
+                <Divider my="xs" label="没有更多啦" size="sm" labelPosition="center" />
+              </div>
+            }
             dataLength={chats.length}
             scrollableTarget={chatViewRef.current as unknown as React.ReactNode}
             scrollThreshold="400px"
