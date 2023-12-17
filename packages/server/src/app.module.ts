@@ -21,6 +21,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { appEnv } from './utils';
 import { ChatManager } from './manager/chat.manager';
+import { UserFriendResolver } from './resolvers/user/user-friend.resolver';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { ChatManager } from './manager/chat.manager';
     ChatResolver,
     TxManager,
     ChatManager,
+    UserFriendResolver,
   ],
 })
 export class AppModule {}

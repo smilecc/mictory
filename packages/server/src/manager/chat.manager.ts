@@ -43,7 +43,9 @@ export class ChatManager {
                 }
               : {}),
           },
-          update: {},
+          update: {
+            lastChatTime: new Date(),
+          },
         });
       }
 

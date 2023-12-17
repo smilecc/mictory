@@ -107,8 +107,11 @@ export class UserResolver {
 
   @Directive('@user')
   @Query(() => [UserFriend], { description: '用户好友列表' })
-  async userFriends(@Context(CTX_USER) user: RequestUser) {
+  async userFriends(@Context(CTX_USER) user: RequestUser, @Info() info: GraphQLResolveInfo) {
+    const select = new PrismaSelect(info).value;
+
     return this.prisma.userFriend.findMany({
+      ...select,
       where: {
         OR: [
           {

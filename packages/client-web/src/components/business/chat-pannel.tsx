@@ -93,7 +93,16 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
               ? {
                   roomId: { equals: props.roomId },
                 }
-              : {}),
+              : {
+                  OR: [
+                    {
+                      userId: { equals: props.userId },
+                    },
+                    {
+                      targetUserId: { equals: props.userId },
+                    },
+                  ],
+                }),
           },
           take: 20,
           ...(cursor
@@ -135,7 +144,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
           }
         });
     },
-    [fetchMore, props.roomId, props.type, state],
+    [fetchMore, props.roomId, props.type, props.userId, state],
   );
 
   const { run: loadNext } = useDebounceFn(loadNextAtNow, { wait: 200 });
@@ -153,8 +162,14 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
           variables: {
             data: {
               message: v,
-              target: ChatTarget.Room,
-              room: { connect: { id: props.roomId } },
+              target: props.type,
+              ...(props.type === ChatTarget.Room
+                ? {
+                    room: { connect: { id: props.roomId } },
+                  }
+                : {
+                    targetUser: { connect: { id: props.userId } },
+                  }),
             },
           },
         });
@@ -163,7 +178,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
         state.sending = false;
       }
     },
-    [loadNextAtNow, props.roomId, send, state],
+    [loadNextAtNow, props.roomId, props.type, props.userId, send, state],
   );
 
   return (

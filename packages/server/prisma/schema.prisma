@@ -256,8 +256,8 @@ model Chat {
   /// 消息类型
   type         ChatType   @default(USER)
   /// 用户ID
-  user         User       @relation("fromUserChats", fields: [userId], references: [id])
-  userId       BigInt
+  user         User?      @relation("fromUserChats", fields: [userId], references: [id])
+  userId       BigInt?
   /// 房间
   room         Room?      @relation(fields: [roomId], references: [id])
   roomId       BigInt?

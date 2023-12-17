@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { StoreStorage } from "@/lib/store-storage";
 import type { ThemeDarkMode } from "@/types";
+import { FetchCurrentUserQuery } from "@/@generated/graphql";
 
 export class CommonStore {
   constructor() {
@@ -30,4 +31,6 @@ export class CommonStore {
   get isNotLogin() {
     return !this.isLogin;
   }
+
+  user: FetchCurrentUserQuery["user"];
 }

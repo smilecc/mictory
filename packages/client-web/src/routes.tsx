@@ -2,10 +2,21 @@ import React, { useEffect } from "react";
 import { autorun } from "mobx";
 import { createHashRouter, RouterProvider, Navigate, useNavigate, RouteObject } from "react-router-dom";
 import { useCommonStore } from "@/stores";
+import { gql } from "./@generated";
+import { useLazyQuery } from "@apollo/client";
+
+const FETCH_CURRENT_USER = gql(`query fetchCurrentUser {
+  user (where: { nicknameNo: { equals: -1 } }) {
+    id
+    nickname
+    nicknameNo
+  }
+}`);
 
 export const RouteGuard: React.FC<{
   children: React.ReactNode;
 }> = (props) => {
+  const [loadUser] = useLazyQuery(FETCH_CURRENT_USER);
   const navigate = useNavigate();
   const commonStore = useCommonStore();
 
@@ -15,6 +26,10 @@ export const RouteGuard: React.FC<{
         console.log("autorun");
         if (commonStore.isNotLogin) {
           navigate("/user/login");
+        } else {
+          loadUser().then(({ data }) => {
+            commonStore.user = data?.user;
+          });
         }
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
