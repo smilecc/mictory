@@ -46,6 +46,7 @@ import { UserFriendResolver } from './resolvers/user/user-friend.resolver';
     ...(appEnv() === 'dev'
       ? [
           ServeStaticModule.forRoot({
+            serveRoot: '/files',
             rootPath: join(__dirname, '..', 'files'),
           }),
         ]

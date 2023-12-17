@@ -85,6 +85,7 @@ import { withPlaceholders } from "@/components/plate-ui/placeholder";
 import { EmojiCombobox } from "@/components/plate-ui/emoji-combobox";
 import { TooltipProvider } from "../plate-ui/tooltip";
 import { ForwardedRef } from "react";
+import { Node } from "slate";
 
 const plugins = createPlugins(
   [
@@ -261,13 +262,19 @@ const plugins = createPlugins(
 
 export type ChatValue = Value;
 
-const createMictoryPlugin = createPluginFactory<{ onEnterPress?: (v: ChatValue) => Promise<void> }>({
+const createMictoryPlugin = createPluginFactory<{ onEnterPress?: (v: ChatValue, plainText: string) => Promise<void> }>({
   key: "MICTORY_PLUGIN",
   handlers: {
     onKeyDown: (editor, v) => (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
-        v.options.onEnterPress?.(editor.children).finally(() => {
+        const [node] = editor.nodes({
+          mode: "all",
+        });
+
+        const plainText = Node.string(node[0]);
+
+        v.options.onEnterPress?.(editor.children, plainText).finally(() => {
           editor.reset();
         });
       }
@@ -276,7 +283,7 @@ const createMictoryPlugin = createPluginFactory<{ onEnterPress?: (v: ChatValue) 
 });
 
 export const ChatEditor: React.FC<{
-  onEnterPress?: (v: ChatValue) => Promise<void>;
+  onEnterPress?: (v: ChatValue, plainText: string) => Promise<void>;
   onChange?: (v: ChatValue) => void;
   editorRef?: ForwardedRef<PlateEditor>;
 }> = ({ onEnterPress, onChange, editorRef }) => {

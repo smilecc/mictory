@@ -154,7 +154,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
   }, [loadNext]);
 
   const sendMessage = useCallback(
-    async (v: ChatValue) => {
+    async (v: ChatValue, plainText: string) => {
       console.log("chatValue", v, props.roomId);
       state.sending = true;
       try {
@@ -162,6 +162,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
           variables: {
             data: {
               message: v,
+              plainText,
               target: props.type,
               ...(props.type === ChatTarget.Room
                 ? {
@@ -231,15 +232,18 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
 
                 state.sending = true;
                 ApiAxios.post<{ name: string }>("/file/upload", formData).then(({ data }) => {
-                  sendMessage([
-                    {
-                      id: nanoid(),
-                      url: data.name,
-                      type: "img",
-                      width: 300,
-                      children: [{ text: "" }],
-                    },
-                  ]);
+                  sendMessage(
+                    [
+                      {
+                        id: nanoid(),
+                        url: data.name,
+                        type: "img",
+                        width: 300,
+                        children: [{ text: "" }],
+                      },
+                    ],
+                    "[图片]",
+                  );
                 });
               }
             }}
@@ -282,7 +286,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
           </Popover>
 
           <div className="twp flex-1">
-            <ChatEditor onEnterPress={sendMessage} editorRef={chatEditorRef} />
+            <ChatEditor onEnterPress={async (v, plainText) => sendMessage(v, plainText)} editorRef={chatEditorRef} />
           </div>
         </div>
       </div>

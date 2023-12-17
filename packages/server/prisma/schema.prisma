@@ -266,6 +266,8 @@ model Chat {
   targetUserId BigInt?
   /// 消息内容
   message      Json
+  /// 消息纯文本
+  plainText    String     @default("")
 
   /// @HideField({ input: true, output: false })
   createdTime DateTime  @default(now())
