@@ -43,13 +43,13 @@ export class WebRtcService implements OnModuleInit {
           protocol: 'tcp',
           port: 55555,
           ip: env('APP_IP', '0.0.0.0'),
-          announcedIp: env('APP_ANNOUNCED_IP', '127.0.0.1'),
+          announcedIp: env('APP_ANNOUNCED_IP', env('IP_ADDRESS', '127.0.0.1')),
         },
         {
           protocol: 'udp',
           port: 55555,
           ip: env('APP_IP', '0.0.0.0'),
-          announcedIp: env('APP_ANNOUNCED_IP', '127.0.0.1'),
+          announcedIp: env('APP_ANNOUNCED_IP', env('IP_ADDRESS', '127.0.0.1')),
         },
       ],
     });

@@ -4,7 +4,6 @@ import { Collapse } from "@mantine/core";
 import { useEventListener, useReactive } from "ahooks";
 import React, { Fragment, useCallback, useState } from "react";
 import { UserPopover } from "./user-popover";
-import { IconUser } from "@tabler/icons-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -13,6 +12,7 @@ import {
   ContextMenuTrigger,
 } from "../ui/context-menu";
 import { DropdownMenuLabel } from "../ui/dropdown-menu";
+import { DEFAULT_AVATAR } from "@/utils";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
@@ -122,8 +122,8 @@ export const ChannelPanel: React.FC<{
                           ${speakingUsers.includes(user.id) ? "bg-orange-500/25" : ""}
                         `}
                       >
-                        <IconUser size={18} />
-                        <span className="ml-1">{user.nickname}</span>
+                        <img src={user.avatar || DEFAULT_AVATAR} className="h-6 w-6 rounded-full object-cover" />
+                        <span className="ml-2 leading-none">{user.nickname}</span>
                       </div>
                     </UserPopover>
                   ))}

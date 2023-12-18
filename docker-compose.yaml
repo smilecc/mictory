@@ -20,6 +20,7 @@ services:
     environment:
       APP_ENV: prod
       APP_SECRET_PATH: /app/config/secret
+      IP_ADDRESS: "127.0.0.1"
       DATABASE_URL: mysql://root:root@mictory-db:3306/mic
     volumes:
       - ./data/files:/app/packages/server/files
