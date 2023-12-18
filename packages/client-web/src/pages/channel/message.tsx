@@ -85,6 +85,7 @@ export const MessagePage: React.FC = () => {
               onClick={(userId, id) => {
                 state.selectUserId = userId;
                 state.selectFriendId = id;
+                state.selectUser = friend.userA.id === state.selectUserId ? friend.userA : friend.userB;
               }}
             />
           ))}
@@ -94,19 +95,23 @@ export const MessagePage: React.FC = () => {
         <ChannelBottomPannel />
       </div>
 
-      {state.selectUserId ? (
-        <div className="flex flex-col">
-          <div className="flex select-none items-center p-4 font-bold">
-            <IconUsers size={20} />
-            <span className="ml-2 text-lg">
-              {state.selectUser?.nickname}#{state.selectUser?.nicknameNo}
-            </span>
-          </div>
-          <div className="w-full flex-1 overflow-hidden">
-            <ChatPannel type={ChatTarget.User} userId={state.selectUserId} key={`USER_CHAT_${state.selectUserId}`} />
-          </div>
-        </div>
-      ) : null}
+      <div className="flex w-full flex-1 flex-col">
+        {state.selectUserId ? (
+          <>
+            <div className="flex select-none items-center p-4 font-bold">
+              <IconUsers size={20} />
+              <span className="ml-2 text-lg">
+                {state.selectUser?.nickname}#{state.selectUser?.nicknameNo}
+              </span>
+            </div>
+            <div className="w-full flex-1 overflow-hidden">
+              <ChatPannel type={ChatTarget.User} userId={state.selectUserId} key={`USER_CHAT_${state.selectUserId}`} />
+            </div>
+          </>
+        ) : (
+          <div />
+        )}
+      </div>
     </div>
   );
 };

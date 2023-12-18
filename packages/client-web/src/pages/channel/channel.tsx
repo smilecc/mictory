@@ -191,7 +191,7 @@ export const ChannelPage: React.FC = () => {
 
       <div className="flex flex-1 bg-surface2">
         {/* 频道 */}
-        <div className="relative flex w-60 flex-col bg-surface1 pt-14">
+        <div className="relative flex w-72 flex-col bg-surface1 pt-14">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div
