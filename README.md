@@ -18,7 +18,7 @@ Microphone + Victory = Mictory
 
 ## 项目部署
 
-在服务器上部署时，您确保该主机拥有可被访问的公网IP，将 `docker-compose.yaml` 中的 `IP_ADDRESS` 修改为您的服务器公网IP地址。
+在服务器上部署时，您需要确保该主机拥有可被访问的公网IP，将 `docker-compose.yaml` 中的 `IP_ADDRESS` 修改为您的服务器公网IP地址。
 
 如果您是在局域网中使用，可以将该环境变量修改为您在局域网中的IP地址。
 
@@ -36,11 +36,13 @@ mictory-server:
     DATABASE_URL: mysql://root:root@mictory-db:3306/mic
 ```
 
-您可能需要更新您的 `docker`，需要 `docker compose` 版本>=3。
+随后运行如下命令来启动项目：
 
 ```bash
 docker compose up --build
 ```
+
+如果您的 `docker` 版本比较老旧，您可能需要更新您的 `docker`，需要 `docker compose` 版本>=3。
 
 等待项目启动，可能需要等待3分钟左右，当您看到如下日志后，说明项目已经启动完毕：
 
