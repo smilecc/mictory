@@ -12,6 +12,9 @@ import { Observer } from "mobx-react-lite";
 import { autorun, runInAction } from "mobx";
 import { RouteGuard } from "@/routes";
 import { useReactive } from "ahooks";
+import { NewChatMessageEvent } from "@mictory/common";
+import { notifications } from "@mantine/notifications";
+import { truncate } from "lodash-es";
 
 const QUERY_USER_CHANNELS = gql(`
 query listUserChannel {
@@ -88,6 +91,29 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
       socketClient.connect();
     }
   }, [channelStore, socketClient]);
+
+  useEffect(() => {
+    socketClient.on("newChatMessage", async (event: NewChatMessageEvent) => {
+      if (event.target === "USER") {
+        notifications.show({
+          color: "teal",
+          title: (
+            <span>
+              <span className="mr-1">新消息来自</span>
+              <span className="font-bold">{event.fromUser.nickname}</span>
+            </span>
+          ),
+          message: truncate(event.text, { length: 26 }),
+        });
+      }
+    });
+
+    return () => {
+      console.log('BaseLayout -> socketClient.off("newChatMessage")');
+      socketClient.off("newChatMessage");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <RouteGuard>

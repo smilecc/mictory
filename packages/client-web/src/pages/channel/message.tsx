@@ -1,13 +1,13 @@
 import { gql } from "@/@generated";
 import { ChatTarget, FetchUserFriendsQuery, UserType } from "@/@generated/graphql";
-import { ChatPannel } from "@/components/business";
-import { BaseLayout } from "@/components/layout/base-layout";
+import { ChannelBottomPannel, ChatPannel } from "@/components/business";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
-import { Badge } from "@mantine/core";
+import { Badge, Indicator } from "@mantine/core";
 import { useReactive } from "ahooks";
 import React, { useMemo } from "react";
 import { first } from "lodash-es";
+import { IconUsers } from "@tabler/icons-react";
 
 const FETCH_FRIENDS = gql(`query fetchUserFriends {
   currentUser: user(where: { nicknameNo: { equals: -1 } }) {
@@ -56,18 +56,20 @@ export const MessagePage: React.FC = () => {
       if (!state.selectFriendId && friend) {
         state.selectFriendId = friend.id;
         state.selectUserId = getFriendUserId(data.currentUser!.id, friend.userA.id, friend.userB.id);
+        state.selectUser = friend.userA.id === state.selectUserId ? friend.userA : friend.userB;
       }
     },
   });
   const state = useReactive({
+    selectUser: null as FriendItemData["userA"] | null,
     selectUserId: 0,
     selectFriendId: 0,
   });
 
   return (
-    <BaseLayout>
-      <div className="flex flex-1 bg-surface2">
-        <div className="w-72 select-none border-0 border-r border-solid border-zinc-700 p-4">
+    <div className="flex flex-1 bg-surface2">
+      <div className="relative flex w-72 select-none flex-col border-0 border-r border-solid border-zinc-700">
+        <div className="flex-1 overflow-y-auto p-4">
           {data?.currentUser ? (
             <div className="mb-4 text-lg font-bold">
               {data.currentUser.nickname}#{data.currentUser.nicknameNo}
@@ -88,13 +90,24 @@ export const MessagePage: React.FC = () => {
           ))}
         </div>
 
-        {state.selectUserId ? (
-          <div className="h-full w-full">
+        {/* 底部控制面板 */}
+        <ChannelBottomPannel />
+      </div>
+
+      {state.selectUserId ? (
+        <div className="flex flex-col">
+          <div className="flex select-none items-center p-4 font-bold">
+            <IconUsers size={20} />
+            <span className="ml-2 text-lg">
+              {state.selectUser?.nickname}#{state.selectUser?.nicknameNo}
+            </span>
+          </div>
+          <div className="w-full flex-1 overflow-hidden">
             <ChatPannel type={ChatTarget.User} userId={state.selectUserId} key={`USER_CHAT_${state.selectUserId}`} />
           </div>
-        ) : null}
-      </div>
-    </BaseLayout>
+        </div>
+      ) : null}
+    </div>
   );
 };
 
@@ -120,7 +133,13 @@ const FriendItem: React.FC<{
       )}
       onClick={() => onClick?.(user.id, friend.id)}
     >
-      <img src={user.avatar || "/img/default-avatar.jpg"} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
+      <Indicator inline offset={3} label="2" color="red" disabled>
+        <img
+          src={user.avatar || "/img/default-avatar.jpg"}
+          alt="avatar"
+          className="h-7 w-7 rounded-full object-cover"
+        />
+      </Indicator>
       <div className="ml-2">
         <span>{user.nickname}</span>
         {user.type === UserType.System ? (

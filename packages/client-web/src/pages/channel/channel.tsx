@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom";
 // import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
-import { BaseLayout } from "@/components/layout/base-layout";
 import {
   ChannelBottomPannel,
   ChannelPanel,
@@ -158,7 +157,7 @@ export const ChannelPage: React.FC = () => {
   }, [refetchChannelDetail, params.channelCode]);
 
   return (
-    <BaseLayout>
+    <>
       {channel && (
         <>
           {/* 创建房间 */}
@@ -247,6 +246,6 @@ export const ChannelPage: React.FC = () => {
       <div className="w-72 break-words bg-surface1">
         <ChannelUsers users={channel?.users || []} />
       </div>
-    </BaseLayout>
+    </>
   );
 };

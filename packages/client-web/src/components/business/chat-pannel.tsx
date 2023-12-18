@@ -15,6 +15,7 @@ import { PlateEditor, nanoid } from "@udecode/plate-common";
 import { ApiAxios } from "@/utils";
 import { SocketClientContext } from "@/contexts";
 import { NewChatMessageEvent } from "@mictory/common";
+import { cn } from "@/lib/utils";
 
 export type ChatPannelRoomProps = {
   type: ChatTarget.Room;
@@ -28,7 +29,9 @@ export type ChatPannelUserProps = {
   roomId?: number;
 };
 
-export type ChatPannelProps = ChatPannelRoomProps | ChatPannelUserProps;
+export type ChatPannelProps = (ChatPannelRoomProps | ChatPannelUserProps) & {
+  className?: string;
+};
 
 const FETCH =
   gql(`query fetchChats($target: ChatTarget!, $where: ChatWhereInput!, $take: Int, $skip: Int, $cursor: ChatWhereUniqueInput, $order: SortOrder!) {
@@ -78,14 +81,14 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
 
   useEffect(() => {
     socketClient.on("newChatMessage", async (event: NewChatMessageEvent) => {
-      console.log("newUserChatMessage -> ", event);
+      console.log("newChatMessage -> ", event);
 
       await loadNextAtNow("new");
     });
 
     return () => {
-      console.log('socketClient.off("newUserChatMessage")');
-      socketClient.off("newUserChatMessage");
+      console.log('socketClient.off("newChatMessage")');
+      socketClient.off("newChatMessage");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.type, props.userId]);
@@ -199,7 +202,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
   );
 
   return (
-    <div className="relative box-content h-full w-full">
+    <div className={cn("relative box-content h-full w-full", props.className)}>
       <div className="flex h-[calc(100%-4.5rem)] flex-col-reverse overflow-auto" ref={chatViewRef} id="aaa">
         {chatViewRef.current && (
           <InfiniteScroll

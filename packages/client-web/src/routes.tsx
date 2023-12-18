@@ -79,6 +79,12 @@ const router = createHashRouter([
   },
   {
     path: "/channel",
+    lazy: async () => {
+      const { ChannelLayoutPage } = await import("@/pages/channel/layout");
+      return {
+        Component: ChannelLayoutPage,
+      };
+    },
     children: [
       {
         path: "",
