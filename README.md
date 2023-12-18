@@ -31,6 +31,8 @@ Microphone + Victory = Mictory
 - [ ] 频道权限
 - [ ] 频道设置
 - [ ] i18n 国际化
+- [ ] Windows & macOS 客户端
+- [ ] 手机客户端
 
 ## 项目部署
 
