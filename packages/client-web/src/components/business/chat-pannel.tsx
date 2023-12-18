@@ -1,9 +1,9 @@
 import { gql } from "@/@generated";
 import { ChatTarget, FetchChatsQuery, SortOrder } from "@/@generated/graphql";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { last, first } from "lodash-es";
-import { useDebounceFn, useReactive } from "ahooks";
+import { useDebounceFn, useEventListener, useReactive } from "ahooks";
 import { ChatEditor, ChatPreview, ChatValue } from "./chat-editor";
 import InfiniteScroll from "react-infinite-scroll-component";
 import dayjs from "dayjs";
@@ -13,7 +13,6 @@ import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoj
 import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
 import { PlateEditor, nanoid } from "@udecode/plate-common";
 import { ApiAxios } from "@/utils";
-import { SocketClientContext } from "@/contexts";
 import { NewChatMessageEvent } from "@mictory/common";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +66,6 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
   const [send] = useMutation(SEND);
   const [fetchMore] = useLazyQuery(FETCH);
   const [chats, setChats] = useState<ChatItem[]>([]);
-  const socketClient = useContext(SocketClientContext);
   const chatViewRef = useRef<HTMLDivElement>(null);
   const chatEditorRef = useRef<PlateEditor>(null);
 
@@ -79,19 +77,17 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
     message: "",
   });
 
-  useEffect(() => {
-    socketClient.on("newChatMessage", async (event: NewChatMessageEvent) => {
-      console.log("newChatMessage -> ", event);
-
+  // 监听新消息
+  useEventListener(
+    "chat:newMessage",
+    async (e: CustomEvent<NewChatMessageEvent>) => {
+      console.log("ChatPanel -> newChatMessage", e.detail);
       await loadNextAtNow("new");
-    });
-
-    return () => {
-      console.log('socketClient.off("newChatMessage")');
-      socketClient.off("newChatMessage");
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.type, props.userId]);
+    },
+    {
+      target: window,
+    },
+  );
 
   const loadNextAtNow = useCallback(
     async (type: "new" | "old") => {

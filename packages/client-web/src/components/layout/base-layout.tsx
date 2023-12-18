@@ -94,6 +94,8 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
 
   useEffect(() => {
     socketClient.on("newChatMessage", async (event: NewChatMessageEvent) => {
+      window.dispatchEvent(new CustomEvent("chat:newMessage", { detail: event }));
+
       if (event.target === "USER") {
         notifications.show({
           color: "teal",

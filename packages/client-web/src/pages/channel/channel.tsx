@@ -125,11 +125,9 @@ export const ChannelPage: React.FC = () => {
   const sleepFetchChannelDetail = useCallback(
     async (time: number) => {
       await sleep(time);
-      await refetchChannelDetail({
-        code: params.channelCode,
-      });
+      await refetchChannelDetail();
     },
-    [params.channelCode, refetchChannelDetail],
+    [refetchChannelDetail],
   );
 
   useEffect(() => {
