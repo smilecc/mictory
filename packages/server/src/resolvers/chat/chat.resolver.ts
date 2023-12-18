@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import { Args, Context, Directive, Mutation, Resolver, Query, Info } from '@nestjs/graphql';
 import { PrismaSelect } from '@paljs/plugins';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
-import { Chat, CreateOneChatArgs, DeleteManyChatArgs, FindManyChatArgs } from 'src/@generated';
+import { Chat, ChatTarget, CreateOneChatArgs, DeleteManyChatArgs, FindManyChatArgs } from 'src/@generated';
 import { CTX_USER } from 'src/consts';
 import { ChatManager } from 'src/manager/chat.manager';
 import { TxManager } from 'src/manager/tx.manager';
@@ -19,11 +19,43 @@ export class ChatResolver {
 
   private readonly logger = new Logger(ChatResolver.name);
 
+  @Directive('@user')
   @Query(() => [Chat], { description: '查询消息' })
-  async chats(@Args() args: FindManyChatArgs, @Info() info: GraphQLResolveInfo) {
+  async chats(
+    @Context(CTX_USER) user: RequestUser,
+    @Args() args: FindManyChatArgs,
+    @Args('target', { type: () => ChatTarget }) _target: ChatTarget,
+    @Info() info: GraphQLResolveInfo,
+  ) {
     const select = new PrismaSelect(info).value;
+    const { target, ...otherProps } = args as FindManyChatArgs & { target: ChatTarget };
+    const wheres: Prisma.ChatWhereInput[] = [
+      args.where,
+      {
+        target,
+      },
+    ];
 
-    return this.prisma.chat.findMany({ ...args, ...select });
+    if (target === ChatTarget.USER) {
+      wheres.push({
+        OR: [
+          {
+            userId: user.userId,
+          },
+          {
+            targetUserId: user.userId,
+          },
+        ],
+      });
+    }
+
+    return this.prisma.chat.findMany({
+      ...otherProps,
+      where: {
+        AND: wheres,
+      },
+      ...select,
+    });
   }
 
   @Directive('@user')

@@ -1,7 +1,7 @@
 import { gql } from "@/@generated";
 import { ChatTarget, FetchChatsQuery, SortOrder } from "@/@generated/graphql";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { last, first } from "lodash-es";
 import { useDebounceFn, useReactive } from "ahooks";
 import { ChatEditor, ChatPreview, ChatValue } from "./chat-editor";
@@ -13,6 +13,8 @@ import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoj
 import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
 import { PlateEditor, nanoid } from "@udecode/plate-common";
 import { ApiAxios } from "@/utils";
+import { SocketClientContext } from "@/contexts";
+import { NewChatMessageEvent } from "@mictory/common";
 
 export type ChatPannelRoomProps = {
   type: ChatTarget.Room;
@@ -29,8 +31,8 @@ export type ChatPannelUserProps = {
 export type ChatPannelProps = ChatPannelRoomProps | ChatPannelUserProps;
 
 const FETCH =
-  gql(`query fetchChats($where: ChatWhereInput!, $take: Int, $skip: Int, $cursor: ChatWhereUniqueInput, $order: SortOrder!) {
-  chats(where: $where, skip: $skip, take: $take, cursor: $cursor, orderBy: { id: $order }) {
+  gql(`query fetchChats($target: ChatTarget!, $where: ChatWhereInput!, $take: Int, $skip: Int, $cursor: ChatWhereUniqueInput, $order: SortOrder!) {
+  chats(target: $target, where: $where, skip: $skip, take: $take, cursor: $cursor, orderBy: { id: $order }) {
     id
     type
     user {
@@ -62,6 +64,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
   const [send] = useMutation(SEND);
   const [fetchMore] = useLazyQuery(FETCH);
   const [chats, setChats] = useState<ChatItem[]>([]);
+  const socketClient = useContext(SocketClientContext);
   const chatViewRef = useRef<HTMLDivElement>(null);
   const chatEditorRef = useRef<PlateEditor>(null);
 
@@ -72,6 +75,20 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
     sending: false,
     message: "",
   });
+
+  useEffect(() => {
+    socketClient.on("newChatMessage", async (event: NewChatMessageEvent) => {
+      console.log("newUserChatMessage -> ", event);
+
+      await loadNextAtNow("new");
+    });
+
+    return () => {
+      console.log('socketClient.off("newUserChatMessage")');
+      socketClient.off("newUserChatMessage");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.type, props.userId]);
 
   const loadNextAtNow = useCallback(
     async (type: "new" | "old") => {
@@ -86,9 +103,9 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
 
       await fetchMore({
         variables: {
+          target: props.type,
           order: sortOrder,
           where: {
-            target: { equals: props.type },
             ...(props.type === ChatTarget.Room
               ? {
                   roomId: { equals: props.roomId },
@@ -155,7 +172,6 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
 
   const sendMessage = useCallback(
     async (v: ChatValue, plainText: string) => {
-      console.log("chatValue", v, props.roomId);
       state.sending = true;
       try {
         await send({

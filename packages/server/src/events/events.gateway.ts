@@ -20,8 +20,9 @@ import {
   MessageProduceTransport,
 } from 'src/types';
 import { PrismaClient } from '@prisma/client';
+import { socketChannelKey, socketRoomKey, socketUserKey } from 'src/utils';
+import { SocketIoManager } from 'src/manager/socket-io.manager';
 import { Server as SocketServer } from 'socket.io';
-import { socketChannelKey, socketRoomKey } from 'src/utils';
 
 @WebSocketGateway(0, {
   cors: {
@@ -33,12 +34,13 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
   constructor(
     private readonly prisma: PrismaClient,
     private readonly webRtcService: WebRtcService,
+    private readonly socketIoManager: SocketIoManager,
   ) {}
 
   private readonly logger = new Logger(EventsGateway.name);
 
   async afterInit(server: SocketServer) {
-    this.webRtcService.socketServer = server;
+    this.socketIoManager.socket = server;
     const clearCount = await this.prisma.user.updateMany({
       where: {
         type: {
@@ -56,6 +58,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGate
   async handleConnection(client: MictorySocket) {
     this.logger.log(`UserSession Connected, User: ${client.user.userId}`);
     try {
+      await client.join(socketUserKey(client.user.userId));
+
       await this.prisma.user.update({
         where: {
           id: client.user.userId,

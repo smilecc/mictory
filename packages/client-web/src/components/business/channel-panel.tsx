@@ -18,7 +18,8 @@ export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
   onShouldRefetch?: () => void;
   onRoomClick?: (roomId: number) => void;
-}> = ({ channel, onShouldRefetch, onRoomClick }) => {
+  onJoinRoom?: (roomId: number) => void;
+}> = ({ channel, onShouldRefetch, onRoomClick, onJoinRoom }) => {
   const channelStore = useChannelStore();
   const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
   const state = useReactive({
@@ -92,6 +93,7 @@ export const ChannelPanel: React.FC<{
                         onRoomClick?.(room.id);
                         await channelStore.joinRoom(room.id, room.channelId);
 
+                        onJoinRoom?.(room.id);
                         onShouldRefetch?.();
 
                         // 创建消费者

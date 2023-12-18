@@ -273,10 +273,12 @@ const createMictoryPlugin = createPluginFactory<{ onEnterPress?: (v: ChatValue, 
         });
 
         const plainText = Node.string(node[0]);
+        if (!plainText.trim().length) {
+          return;
+        }
 
-        v.options.onEnterPress?.(editor.children, plainText).finally(() => {
-          editor.reset();
-        });
+        v.options.onEnterPress?.(editor.children, plainText);
+        editor.reset();
       }
     },
   },

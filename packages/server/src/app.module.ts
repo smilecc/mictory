@@ -22,6 +22,7 @@ import { join } from 'path';
 import { appEnv } from './utils';
 import { ChatManager } from './manager/chat.manager';
 import { UserFriendResolver } from './resolvers/user/user-friend.resolver';
+import { SocketIoManager } from './manager/socket-io.manager';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { UserFriendResolver } from './resolvers/user/user-friend.resolver';
     TxManager,
     ChatManager,
     UserFriendResolver,
+    SocketIoManager,
   ],
 })
 export class AppModule {}

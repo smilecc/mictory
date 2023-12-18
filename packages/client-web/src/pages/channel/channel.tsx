@@ -2,7 +2,7 @@ import { useReactive } from "ahooks";
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 // import { useLoaderData } from "react-router-dom";
 // import * as mediasoupClient from "mediasoup-client";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 // import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
@@ -11,6 +11,7 @@ import {
   ChannelBottomPannel,
   ChannelPanel,
   ChannelUsers,
+  ChatPannel,
   CreateChannelCategoryModal,
   CreateRoomModal,
 } from "@/components/business";
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { sleep } from "@/utils";
+import { ChatTarget } from "@/@generated/graphql";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -89,11 +91,9 @@ const ChannelMenuItem = React.memo<{ label: string; icon: React.FC; onClick?: ()
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
-  const navigate = useNavigate();
   const channelStore = useChannelStore();
   const socketClient = useContext(SocketClientContext);
   const params = useParams<{ channelCode: string }>();
-
   const {
     data,
     refetch: refetchChannelDetail,
@@ -115,6 +115,7 @@ export const ChannelPage: React.FC = () => {
   const state = useReactive({
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
+    selectChatRoomId: 0,
   });
 
   useEffect(() => {
@@ -219,8 +220,8 @@ export const ChannelPage: React.FC = () => {
             {channel ? (
               <ChannelPanel
                 channel={channel}
-                onRoomClick={(roomId) => {
-                  navigate(`/channel/${channel.code}/${roomId}`);
+                onJoinRoom={(roomId) => {
+                  state.selectChatRoomId = roomId;
                 }}
                 onShouldRefetch={() => {
                   refetchChannelDetail({
@@ -234,7 +235,13 @@ export const ChannelPage: React.FC = () => {
           <ChannelBottomPannel />
         </div>
         <div className="flex-1">
-          <Outlet />
+          {state.selectChatRoomId ? (
+            <ChatPannel
+              type={ChatTarget.Room}
+              roomId={state.selectChatRoomId}
+              key={`ROOM_CHAT_${state.selectChatRoomId}`}
+            />
+          ) : null}
         </div>
       </div>
       <div className="w-72 break-words bg-surface1">

@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as mediasoup from 'mediasoup';
 import { RoomManager } from 'src/manager';
 import {
-  RoomId,
+  TableId,
   WorkerAppData,
   MediasoupWorker,
   WorkerId,
@@ -12,7 +12,6 @@ import {
   Room,
 } from 'src/types';
 import { nanoid } from 'nanoid';
-import { Server as SocketServer } from 'socket.io';
 import { env, socketChannelKey, socketRoomKey } from 'src/utils';
 import { MictorySocket } from 'src/events/socket.adapter';
 import { PrismaClient } from '@prisma/client';
@@ -22,8 +21,6 @@ export class WebRtcService implements OnModuleInit {
   private workers: MediasoupWorker[] = [];
   private nextWorkderIndex: number = 0;
   private rooms: Room[] = [];
-  public socketServer: SocketServer;
-
   private readonly logger = new Logger(WebRtcService.name);
 
   constructor(
@@ -96,7 +93,7 @@ export class WebRtcService implements OnModuleInit {
     return worker;
   }
 
-  async getRoom(roomId: RoomId): Promise<Room> {
+  async getRoom(roomId: TableId): Promise<Room> {
     let room: Room = this.rooms.find((it) => it.roomId === roomId);
     if (!room) {
       const worker = this.getNextWorker();
@@ -149,12 +146,12 @@ export class WebRtcService implements OnModuleInit {
     return room;
   }
 
-  async getWorkerByRoomId(roomId: RoomId): Promise<MediasoupWorker> {
+  async getWorkerByRoomId(roomId: TableId): Promise<MediasoupWorker> {
     const room = await this.getRoom(roomId);
     return this.getWorker(room.workerId);
   }
 
-  async joinRoom(roomId: RoomId, userId: bigint, socket: MictorySocket): Promise<RoomSession> {
+  async joinRoom(roomId: TableId, userId: bigint, socket: MictorySocket): Promise<RoomSession> {
     this.logger.log(`Join Room, User: ${userId} Room: ${roomId}`);
 
     // 查询房间信息
@@ -199,7 +196,7 @@ export class WebRtcService implements OnModuleInit {
     }
   }
 
-  async createTransport(roomId: RoomId, userId: bigint, transportDirection: SessionTransportDirection) {
+  async createTransport(roomId: TableId, userId: bigint, transportDirection: SessionTransportDirection) {
     this.logger.log(`CreateTransport, Room: ${roomId} User: ${userId} Direction: ${transportDirection}`);
     const room = await this.getRoom(roomId);
     const worker = this.getWorker(room.workerId);
@@ -224,13 +221,13 @@ export class WebRtcService implements OnModuleInit {
     return transport;
   }
 
-  async getTransport(roomId: RoomId, userId: bigint, transportId: string): Promise<SessionTransport | undefined> {
+  async getTransport(roomId: TableId, userId: bigint, transportId: string): Promise<SessionTransport | undefined> {
     const room = await this.getRoom(roomId);
     const session = room.sessions.find((it) => it.userId == userId);
     return session?.transports?.find((it) => it.transport.id === transportId);
   }
 
-  async exitRoom(roomId: RoomId, userId: bigint, socket: MictorySocket) {
+  async exitRoom(roomId: TableId, userId: bigint, socket: MictorySocket) {
     // 查询房间信息
     const roomInfo = await this.prisma.room.findUnique({
       where: {

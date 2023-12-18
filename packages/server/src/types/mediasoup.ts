@@ -12,10 +12,10 @@ import type {
   AudioLevelObserver,
 } from 'mediasoup/node/lib/types';
 
-export type RoomId = number | string;
+export type TableId = bigint | number | string;
 export type WorkerId = number | string;
 export type Room = {
-  roomId: RoomId;
+  roomId: TableId;
   channelId: bigint;
   workerId: WorkerId;
   sessions: RoomSession[];
@@ -32,7 +32,7 @@ export type WorkerAppData = {
 export type MediasoupWorker = Worker<WorkerAppData>;
 export type RoomSession = {
   id: string;
-  roomId: RoomId;
+  roomId: TableId;
   userId: bigint;
   workerId: WorkerId;
   transports: SessionTransport[];
@@ -49,15 +49,15 @@ export type SessionTransport = {
 };
 
 export type MessageGetRouterRtpCapabilities = {
-  roomId: RoomId;
+  roomId: TableId;
 };
 
 export type MessageActiveChannel = {
-  channelId: RoomId;
+  channelId: TableId;
 };
 
 export type MessageJoinRoom = {
-  roomId: RoomId;
+  roomId: TableId;
 };
 
 export type MessageCreateTransport = {

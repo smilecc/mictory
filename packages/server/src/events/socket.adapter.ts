@@ -2,17 +2,17 @@ import { Server as SocketServer, Socket } from 'socket.io';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RoomId } from 'src/types';
+import { TableId } from 'src/types';
 import { instrument } from '@socket.io/admin-ui';
 import { appEnv } from 'src/utils';
 import { JwtUserClaims, RequestUserType } from 'src/modules/auth.module';
 
 export interface MictorySocket extends Socket {
   user: JwtUserClaims;
-  mediasoupRoomId?: RoomId;
-  mediasoupChannelId?: RoomId;
-  mediasoupActiveChannelId?: RoomId;
-  mediasoupActiveChatRoomId?: RoomId;
+  mediasoupRoomId?: TableId;
+  mediasoupChannelId?: TableId;
+  mediasoupActiveChannelId?: TableId;
+  mediasoupActiveChatRoomId?: TableId;
 }
 
 export class MictorySocketAdapter extends IoAdapter {

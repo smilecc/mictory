@@ -90,7 +90,7 @@ export const MessagePage: React.FC = () => {
 
         {state.selectUserId ? (
           <div className="h-full w-full">
-            <ChatPannel type={ChatTarget.User} userId={state.selectUserId} key={state.selectUserId} />
+            <ChatPannel type={ChatTarget.User} userId={state.selectUserId} key={`USER_CHAT_${state.selectUserId}`} />
           </div>
         ) : null}
       </div>
