@@ -4,6 +4,22 @@ Microphone + Victory = Mictory
 
 ![](https://i.imgur.com/pRE6gAz.png)
 
+<details><summary><b>其他一些功能截图</b></summary>
+
+#### 输入设备选择
+
+![](https://i.imgur.com/KpLz4KY.png)
+
+#### 私聊界面
+
+![](https://i.imgur.com/hWrHiF7.png)
+
+#### 用户卡片
+
+![](https://i.imgur.com/P3HDzf1.png)
+
+</details>
+
 ## 功能规划
 
 **项目还在开发中🚧**，目前已达到初步可用。
@@ -50,7 +66,7 @@ docker compose up --build
 mictory-server-1  | [Nest] 140  - 12/18/2023, 7:06:58 PM     LOG [NestApplication] Nest application successfully started +1ms
 ```
 
-随后访问 `8999` 端口即可访问，例如 http://localhost:8999。
+随后访问 `8999` 端口即可访问，例如 http://localhost:8999
 
 顺利启动后，您可以使用 `ctrl + c` 来关闭项目，如果需要常驻并在后台运行，可以运行如下命令：
 
