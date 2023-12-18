@@ -12,6 +12,7 @@ export interface MictorySocket extends Socket {
   mediasoupRoomId?: RoomId;
   mediasoupChannelId?: RoomId;
   mediasoupActiveChannelId?: RoomId;
+  mediasoupActiveChatRoomId?: RoomId;
 }
 
 export class MictorySocketAdapter extends IoAdapter {
