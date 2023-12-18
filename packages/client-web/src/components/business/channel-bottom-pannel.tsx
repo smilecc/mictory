@@ -19,10 +19,9 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useNavigate } from "react-router-dom";
+import { runInAction } from "mobx";
 
 export const ChannelBottomPannel: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
-  const navigate = useNavigate();
   const commonStore = useCommonStore();
   const channelStore = useChannelStore();
 
@@ -95,8 +94,9 @@ export const ChannelBottomPannel: React.FC<React.HTMLAttributes<HTMLDivElement>>
                   <Tooltip label="用户设置" color="dark">
                     <ActionIcon
                       onClick={() => {
-                        commonStore.settingModalOpen = true;
-                        navigate("setting/audio");
+                        runInAction(() => {
+                          commonStore.settingModalPath = "/";
+                        });
                       }}
                     >
                       <IconSettings size={18} />

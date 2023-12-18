@@ -1,10 +1,14 @@
 import { useCommonStore } from "@/stores";
-import { Modal, NavLink } from "@mantine/core";
+import { Loader, Modal, NavLink } from "@mantine/core";
+import { runInAction } from "mobx";
 import { Observer } from "mobx-react-lite";
-import { useMemo } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
+
+const UserProfile = lazy(() => import("./settings/user-profile"));
+const AppAudio = lazy(() => import("./settings/app-audio"));
 
 type Settings = {
+  key: string;
   title: string;
   items: {
     title: string;
@@ -12,41 +16,46 @@ type Settings = {
   }[];
 }[];
 
-const SETTING_REG = /(.+)\/setting\/(.+)/;
-
 const SETTINGS: Settings = [
   {
+    key: "user",
+    title: "用户设置",
+    items: [
+      {
+        title: "用户资料",
+        link: "user/profile",
+      },
+    ],
+  },
+  {
+    key: "app",
     title: "App设置",
     items: [
       {
         title: "语音设置",
-        link: "setting/audio",
+        link: "app/audio",
       },
       {
         title: "语音设置",
-        link: "setting/advance",
+        link: "app/advance",
       },
     ],
   },
 ];
 
 export const SettingModal: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const commonStore = useCommonStore();
-
-  const settingPath = useMemo(() => `setting/${SETTING_REG.exec(location.pathname)?.[2]}`, [location.pathname]);
-  const fromPath = useMemo(() => location.pathname.replace(`/${settingPath}`, ""), [location.pathname, settingPath]);
 
   return (
     <Observer>
       {() => (
         <Modal
-          opened={commonStore.settingModalOpen}
+          opened={!!commonStore.settingModalPath}
           title="设置"
           onClose={() => {
-            commonStore.settingModalOpen = false;
-            navigate(location.pathname.replace(`/${settingPath}`, ""));
+            runInAction(() => {
+              commonStore.settingModalPath = undefined;
+            });
           }}
           fullScreen
           radius={0}
@@ -56,22 +65,34 @@ export const SettingModal: React.FC = () => {
             <div className="w-60">
               {SETTINGS.map((setting) => (
                 <NavLink
+                  variant="filled"
+                  key={setting.key}
                   label={<span className="text-xs font-bold">{setting.title}</span>}
                   defaultOpened
                   childrenOffset={0}
                 >
                   {setting.items.map((item) => (
                     <NavLink
-                      active={settingPath === item.link}
+                      color="violet"
+                      variant="filled"
+                      key={item.link}
+                      active={commonStore.settingModalPath === item.link}
                       label={item.title}
-                      onClick={() => navigate(`${fromPath}/${item.link}`)}
+                      onClick={() => {
+                        runInAction(() => {
+                          commonStore.settingModalPath = item.link;
+                        });
+                      }}
                     />
                   ))}
                 </NavLink>
               ))}
             </div>
             <div className="flex-1 pl-8">
-              <Outlet />
+              <Suspense fallback={<Loader />}>
+                {commonStore.settingModalPath === "user/profile" ? <UserProfile /> : null}
+                {commonStore.settingModalPath === "app/audio" ? <AppAudio /> : null}
+              </Suspense>
             </div>
           </div>
         </Modal>

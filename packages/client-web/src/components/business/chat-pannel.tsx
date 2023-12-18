@@ -12,7 +12,7 @@ import { ActionIcon, Divider, FileButton, Popover, Skeleton } from "@mantine/cor
 import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
 import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
 import { PlateEditor, nanoid } from "@udecode/plate-common";
-import { ApiAxios } from "@/utils";
+import { ApiAxios, DEFAULT_AVATAR } from "@/utils";
 import { NewChatMessageEvent } from "@mictory/common";
 import { cn } from "@/lib/utils";
 
@@ -220,7 +220,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
               <div key={chat.id} className="flex p-3 transition-colors duration-75 hover:bg-surface3">
                 <UserPopover nickname={chat.user!.nickname} no={chat.user!.nicknameNo}>
                   <img
-                    src={chat.user?.avatar || "/img/default-avatar.jpg"}
+                    src={chat.user?.avatar || DEFAULT_AVATAR}
                     alt="avatar"
                     className="h-10 w-10 rounded-full object-cover"
                   />

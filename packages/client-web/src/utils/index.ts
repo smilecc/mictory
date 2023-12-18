@@ -3,6 +3,9 @@ import { notifications } from "@mantine/notifications";
 import { i18n } from "@/i18n";
 import axios from "axios";
 
+export const DEFAULT_AVATAR = "/img/default-avatar.jpg";
+export const DEFAULT_USER_BG = "/img/default-user-bg.jpg";
+
 export const API_HOST = (() => {
   if (import.meta.env.VITE_API_HOST) {
     return import.meta.env.VITE_API_HOST;
