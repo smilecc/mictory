@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { autorun } from "mobx";
-import { createHashRouter, RouterProvider, Navigate, useNavigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate, useNavigate } from "react-router-dom";
 import { useCommonStore } from "@/stores";
 import { gql } from "./@generated";
 import { useLazyQuery } from "@apollo/client";
@@ -39,7 +39,7 @@ export const RouteGuard: React.FC<{
   return <>{props.children}</>;
 };
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     Component: () => <Navigate to="/channel" replace />,
