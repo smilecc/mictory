@@ -9,6 +9,8 @@ server {
     gzip_disable "MSIE [1-6]\.";
     gzip_buffers 32 4k;
 
+    client_max_body_size  64m;
+
     location / {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
