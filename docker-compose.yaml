@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  mictory-nginx:
+  nginx:
     image: nginx:1.25.3
     volumes:
       - ./data/files:/www/files
@@ -9,19 +9,20 @@ services:
     ports:
       - 8999:80
     links:
-      - mictory-server
+      - server
 
-  mictory-server:
-    build:
-      context: ./
-      dockerfile: ./docker/server/Dockerfile
-      args:
-        API_HOST: /api
+  server:
+    # build:
+    #   context: ./
+    #   dockerfile: ./docker/server/Dockerfile
+    #   args:
+    #     API_HOST: /api
+    image: smilecc/mictory-server:latest
     environment:
       APP_ENV: prod
       APP_SECRET_PATH: /app/config/secret
       IP_ADDRESS: "127.0.0.1"
-      DATABASE_URL: mysql://root:root@mictory-db:3306/mic
+      DATABASE_URL: mysql://root:root@db:3306/mic
     volumes:
       - ./data/files:/app/packages/server/files
       - ./data/config:/app/config
@@ -29,12 +30,12 @@ services:
     ports:
       - 55555:55555
     depends_on:
-      mictory-db:
+      db:
         condition: service_healthy
     links:
-      - mictory-db
+      - db
 
-  mictory-db:
+  db:
     image: mysql:8.1.0
     restart: always
     environment:
