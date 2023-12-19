@@ -1,6 +1,14 @@
 server {
     listen 80;
 
+    gzip on;
+    gzip_min_length 1k;
+    gzip_comp_level 1;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png application/vnd.ms-fontobject font/ttf font/opentype font/x-woff image/svg+xml;
+    gzip_vary on;
+    gzip_disable "MSIE [1-6]\.";
+    gzip_buffers 32 4k;
+
     location / {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
