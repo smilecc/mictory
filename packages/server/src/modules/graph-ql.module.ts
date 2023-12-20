@@ -70,6 +70,7 @@ export class GraphQlModule {
 
             if (ctx.req && ctx.req?.headers?.authorization) {
               const claims: JwtUserClaims = await jwtService.verifyAsync(ctx.req.headers.authorization);
+              cls.set(CLS_REQUEST_USER, `${claims.type}:${claims.userId}`);
               return { ...ctx, [CTX_USER]: new RequestUser(claims, prisma) };
             }
           } catch {}

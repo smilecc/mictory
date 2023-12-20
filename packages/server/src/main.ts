@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { env, loadOrGenerateAppSecret } from './utils';
+import { env, getLogger, loadOrGenerateAppSecret } from './utils';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { MictorySocketAdapter } from './events/socket.adapter';
 import * as _ from 'lodash';
@@ -21,8 +21,10 @@ global.Object.defineProperty(global.BigInt.prototype, 'toJSON', {
 });
 
 async function bootstrap() {
+  const logger = getLogger();
   const app = await NestFactory.create(AppModule, {
     cors: true,
+    logger,
   });
 
   app.useGlobalPipes(
@@ -46,7 +48,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new MictorySocketAdapter(app));
   const APP_PORT = env('APP_PORT', '3000');
 
-  Logger.log(`App started, listen port: ${APP_PORT}`, 'bootstrap');
+  logger.log(`App started, listen port: ${APP_PORT}`, 'bootstrap');
   await app.listen(APP_PORT);
 }
 

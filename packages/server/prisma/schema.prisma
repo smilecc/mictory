@@ -85,6 +85,10 @@ model User {
   type          UserType         @default(USER)
   /// 未读私信
   unreadMessage Int              @default(0)
+  /// 个人介绍
+  intro         String           @default("")
+  /// 资料横幅
+  profileBanner String?
 
   fromChats   Chat[]       @relation("fromUserChats")
   targetChats Chat[]       @relation("targetUserChats")

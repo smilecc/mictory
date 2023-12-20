@@ -1,7 +1,4 @@
 import * as process from 'process';
-import { Logger } from '@nestjs/common';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { nanoid } from 'nanoid';
 
 /**
  * 获取环境变量
@@ -17,21 +14,4 @@ export type AppEnv = 'prod' | 'dev';
 
 export function appEnv() {
   return env('APP_ENV', 'prod') as AppEnv;
-}
-
-/**
- * 加载或生成一个应用秘钥
- */
-export function loadOrGenerateAppSecret(): string {
-  const secretPath = env('APP_SECRET_PATH', '.secret');
-  if (!existsSync(secretPath)) {
-    global.appSecret = nanoid(64);
-    writeFileSync(secretPath, global.appSecret);
-  } else {
-    global.appSecret = readFileSync(secretPath).toString();
-  }
-
-  Logger.log(`AppSecret: ${global.appSecret}`, 'utils');
-
-  return global.appSecret;
 }

@@ -14,6 +14,10 @@ import { CreateMictoryError } from 'src/utils';
 import { CTX_USER } from 'src/consts';
 import { RequestUser } from 'src/modules/auth.module';
 import { UserFriend } from 'src/@generated';
+import { UserProfileUpdateInput } from 'src/types/gql/user-profile-update.input';
+import { createModuleCallLog } from 'src/aspects';
+
+const ModuleCallLog = createModuleCallLog('UserResolver');
 
 @Resolver(() => User)
 export class UserResolver {
@@ -51,6 +55,7 @@ export class UserResolver {
     return this.prisma.user.findFirst({ where, ...select });
   }
 
+  @ModuleCallLog<UserResolver['userCreate']>(`create user`)
   @Mutation(() => UserSession)
   async userCreate(@Args() args: CreateOneUserArgs): Promise<UserSession> {
     const passwordSalt = nanoid(64);
@@ -83,6 +88,7 @@ export class UserResolver {
     };
   }
 
+  @ModuleCallLog<UserResolver['userSessionCreate']>((u) => `user login: account: ${u.account}`)
   @Mutation(() => UserSession)
   async userSessionCreate(@Args('args') args: UserSessionCreateInput) {
     const user = await this.prisma.user.findUnique({
@@ -103,6 +109,34 @@ export class UserResolver {
       userId: user.id,
       sessionToken: await this.userService.generateSessionToken(user),
     } as UserSession);
+  }
+
+  @ModuleCallLog<UserResolver['userProfileUpdate']>((u) => `user update profile: userId: ${u.userId}`, {
+    withArgs: [1],
+  })
+  @Directive('@user')
+  @Mutation(() => User)
+  async userProfileUpdate(
+    @Context(CTX_USER) user: RequestUser,
+    @Args('data', { type: () => UserProfileUpdateInput }) data: UserProfileUpdateInput,
+  ) {
+    return this.prisma.user.update({
+      where: {
+        id: user.userId,
+      },
+      data: {
+        ...data,
+      },
+    });
+  }
+
+  @ModuleCallLog<UserResolver['userProfileUpdate']>((u) => `user update nickname: userId: ${u.userId}`, {
+    withArgs: [1],
+  })
+  @Directive('@user')
+  @Mutation(() => User)
+  async userNicknameUpdate(@Context(CTX_USER) user: RequestUser, @Args('nickname') nickname: string) {
+    return this.userService.setUserNickname(user.userId, nickname);
   }
 
   @Directive('@user')

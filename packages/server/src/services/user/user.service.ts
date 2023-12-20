@@ -7,6 +7,7 @@ import { RoomManager } from 'src/manager';
 import { ChatManager } from 'src/manager/chat.manager';
 import { TxManager } from 'src/manager/tx.manager';
 import { JwtUserClaims, RequestUserType } from 'src/modules/auth.module';
+import { TableId } from 'src/types';
 
 @Injectable()
 export class UserService {
@@ -52,20 +53,6 @@ export class UserService {
         },
       });
 
-      // 锁定用户昵称编号
-      const userNickname = await tx.userNickname.upsert({
-        where: {
-          nickname: newUser.nickname.trim(),
-        },
-        update: {
-          no: { increment: 1 },
-        },
-        create: {
-          nickname,
-          no: 1000,
-        },
-      });
-
       // 创建用户默认频道
       await this.roomManager.createChannel(newUser.id, {
         name: `${newUser.nickname}的频道`,
@@ -80,12 +67,44 @@ export class UserService {
         message: [{ type: 'p', children: [{ text: 'Welcome!🥳🥳🥳' }] }],
       });
 
-      return tx.user.update({
-        data: {
-          nicknameNo: userNickname.no,
-        },
+      return this.setUserNickname(newUser.id, nickname);
+    });
+  }
+
+  async setUserNickname(userId: TableId, newNickname: string, force: boolean = false) {
+    const nickname = newNickname.trim();
+    return this.txManager.run(async (tx) => {
+      const user = await tx.user.findUnique({
         where: {
-          id: newUser.id,
+          id: BigInt(userId),
+        },
+      });
+
+      if (!force && user.nickname === nickname) {
+        return user;
+      }
+
+      // 锁定用户昵称编号
+      const userNickname = await tx.userNickname.upsert({
+        where: {
+          nickname,
+        },
+        update: {
+          no: { increment: 1 },
+        },
+        create: {
+          nickname,
+          no: 1000,
+        },
+      });
+
+      return tx.user.update({
+        where: {
+          id: BigInt(userId),
+        },
+        data: {
+          nickname,
+          nicknameNo: userNickname.no,
         },
       });
     });
