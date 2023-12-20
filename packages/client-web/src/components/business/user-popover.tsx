@@ -1,11 +1,12 @@
 import { gql } from "@/@generated";
 import { GetUserPopoverInfoQuery, UserSessionState, UserType } from "@/@generated/graphql";
+import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR, DEFAULT_USER_BG } from "@/utils";
 import { useLazyQuery } from "@apollo/client";
-import { Text, Skeleton, Card, Image, Button, Badge, Popover } from "@mantine/core";
+import { Text, Skeleton, Card, Image, Button, Badge, Popover, FileButton } from "@mantine/core";
 // import { IUserInfo, UserApi } from "@renderer/api";
 // import { NoticeErrorHandler } from "@renderer/utils";
-import React from "react";
+import React, { useCallback } from "react";
 
 const QUERY_USER_POPOVER = gql(`query getUserPopoverInfo($nickname: String!, $no: Int!) {
   user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {
@@ -15,6 +16,8 @@ const QUERY_USER_POPOVER = gql(`query getUserPopoverInfo($nickname: String!, $no
     nicknameNo
     avatar
     sessionState
+    intro
+    profileBanner
   }
 }`);
 
@@ -56,16 +59,63 @@ export const UserPopover: React.FC<{
   );
 };
 
-export const UserPopoverCard: React.FC<{ user: GetUserPopoverInfoQuery["user"] }> = ({ user }) => {
+export type UserPopoverCardUser = GetUserPopoverInfoQuery["user"];
+
+const UserPopoverImageWrapper: React.FC<
+  React.PropsWithChildren<{ edit: boolean; text: string; onFileUpload?: (file: File) => void }>
+> = ({ edit, text, children, onFileUpload }) => {
+  const onUpload = useCallback(
+    (file: File) => {
+      if (edit) {
+        onFileUpload?.(file);
+      }
+    },
+    [edit, onFileUpload],
+  );
+
+  if (!edit) return children;
+
   return (
-    <Card shadow="lg" padding="lg" radius="md" className="w-96">
+    <FileButton accept="image/png,image/jpeg,image/gif" onChange={onUpload}>
+      {(props) => (
+        <div className={edit ? "group/user-popover-img-wrapper relative cursor-pointer select-none" : ""} {...props}>
+          <span className="transition-opacity group-hover/user-popover-img-wrapper:opacity-30">{children}</span>
+          <div
+            className={cn(
+              "absolute inset-0 hidden items-center justify-center text-white opacity-0 transition-opacity",
+              "group-hover/user-popover-img-wrapper:flex group-hover/user-popover-img-wrapper:opacity-100",
+            )}
+          >
+            {text}
+          </div>
+        </div>
+      )}
+    </FileButton>
+  );
+};
+
+export const UserPopoverCard: React.FC<{
+  user: UserPopoverCardUser;
+  edit?: boolean;
+  onUpload?: (field: "avatar" | "profileBanner", file: File) => void;
+}> = ({ user, onUpload, edit = false }) => {
+  return (
+    <Card shadow="lg" padding="lg" radius="md" className={cn("w-96", edit ? "select-none" : "")}>
       <Card.Section>
-        <Image src={DEFAULT_USER_BG} height={80} alt="Norway" />
+        <UserPopoverImageWrapper edit={edit} text="上传横幅" onFileUpload={(f) => onUpload?.("profileBanner", f)}>
+          <Image src={user?.profileBanner || DEFAULT_USER_BG} height={80} alt="Norway" />
+        </UserPopoverImageWrapper>
       </Card.Section>
 
       <div className="relative flex justify-between">
         <div className="absolute -left-1 -top-8 rounded-full bg-gray-700 p-1">
-          <img className="h-16 w-16 rounded-full object-cover" alt="avatar" src={user?.avatar || DEFAULT_AVATAR} />
+          <UserPopoverImageWrapper edit={edit} text="上传" onFileUpload={(f) => onUpload?.("avatar", f)}>
+            <img
+              className={cn("h-16 w-16 rounded-full object-cover group-hover/user-popover:opacity-30")}
+              alt="avatar"
+              src={user?.avatar || DEFAULT_AVATAR}
+            />
+          </UserPopoverImageWrapper>
         </div>
         <div />
         <div className="pt-2">
@@ -101,7 +151,7 @@ export const UserPopoverCard: React.FC<{ user: GetUserPopoverInfoQuery["user"] }
         </div>
 
         <Text size="sm" c="dimmed">
-          什么也没留下...
+          {user?.intro || "什么也没留下..."}
         </Text>
       </div>
     </Card>

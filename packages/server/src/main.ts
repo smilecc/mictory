@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { env, getLogger, loadOrGenerateAppSecret } from './utils';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { MictorySocketAdapter } from './events/socket.adapter';
 import * as _ from 'lodash';
 import { UserInputError } from '@nestjs/apollo';

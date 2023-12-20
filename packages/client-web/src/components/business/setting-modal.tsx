@@ -35,10 +35,6 @@ const SETTINGS: Settings = [
         title: "语音设置",
         link: "app/audio",
       },
-      {
-        title: "语音设置",
-        link: "app/advance",
-      },
     ],
   },
 ];
@@ -73,8 +69,8 @@ export const SettingModal: React.FC = () => {
                 >
                   {setting.items.map((item) => (
                     <NavLink
-                      color="violet"
-                      variant="filled"
+                      color="teal"
+                      variant="light"
                       key={item.link}
                       active={commonStore.settingModalPath === item.link}
                       label={item.title}

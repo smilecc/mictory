@@ -37,3 +37,10 @@ export function sleep(time: number) {
 export const ApiAxios = axios.create({
   baseURL: API_HOST,
 });
+
+export async function ApiAxiosUpload(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return ApiAxios.post<{ name: string }>("/file/upload", formData);
+}

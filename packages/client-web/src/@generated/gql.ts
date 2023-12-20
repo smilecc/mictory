@@ -18,7 +18,10 @@ const documents = {
     "mutation createChannelRoom($where: ChannelWhereUniqueInput!, $data: ChannelUpdateInput!) {\n  channelUpdate (where: $where, data: $data) {\n    id\n  }\n}": types.CreateChannelRoomDocument,
     "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n  }\n}": types.JoinChannelDocument,
     "mutation createChannel($data: ChannelCreateInput!) {\n  channelCreate(data: $data) {\n    id\n  }\n}": types.CreateChannelDocument,
-    "query getUserPopoverInfo($nickname: String!, $no: Int!) {\n  user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n  }\n}": types.GetUserPopoverInfoDocument,
+    "query fetchCurrentUserForUpdate {\n  user(where: { nicknameNo: { equals: -1 } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}": types.FetchCurrentUserForUpdateDocument,
+    "mutation updateUserProfile($data: UserProfileUpdateInput!) {\n  userProfileUpdate(data: $data) {\n    id\n  }\n}": types.UpdateUserProfileDocument,
+    "mutation updateUserNickname($nickname: String!) {\n  userNicknameUpdate(nickname: $nickname) {\n    id\n  }\n}": types.UpdateUserNicknameDocument,
+    "query getUserPopoverInfo($nickname: String!, $no: Int!) {\n  user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}": types.GetUserPopoverInfoDocument,
     "\nquery listUserChannel {\n  user(where: { nicknameNo: { equals: -1 } }) {\n    id\n    nickname\n    nicknameNo\n    channels {\n      channel {\n        id\n        name\n        code\n        avatar\n        ownerUser {\n          ...UserFrag\n        }\n      }\n    }\n  }\n}\n\nfragment UserFrag on User {\n  id\n  nickname\n  nicknameNo\n  sessionState\n  avatar\n}\n": types.ListUserChannelDocument,
     "\nquery getChannelDetail($code: String!) {\n  channels (where: { code: { equals: $code } } ) {\n    id\n    name\n    code\n    avatar\n    ownerUser {\n      id\n      nickname\n      nicknameNo\n      sessionState\n      avatar\n    }\n    users {\n      role: channelRole {\n        name\n        color\n      }\n      user {\n        id\n        nickname\n        nicknameNo\n        sessionState\n        avatar\n      }\n    }\n    categories {\n      id\n      name\n      rooms {\n        id\n        name\n        maxMember\n        sort\n        channelId\n        users {\n          id\n          nickname\n          nicknameNo\n          avatar\n        }\n      }\n    }\n  }\n}\n": types.GetChannelDetailDocument,
     "query fetchUserFriends {\n  currentUser: user(where: { nicknameNo: { equals: -1 } }) {\n    id\n    nickname\n    nicknameNo\n  }\n\n  userFriends {\n    id\n    userAAccept\n    userBAccept\n    lastChatTime\n    userA {\n      id\n      nickname\n      nicknameNo\n      avatar\n      type\n    }\n    userB {\n      id\n      nickname\n      nicknameNo\n      avatar\n      type\n    }\n  }\n}": types.FetchUserFriendsDocument,
@@ -64,7 +67,19 @@ export function gql(source: "mutation createChannel($data: ChannelCreateInput!) 
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "query getUserPopoverInfo($nickname: String!, $no: Int!) {\n  user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n  }\n}"): (typeof documents)["query getUserPopoverInfo($nickname: String!, $no: Int!) {\n  user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n  }\n}"];
+export function gql(source: "query fetchCurrentUserForUpdate {\n  user(where: { nicknameNo: { equals: -1 } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}"): (typeof documents)["query fetchCurrentUserForUpdate {\n  user(where: { nicknameNo: { equals: -1 } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "mutation updateUserProfile($data: UserProfileUpdateInput!) {\n  userProfileUpdate(data: $data) {\n    id\n  }\n}"): (typeof documents)["mutation updateUserProfile($data: UserProfileUpdateInput!) {\n  userProfileUpdate(data: $data) {\n    id\n  }\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "mutation updateUserNickname($nickname: String!) {\n  userNicknameUpdate(nickname: $nickname) {\n    id\n  }\n}"): (typeof documents)["mutation updateUserNickname($nickname: String!) {\n  userNicknameUpdate(nickname: $nickname) {\n    id\n  }\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "query getUserPopoverInfo($nickname: String!, $no: Int!) {\n  user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}"): (typeof documents)["query getUserPopoverInfo($nickname: String!, $no: Int!) {\n  user(where: { nickname: { equals: $nickname }, nicknameNo: { equals: $no } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

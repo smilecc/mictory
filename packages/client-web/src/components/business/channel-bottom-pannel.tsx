@@ -95,7 +95,7 @@ export const ChannelBottomPannel: React.FC<React.HTMLAttributes<HTMLDivElement>>
                     <ActionIcon
                       onClick={() => {
                         runInAction(() => {
-                          commonStore.settingModalPath = "/";
+                          commonStore.settingModalPath = "user/profile";
                         });
                       }}
                     >

@@ -12,7 +12,7 @@ import { ActionIcon, Divider, FileButton, Popover, Skeleton } from "@mantine/cor
 import EmojiPicker, { Categories, EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
 import { IconMoodSmileBeam, IconPhoto } from "@tabler/icons-react";
 import { PlateEditor, nanoid } from "@udecode/plate-common";
-import { ApiAxios, DEFAULT_AVATAR } from "@/utils";
+import { ApiAxiosUpload, DEFAULT_AVATAR } from "@/utils";
 import { NewChatMessageEvent } from "@mictory/common";
 import { cn } from "@/lib/utils";
 
@@ -246,11 +246,8 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
             accept="image/png,image/jpeg,image/gif"
             onChange={(file) => {
               if (file) {
-                const formData = new FormData();
-                formData.append("file", file);
-
                 state.sending = true;
-                ApiAxios.post<{ name: string }>("/file/upload", formData).then(({ data }) => {
+                ApiAxiosUpload(file).then(({ data }) => {
                   sendMessage(
                     [
                       {
