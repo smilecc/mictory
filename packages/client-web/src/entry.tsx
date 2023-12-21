@@ -16,7 +16,7 @@ export const App: React.FC = () => {
   );
 };
 
-export { SocketClientContext, createApolloClient, createSocketClient } from "@/contexts";
+export { SocketClientContext, createApolloClient, createSocketClient, setImageHost } from "@/contexts";
 export { StoreContext, getStores } from "@/stores";
 export { ApolloProvider } from "@apollo/client";
 export { API_HOST, createApiAxios } from "@/utils";

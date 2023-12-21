@@ -7,6 +7,8 @@ export * from "./apollo";
 
 const SOCKET_URL = import.meta.env.DEV ? "http://localhost:3000" : undefined;
 
+export let IMAGE_HOST = "";
+
 let socketClient: Socket | null = null;
 
 export function createSocketClient(socketUrl = SOCKET_URL): Socket {
@@ -30,4 +32,12 @@ export function getSocketClient(): Socket {
   return socketClient!;
 }
 
+export function setImageHost(host: string) {
+  IMAGE_HOST = host;
+}
+
 export const SocketClientContext: React.Context<Socket> = React.createContext<Socket>(null as unknown as Socket);
+
+export function imgUrl(url: string | undefined | null, defaultUrl?: string) {
+  return url ? `${IMAGE_HOST}${url}` : defaultUrl;
+}

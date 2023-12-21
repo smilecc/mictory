@@ -13,6 +13,7 @@ import {
 } from "../ui/context-menu";
 import { DropdownMenuLabel } from "../ui/dropdown-menu";
 import { DEFAULT_AVATAR } from "@/utils";
+import { imgUrl } from "@/contexts";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
@@ -122,7 +123,7 @@ export const ChannelPanel: React.FC<{
                           ${speakingUsers.includes(user.id) ? "bg-orange-500/25" : ""}
                         `}
                       >
-                        <img src={user.avatar || DEFAULT_AVATAR} className="h-6 w-6 rounded-full object-cover" />
+                        <img src={imgUrl(user.avatar, DEFAULT_AVATAR)} className="h-6 w-6 rounded-full object-cover" />
                         <span className="ml-2 leading-none">{user.nickname}</span>
                       </div>
                     </UserPopover>

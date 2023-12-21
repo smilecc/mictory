@@ -9,6 +9,7 @@ import React, { useMemo } from "react";
 import { first } from "lodash-es";
 import { IconUsers } from "@tabler/icons-react";
 import { DEFAULT_AVATAR } from "@/utils";
+import { imgUrl } from "@/contexts";
 
 const FETCH_FRIENDS = gql(`query fetchUserFriends {
   currentUser: user(where: { nicknameNo: { equals: -1 } }) {
@@ -140,7 +141,7 @@ const FriendItem: React.FC<{
       onClick={() => onClick?.(user.id, friend.id)}
     >
       <Indicator inline offset={3} label="2" color="red" disabled>
-        <img src={user.avatar || DEFAULT_AVATAR} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
+        <img src={imgUrl(user.avatar, DEFAULT_AVATAR)} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
       </Indicator>
       <div className="ml-2">
         <span>{user.nickname}</span>

@@ -2,6 +2,7 @@ import { GetChannelDetailQuery, UserSessionState } from "@/@generated/graphql";
 import React, { useMemo } from "react";
 import { UserPopover } from ".";
 import { DEFAULT_AVATAR } from "@/utils";
+import { imgUrl } from "@/contexts";
 
 type Users = NonNullable<NonNullable<GetChannelDetailQuery["channels"][0]>["users"]>;
 
@@ -31,7 +32,7 @@ const UsersPannel: React.FC<{ title: string; users: Users }> = ({ title, users }
         <UserPopover nickname={user.user.nickname} no={user.user.nicknameNo} key={user.user.id}>
           <div className="flex items-center rounded-md px-3 py-1.5 text-zinc-300 hover:bg-zinc-700">
             <img
-              src={user.user.avatar || DEFAULT_AVATAR}
+              src={imgUrl(user.user.avatar, DEFAULT_AVATAR)}
               alt="avatar"
               className="h-7 w-7 rounded-full object-cover"
             />

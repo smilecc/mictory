@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, Tooltip } from "@mantine/core";
+import { imgUrl } from "@/contexts";
 
 export interface ISiderAvatarProps {
   active?: boolean;
@@ -27,7 +28,7 @@ export const SideAvatar: React.FC<ISiderAvatarProps> = (props) => {
             color="cyan"
             size="3rem"
             className="overflow-hidden rounded-2xl transition-all group-hover:h-14 group-hover:w-14 group-hover:rounded-md"
-            src={props.avatar}
+            src={imgUrl(props.avatar)}
           >
             {props.icon ? props.icon : props.name?.at(0)?.toUpperCase()}
           </Avatar>

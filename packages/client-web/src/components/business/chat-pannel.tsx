@@ -15,6 +15,7 @@ import { PlateEditor, nanoid } from "@udecode/plate-common";
 import { ApiAxiosUpload, DEFAULT_AVATAR } from "@/utils";
 import { NewChatMessageEvent } from "@mictory/common";
 import { cn } from "@/lib/utils";
+import { imgUrl } from "@/contexts";
 
 export type ChatPannelRoomProps = {
   type: ChatTarget.Room;
@@ -220,7 +221,7 @@ export const ChatPannel: React.FC<ChatPannelProps> = (props) => {
               <div key={chat.id} className="flex p-3 transition-colors duration-75 hover:bg-surface3">
                 <UserPopover nickname={chat.user!.nickname} no={chat.user!.nicknameNo}>
                   <img
-                    src={chat.user?.avatar || DEFAULT_AVATAR}
+                    src={imgUrl(chat.user?.avatar, DEFAULT_AVATAR)}
                     alt="avatar"
                     className="h-10 w-10 rounded-full object-cover"
                   />

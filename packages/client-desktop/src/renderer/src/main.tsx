@@ -9,11 +9,13 @@ import {
   createApolloClient,
   createSocketClient,
   getStores,
-  createApiAxios
+  createApiAxios,
+  setImageHost
 } from '@mictory/client-web'
 
 const HOST = 'https://mictory.smilec.cc'
 
+setImageHost(HOST)
 createApiAxios(`${HOST}/api`)
 const socketClient = createSocketClient(HOST)
 const apolloClient = createApolloClient(`${HOST}/api`)

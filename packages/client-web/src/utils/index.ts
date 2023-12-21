@@ -3,9 +3,11 @@ import { notifications } from "@mantine/notifications";
 import { i18n } from "@/i18n";
 import axios from "axios";
 import type { AxiosInstance } from "axios";
+import defaultAvatar from "@/assets/img/default-avatar.jpg";
+import defaultUserBg from "@/assets/img/default-user-bg.jpg";
 
-export const DEFAULT_AVATAR = "/img/default-avatar.jpg";
-export const DEFAULT_USER_BG = "/img/default-user-bg.jpg";
+export const DEFAULT_AVATAR = defaultAvatar;
+export const DEFAULT_USER_BG = defaultUserBg;
 
 export const API_HOST = (() => {
   if (import.meta.env.VITE_API_HOST) {

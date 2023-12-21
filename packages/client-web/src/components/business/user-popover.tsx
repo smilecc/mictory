@@ -1,5 +1,6 @@
 import { gql } from "@/@generated";
 import { GetUserPopoverInfoQuery, UserSessionState, UserType } from "@/@generated/graphql";
+import { imgUrl } from "@/contexts";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AVATAR, DEFAULT_USER_BG } from "@/utils";
 import { useLazyQuery } from "@apollo/client";
@@ -103,7 +104,7 @@ export const UserPopoverCard: React.FC<{
     <Card shadow="lg" padding="lg" radius="md" className={cn("w-96", edit ? "select-none" : "")}>
       <Card.Section>
         <UserPopoverImageWrapper edit={edit} text="上传横幅" onFileUpload={(f) => onUpload?.("profileBanner", f)}>
-          <Image src={user?.profileBanner || DEFAULT_USER_BG} height={80} alt="Norway" />
+          <Image src={imgUrl(user?.profileBanner, DEFAULT_USER_BG)} height={80} alt="Norway" />
         </UserPopoverImageWrapper>
       </Card.Section>
 
@@ -113,7 +114,7 @@ export const UserPopoverCard: React.FC<{
             <img
               className={cn("h-16 w-16 rounded-full object-cover group-hover/user-popover:opacity-30")}
               alt="avatar"
-              src={user?.avatar || DEFAULT_AVATAR}
+              src={imgUrl(user?.avatar, DEFAULT_AVATAR)}
             />
           </UserPopoverImageWrapper>
         </div>
