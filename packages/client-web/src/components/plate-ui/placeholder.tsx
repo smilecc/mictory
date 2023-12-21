@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { createNodeHOC, createNodesHOC, PlaceholderProps, usePlaceholderState } from "@udecode/plate-common";
+import { createNodeHOC, createNodesHOC, usePlaceholderState } from "@udecode/plate-common";
+import type { CreateHOCOptions, PlaceholderProps, PlateRenderElementProps, Value } from "@udecode/plate-common";
 import { ELEMENT_H1 } from "@udecode/plate-heading";
 import { ELEMENT_PARAGRAPH } from "@udecode/plate-paragraph";
 
@@ -24,10 +26,19 @@ export const Placeholder = (props: PlaceholderProps) => {
   });
 };
 
-export const withPlaceholder = createNodeHOC(Placeholder);
-export const withPlaceholdersPrimitive = createNodesHOC(Placeholder);
+// eslint-disable-next-line react-refresh/only-export-components
+export const withPlaceholder: (
+  Component: any,
+  props: PlaceholderProps,
+) => (childrenProps: PlateRenderElementProps<Value>) => React.JSX.Element = createNodeHOC(Placeholder);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line react-refresh/only-export-components
+export const withPlaceholdersPrimitive: (
+  components: any,
+  options: CreateHOCOptions<PlaceholderProps> | CreateHOCOptions<PlaceholderProps>[],
+) => any = createNodesHOC(Placeholder);
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const withPlaceholders = (components: any) =>
   withPlaceholdersPrimitive(components, [
     {

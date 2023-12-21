@@ -2,9 +2,12 @@
   "name": "@mictory/client-web",
   "private": true,
   "version": "0.0.0",
+  "main": "./dist-lib/mictory-web.mjs",
+  "types": "./dist-lib/mictory-web.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:lib": "tsc && vite build --config vite-lib.config.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "gql:gen": "graphql-codegen",
@@ -116,6 +119,7 @@
     "prettier-plugin-tailwindcss": "^0.5.3",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.6.4"
   }
 }

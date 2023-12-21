@@ -21,7 +21,7 @@ export function getStores(): IStores {
   return stores;
 }
 
-export const StoreContext = React.createContext<IStores>(getStores());
+export const StoreContext = React.createContext<IStores>({} as IStores);
 
 export const useCommonStore = () => {
   const stores = useContext(StoreContext);

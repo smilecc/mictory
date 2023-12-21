@@ -2,6 +2,7 @@ import { ApolloError } from "@apollo/client";
 import { notifications } from "@mantine/notifications";
 import { i18n } from "@/i18n";
 import axios from "axios";
+import type { AxiosInstance } from "axios";
 
 export const DEFAULT_AVATAR = "/img/default-avatar.jpg";
 export const DEFAULT_USER_BG = "/img/default-user-bg.jpg";
@@ -34,9 +35,13 @@ export function sleep(time: number) {
   return new Promise<void>((r) => setTimeout(r, time));
 }
 
-export const ApiAxios = axios.create({
-  baseURL: API_HOST,
-});
+let ApiAxios: AxiosInstance;
+
+export function createApiAxios(url: string) {
+  return (ApiAxios = axios.create({
+    baseURL: url,
+  }));
+}
 
 export async function ApiAxiosUpload(file: File) {
   const formData = new FormData();

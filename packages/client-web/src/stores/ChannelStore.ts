@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { ListUserChannelQuery } from "@/@generated/graphql";
-import { socketClient } from "@/contexts";
+import { getSocketClient } from "@/contexts";
 import * as mediasoupClient from "mediasoup-client";
 import type { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Producer, Transport } from "mediasoup-client/lib/types";
@@ -15,8 +15,8 @@ export class ChannelStore {
     makeAutoObservable(this);
 
     this.mediasoupDevice = new mediasoupClient.Device();
-    socketClient.on("connect", () => this.handleSocketConnect());
-    socketClient.on("disconnect", () => this.handleSocketDisconnect());
+    getSocketClient().on("connect", () => this.handleSocketConnect());
+    getSocketClient().on("disconnect", () => this.handleSocketDisconnect());
   }
 
   firstLoading: boolean = true;
@@ -144,18 +144,18 @@ export class ChannelStore {
   }
 
   async handleSocketConnect() {
-    console.log("SocketClient connected", this.activeChannelId);
+    console.log("getSocketClient() connected", this.activeChannelId);
 
     if (this.activeChannelId) {
-      socketClient.emit("activeChannel", { channelId: this.activeChannelId });
+      getSocketClient().emit("activeChannel", { channelId: this.activeChannelId });
     }
 
-    socketClient.on("newProducer", (producer) => {
+    getSocketClient().on("newProducer", (producer) => {
       console.log("ChannelStore:newProducer", producer);
       this.createConsumer(producer.producerId);
     });
 
-    socketClient.on("roomMemberLeave", (data) => {
+    getSocketClient().on("roomMemberLeave", (data) => {
       const userId: number = data.userId;
       console.log("roomMemberLeave", data);
 
@@ -170,17 +170,17 @@ export class ChannelStore {
       }
     });
 
-    socketClient.on("speak", (speaker) => {
+    getSocketClient().on("speak", (speaker) => {
       console.log("ChannelStore:speak", speaker);
     });
   }
 
   async handleSocketDisconnect() {
-    console.log("SocketClient disconnected");
+    console.log("getSocketClient() disconnected");
 
-    socketClient.off("newProducer");
-    socketClient.off("roomMemberLeave");
-    socketClient.off("speak");
+    getSocketClient().off("newProducer");
+    getSocketClient().off("roomMemberLeave");
+    getSocketClient().off("speak");
   }
 
   async cleanUserState() {
@@ -251,16 +251,16 @@ export class ChannelStore {
     this.joinedChannelId = channelId;
     this.mediasoupDevice = new mediasoupClient.Device();
 
-    const rtpCapabilities = (await socketClient.emitWithAck("getRouterRtpCapabilities", { roomId })) as RtpCapabilities;
+    const rtpCapabilities = (await getSocketClient().emitWithAck("getRouterRtpCapabilities", { roomId })) as RtpCapabilities;
     console.log("JoinRoom:rtpCapabilities", roomId, rtpCapabilities);
 
-    const roomSession = await socketClient.emitWithAck("joinRoom", { roomId });
+    const roomSession = await getSocketClient().emitWithAck("joinRoom", { roomId });
     console.log("JoinRoom:roomSession", roomId, roomSession);
 
     await this.mediasoupDevice.load({ routerRtpCapabilities: rtpCapabilities });
 
     // 创建消费者
-    const remoteRecvTransport = await socketClient.emitWithAck("createTransport", {
+    const remoteRecvTransport = await getSocketClient().emitWithAck("createTransport", {
       direction: "Consumer",
     });
 
@@ -269,7 +269,7 @@ export class ChannelStore {
 
     recvTransport.on("connect", async ({ dtlsParameters }, callback, errback) => {
       console.log("JoinRoom:recvTransport:connect", roomId);
-      socketClient
+      getSocketClient()
         .emitWithAck("connectTransport", {
           transportId: recvTransport.id,
           dtlsParameters,
@@ -281,14 +281,14 @@ export class ChannelStore {
     recvTransport.on("connectionstatechange", (state) => console.log("recv:connectionstatechange", state, roomId));
 
     // 获取当前房间已存在的生产者
-    const producers = (await socketClient.emitWithAck("getRoomProducers")) as string[];
+    const producers = (await getSocketClient().emitWithAck("getRoomProducers")) as string[];
     console.log("JoinRoom:producers", roomId, producers);
 
     // 对已经存在的生产者进行消费
     producers.forEach((it) => this.createConsumer(it));
 
     // 创建生产者
-    const remoteSendTransport = await socketClient.emitWithAck("createTransport", {
+    const remoteSendTransport = await getSocketClient().emitWithAck("createTransport", {
       direction: "Producer",
     });
 
@@ -297,7 +297,7 @@ export class ChannelStore {
 
     // 连接生产
     sendTransport.on("connect", async ({ dtlsParameters }, callback, errback) => {
-      socketClient
+      getSocketClient()
         .emitWithAck("connectTransport", {
           transportId: sendTransport.id,
           dtlsParameters,
@@ -307,7 +307,7 @@ export class ChannelStore {
     });
 
     sendTransport.on("produce", async ({ kind, rtpParameters }, callback) => {
-      const produceResp = await socketClient.emitWithAck("produceTransport", {
+      const produceResp = await getSocketClient().emitWithAck("produceTransport", {
         transportId: sendTransport.id,
         kind,
         rtpParameters,
@@ -331,7 +331,7 @@ export class ChannelStore {
    * 退出房间
    */
   async exitRoom() {
-    if (await socketClient.emitWithAck("exitRoom")) {
+    if (await getSocketClient().emitWithAck("exitRoom")) {
       this.recvTransport?.close();
       this.sendTransport?.close();
 
@@ -391,7 +391,7 @@ export class ChannelStore {
       return;
     }
 
-    const consumerData = await socketClient.emitWithAck("consumeTransport", {
+    const consumerData = await getSocketClient().emitWithAck("consumeTransport", {
       producerId: producerId,
       transportId: this.recvTransport.id,
       rtpCapabilities: this.mediasoupDevice.rtpCapabilities,

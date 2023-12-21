@@ -1,5 +1,5 @@
 import { gql } from "@/@generated";
-import { socketClient } from "@/contexts";
+import { getSocketClient } from "@/contexts";
 import { useChannelStore, useCommonStore } from "@/stores";
 import { NoticeErrorHandler } from "@/utils";
 import { useMutation } from "@apollo/client";
@@ -49,7 +49,7 @@ export const LoginPage: React.FC = () => {
                 .then(({ data }) => {
                   commonStore.sessionToken = data!.userSessionCreate.sessionToken;
                   console.log(data?.userSessionCreate);
-                  socketClient.close();
+                  getSocketClient().close();
                   channelStore.cleanUserState();
                   navigate("/channel", { replace: true });
 

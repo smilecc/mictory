@@ -46,7 +46,11 @@ const editorVariants = cva(
 
 export type EditorProps = PlateContentProps & VariantProps<typeof editorVariants>;
 
-const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
+type EditorType = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<EditorProps> & React.RefAttributes<HTMLDivElement>
+>;
+
+const Editor: EditorType = React.forwardRef<HTMLDivElement, EditorProps>(
   ({ className, disabled, focused, focusRing, readOnly, size, variant, ...props }, ref) => {
     return (
       <div ref={ref} className="relative w-full">
