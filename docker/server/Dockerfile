@@ -12,7 +12,13 @@ RUN npx pnpm i
 WORKDIR /app/packages/client-web
 RUN npx pnpm build
 
+# 存储构建
+WORKDIR /app/client-web-build
+RUN cp -r /app/packages/client-web/dist/* /app/client-web-build
+RUN rm -rf /app/packages/client-web
+RUN npx pnpm store prune
+
 # 运行后端
 WORKDIR /app/packages/server
 
-ENTRYPOINT ["/bin/sh","-c","cp -r /app/packages/client-web/dist/* /app/client-web-dist && npx prisma db push && npx pnpm start"]
+ENTRYPOINT ["/bin/sh","-c","cp -r /app/client-web-build/* /app/client-web-dist && npx prisma db push && npx pnpm start"]
