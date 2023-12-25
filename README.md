@@ -36,7 +36,11 @@ Microphone + Victory = Mictory
 
 ## 快速开始
 
-[点此查看文档](https://smilecc.github.io/mictory/)
+```bash
+docker compose up --build
+```
+
+详细使用步骤点此 [查看文档](https://smilecc.github.io/mictory/)
 
 ## 相关技术栈
 
