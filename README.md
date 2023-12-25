@@ -2,6 +2,8 @@
 
 Microphone + Victory = Mictory
 
+[文档](https://smilecc.github.io/mictory/) | [在线 Demo](https://mictory.smilec.cc/)
+
 ![](https://i.imgur.com/pRE6gAz.png)
 
 <details><summary><b>其他一些功能截图</b></summary>
