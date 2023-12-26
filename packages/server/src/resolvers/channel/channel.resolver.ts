@@ -89,7 +89,7 @@ export class ChannelResolver {
     @Args('data') args: ChannelJoinInput,
     @Info() info: GraphQLResolveInfo,
   ) {
-    const code = args.code.substring(args.code.lastIndexOf('/'));
+    const code = args.code.substring(args.code.lastIndexOf('/') + 1);
     const channel = await this.prisma.channel.findFirst({
       where: {
         invites: {
