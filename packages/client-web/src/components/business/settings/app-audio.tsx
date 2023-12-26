@@ -1,4 +1,5 @@
 import { IconSwtich } from "@/components/ui/icon-switch";
+import { cn } from "@/lib/utils";
 import { useChannelStore } from "@/stores";
 import { Card, Input, Select, Slider, Title } from "@mantine/core";
 import { Observer } from "mobx-react-lite";
@@ -22,7 +23,7 @@ const SettingAudio: React.FC = () => {
           设备与音量
         </Title>
 
-        <Card className="overflow-visible">
+        <Card className="overflow-visible p-6">
           <Observer>
             {() => (
               <div className="flex">
@@ -92,39 +93,67 @@ const SettingAudio: React.FC = () => {
           其他设置
         </Title>
 
-        <Card>
+        <Card className="p-6">
           <Observer>
             {() => (
               <>
-                <Input.Wrapper label="AI降噪">
-                  <IconSwtich
-                    className="mt-2"
-                    checked={channelStore.audioNoiseSuppression}
-                    onChange={() => channelStore.toggleNoiseSuppression()}
-                  />
-                </Input.Wrapper>
-
-                <Input.Wrapper label="回音抵消" mt="md">
-                  <IconSwtich
-                    className="mt-2"
-                    checked={channelStore.audioDevice.echoCancellation}
-                    onChange={(e) => channelStore.setAudioDevice("echoCancellation", e.currentTarget.checked)}
-                  />
-                </Input.Wrapper>
-
-                <Input.Wrapper label="自动声音增益" mt="md">
-                  <IconSwtich
-                    className="mt-2"
-                    checked={channelStore.audioDevice.autoGainControl}
-                    onChange={(e) => channelStore.setAudioDevice("autoGainControl", e.currentTarget.checked)}
-                  />
-                </Input.Wrapper>
+                <SettingIconSwtich
+                  label="AI降噪"
+                  description="使用免费的AI降噪降低环境声"
+                  checked={channelStore.audioNoiseSuppression}
+                  onChange={() => channelStore.toggleNoiseSuppression()}
+                />
+                <SettingIconSwtich
+                  className="mt-6"
+                  label="回音抵消"
+                  description="抵消音响传入麦克风的回声"
+                  checked={channelStore.audioDevice.echoCancellation}
+                  onChange={(e) => channelStore.setAudioDevice("echoCancellation", e)}
+                />
+                <SettingIconSwtich
+                  className="mt-6"
+                  label="自动声音增益"
+                  description="自动放大您的麦克风声音"
+                  checked={channelStore.audioDevice.autoGainControl}
+                  onChange={(e) => channelStore.setAudioDevice("autoGainControl", e)}
+                />
               </>
             )}
           </Observer>
         </Card>
       </div>
     </div>
+  );
+};
+
+const SettingIconSwtich: React.FC<{
+  className?: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (e: boolean) => void;
+}> = ({ className, label, description, checked, onChange }) => {
+  return (
+    <Input.Wrapper
+      label={
+        <div>
+          <div className="text-base text-white">{label}</div>
+          <div className="mt-0.5 text-xs">{description}</div>
+        </div>
+      }
+      className={cn("flex items-center justify-between", className)}
+    >
+      <IconSwtich
+        size="md"
+        classNames={{
+          trackLabel: "!text-xs",
+        }}
+        onLabel="ON"
+        offLabel="OFF"
+        checked={checked}
+        onChange={(e) => onChange?.(e.target.checked)}
+      />
+    </Input.Wrapper>
   );
 };
 

@@ -166,8 +166,11 @@ const MicrophoneButton: React.FC = () => {
               radius="sm"
               className="p-2"
               label="AI降噪"
-              onLabel="已开启"
-              offLabel="已关闭"
+              onLabel="ON"
+              offLabel="OFF"
+              classNames={{
+                trackLabel: "text-xs",
+              }}
             />
 
             <ContextMenuLabel className="text-xs">输入音量</ContextMenuLabel>

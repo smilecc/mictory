@@ -1,5 +1,5 @@
 import { gql } from "@/@generated";
-import { Button, Card, Input, TextInput, Title } from "@mantine/core";
+import { Button, Card, Input, LoadingOverlay, TextInput, Title } from "@mantine/core";
 import React, { useCallback } from "react";
 import { UserPopoverCard } from "..";
 import { useMutation, useQuery } from "@apollo/client";
@@ -34,7 +34,7 @@ const UPDATE_NICKNAME = gql(`mutation updateUserNickname($nickname: String!) {
 }`);
 
 const SettingUserProfile: React.FC = () => {
-  const { data: user, refetch: refetchUser } = useQuery(FETCH_USER);
+  const { data: user, refetch: refetchUser, loading } = useQuery(FETCH_USER);
   const [updateProfile] = useMutation(UPDATE_PROFILE);
   const [updateNickname, { loading: updateNicknameLoading }] = useMutation(UPDATE_NICKNAME);
   const state = useReactive({
@@ -135,7 +135,8 @@ const SettingUserProfile: React.FC = () => {
   }, [refetchUser, state, updateNicknameLoading, updateProfile]);
 
   return (
-    <div>
+    <div className="relative h-full w-full">
+      <LoadingOverlay visible={loading} />
       <Title order={2} className="text-white">
         用户资料
       </Title>
