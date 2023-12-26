@@ -16,15 +16,15 @@ docker compose up
 
 ### 语音频道
 
-![](https://i.imgur.com/LwgZVx8.png)
+![](https://i.imgur.com/npAIvVg.png)
 
 ### 个人资料
 
-![](https://i.imgur.com/Mkg8CQ2.png)
+![](https://i.imgur.com/j5WGEnu.png)
 
 ### 语音设置
 
-![](https://i.imgur.com/bAPrfd6.png)
+![](https://i.imgur.com/AgwsYZV.png)
 
 ## 功能规划
 
