@@ -20,7 +20,7 @@ docker compose up
 
 ### 个人资料
 
-![](https://i.imgur.com/j5WGEnu.png)
+![](https://i.imgur.com/V8Jk8yD.png)
 
 ### 语音设置
 
