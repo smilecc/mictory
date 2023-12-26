@@ -21,7 +21,8 @@ export const ChannelPanel: React.FC<{
   onShouldRefetch?: () => void;
   onRoomClick?: (roomId: number) => void;
   onJoinRoom?: (roomId: number) => void;
-}> = ({ channel, onShouldRefetch, onRoomClick, onJoinRoom }) => {
+  onOpenInvite?: () => void;
+}> = ({ channel, onShouldRefetch, onRoomClick, onJoinRoom, onOpenInvite }) => {
   const channelStore = useChannelStore();
   const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
   const state = useReactive({
@@ -114,7 +115,7 @@ export const ChannelPanel: React.FC<{
 
                     <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Invite}>
                       <ContextMenuSeparator />
-                      <ContextMenuItem>邀请</ContextMenuItem>
+                      <ContextMenuItem onClick={onOpenInvite}>邀请</ContextMenuItem>
                     </ChannelPermissionWrapper>
 
                     <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>

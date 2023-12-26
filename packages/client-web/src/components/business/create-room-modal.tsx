@@ -26,7 +26,7 @@ export const CreateRoomModal: React.FC<
   const [mutationCreateRoom, { loading: submitting }] = useMutation(CREATE_ROOM_MUTATION);
 
   return (
-    <Modal title="创建房间" closeOnClickOutside={false} {...otherProps}>
+    <Modal title="创建房间" closeOnClickOutside={false} {...otherProps} centered>
       <form
         onSubmit={form.onSubmit((data) => {
           mutationCreateRoom({

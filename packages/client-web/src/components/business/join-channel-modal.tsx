@@ -5,12 +5,7 @@ import { Button, Input, Modal, ModalProps, Radio } from "@mantine/core";
 import { useReactive } from "ahooks";
 import React, { useCallback } from "react";
 import { notifications } from "@mantine/notifications";
-
-const JOIN = gql(`mutation joinChannel ($code: String!) {
-  channelJoin(data: { code: $code }) {
-    id
-  }
-}`);
+import { JOIN_CHANNEL } from "@/queries";
 
 const CREATE = gql(`mutation createChannel($data: ChannelCreateInput!) {
   channelCreate(data: $data) {
@@ -19,7 +14,7 @@ const CREATE = gql(`mutation createChannel($data: ChannelCreateInput!) {
 }`);
 
 export const JoinChannelModal: React.FC<ModalProps> = (props) => {
-  const [join, { loading: joinLoading }] = useMutation(JOIN);
+  const [join, { loading: joinLoading }] = useMutation(JOIN_CHANNEL);
   const [create, { loading: createLoading }] = useMutation(CREATE);
 
   const state = useReactive({

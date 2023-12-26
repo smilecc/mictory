@@ -16,7 +16,7 @@ const documents = {
     "query fetchChats($target: ChatTarget!, $where: ChatWhereInput!, $take: Int, $skip: Int, $cursor: ChatWhereUniqueInput, $order: SortOrder!) {\n  chats(target: $target, where: $where, skip: $skip, take: $take, cursor: $cursor, orderBy: { id: $order }) {\n    id\n    type\n    user {\n      id\n      nickname\n      nicknameNo\n      avatar\n    }\n    targetUser {\n      id\n      nickname\n      nicknameNo\n      avatar\n    }\n    message\n    createdTime\n  }\n}": types.FetchChatsDocument,
     "mutation sendChatMessage($data: ChatCreateInput!) {\n  createChatMessage(data: $data) {\n    id\n  }\n}": types.SendChatMessageDocument,
     "mutation createChannelRoom($where: ChannelWhereUniqueInput!, $data: ChannelUpdateInput!) {\n  channelUpdate (where: $where, data: $data) {\n    id\n  }\n}": types.CreateChannelRoomDocument,
-    "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n  }\n}": types.JoinChannelDocument,
+    "mutation createChannelInvite($id: BigInt!) {\n  channelCreateInvite (id: $id) {\n    id\n    code\n  }\n}": types.CreateChannelInviteDocument,
     "mutation createChannel($data: ChannelCreateInput!) {\n  channelCreate(data: $data) {\n    id\n  }\n}": types.CreateChannelDocument,
     "query fetchCurrentUserForUpdate {\n  user(where: { nicknameNo: { equals: -1 } }) {\n    id\n    type\n    nickname\n    nicknameNo\n    avatar\n    sessionState\n    intro\n    profileBanner\n  }\n}": types.FetchCurrentUserForUpdateDocument,
     "mutation updateUserProfile($data: UserProfileUpdateInput!) {\n  userProfileUpdate(data: $data) {\n    id\n  }\n}": types.UpdateUserProfileDocument,
@@ -28,6 +28,7 @@ const documents = {
     "mutation userCreate($data: UserCreateInput!) {\n  userCreate(data: $data) {\n    userId\n    sessionToken\n  }\n}": types.UserCreateDocument,
     "mutation userLogin($args: UserSessionCreateInput!) {\n  userSessionCreate(args: $args) {\n    userId\n    sessionToken\n  }\n}": types.UserLoginDocument,
     "mutation exitChannel($id: BigInt!) {\n  channelExit(id: $id)\n}": types.ExitChannelDocument,
+    "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n    code\n  }\n}": types.JoinChannelDocument,
     "query fetchCurrentUser {\n  user (where: { nicknameNo: { equals: -1 } }) {\n    id\n    nickname\n    nicknameNo\n  }\n}": types.FetchCurrentUserDocument,
 };
 
@@ -60,7 +61,7 @@ export function gql(source: "mutation createChannelRoom($where: ChannelWhereUniq
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n  }\n}"): (typeof documents)["mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n  }\n}"];
+export function gql(source: "mutation createChannelInvite($id: BigInt!) {\n  channelCreateInvite (id: $id) {\n    id\n    code\n  }\n}"): (typeof documents)["mutation createChannelInvite($id: BigInt!) {\n  channelCreateInvite (id: $id) {\n    id\n    code\n  }\n}"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -105,6 +106,10 @@ export function gql(source: "mutation userLogin($args: UserSessionCreateInput!) 
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "mutation exitChannel($id: BigInt!) {\n  channelExit(id: $id)\n}"): (typeof documents)["mutation exitChannel($id: BigInt!) {\n  channelExit(id: $id)\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n    code\n  }\n}"): (typeof documents)["mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n    code\n  }\n}"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

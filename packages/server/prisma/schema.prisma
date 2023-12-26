@@ -157,7 +157,6 @@ model Channel {
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   users       ChannelToUser[]
   /// 房间
-  /// @HideField({ input: true, output: false })
   rooms       Room[]
   /// 角色
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
@@ -180,10 +179,10 @@ model ChannelInvite {
   createdTime DateTime  @default(now())
   /// @HideField({ input: true, output: false })
   updatedTime DateTime  @updatedAt
-  /// @HideField({ input: true, output: true })
-  deletedTime DateTime?
   /// 邀请码
   code        String    @unique
+  /// 有效天数
+  days        Int       @default(7)
   /// 有效期
   expireAt    DateTime?
   /// 频道

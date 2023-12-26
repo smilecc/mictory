@@ -347,6 +347,7 @@ export type ChannelCreateInput = {
   code?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   name: Scalars['String']['input'];
+  rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelInput>;
 };
 
 export type ChannelCreateNestedOneWithoutCategoriesInput = {
@@ -387,6 +388,7 @@ export type ChannelCreateWithoutCategoriesInput = {
   code?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   name: Scalars['String']['input'];
+  rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelInput>;
 };
 
 export type ChannelCreateWithoutInvitesInput = {
@@ -395,6 +397,7 @@ export type ChannelCreateWithoutInvitesInput = {
   code?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   name: Scalars['String']['input'];
+  rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelInput>;
 };
 
 export type ChannelCreateWithoutRoomsInput = {
@@ -413,6 +416,8 @@ export type ChannelInvite = {
   /** 邀请码 */
   code: Scalars['String']['output'];
   createdTime: Scalars['DateTime']['output'];
+  /** 有效天数 */
+  days: Scalars['Int']['output'];
   /** 有效期 */
   expireAt?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['BigInt']['output'];
@@ -425,6 +430,7 @@ export type ChannelInvite = {
 export type ChannelInviteAvgAggregate = {
   __typename?: 'ChannelInviteAvgAggregate';
   channelId?: Maybe<Scalars['Float']['output']>;
+  days?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   userId?: Maybe<Scalars['Float']['output']>;
 };
@@ -435,6 +441,7 @@ export type ChannelInviteCountAggregate = {
   channelId: Scalars['Int']['output'];
   code: Scalars['Int']['output'];
   createdTime: Scalars['Int']['output'];
+  days: Scalars['Int']['output'];
   expireAt: Scalars['Int']['output'];
   id: Scalars['Int']['output'];
   updatedTime: Scalars['Int']['output'];
@@ -444,6 +451,7 @@ export type ChannelInviteCountAggregate = {
 export type ChannelInviteCreateManyUserInput = {
   channelId: Scalars['BigInt']['input'];
   code: Scalars['String']['input'];
+  days?: InputMaybe<Scalars['Int']['input']>;
   expireAt?: InputMaybe<Scalars['DateTime']['input']>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
 };
@@ -468,6 +476,7 @@ export type ChannelInviteCreateOrConnectWithoutUserInput = {
 export type ChannelInviteCreateWithoutUserInput = {
   channel: ChannelCreateNestedOneWithoutInvitesInput;
   code: Scalars['String']['input'];
+  days?: InputMaybe<Scalars['Int']['input']>;
   expireAt?: InputMaybe<Scalars['DateTime']['input']>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
 };
@@ -483,6 +492,7 @@ export type ChannelInviteMaxAggregate = {
   channelId?: Maybe<Scalars['BigInt']['output']>;
   code?: Maybe<Scalars['String']['output']>;
   createdTime?: Maybe<Scalars['DateTime']['output']>;
+  days?: Maybe<Scalars['Int']['output']>;
   expireAt?: Maybe<Scalars['DateTime']['output']>;
   id?: Maybe<Scalars['BigInt']['output']>;
   updatedTime?: Maybe<Scalars['DateTime']['output']>;
@@ -494,6 +504,7 @@ export type ChannelInviteMinAggregate = {
   channelId?: Maybe<Scalars['BigInt']['output']>;
   code?: Maybe<Scalars['String']['output']>;
   createdTime?: Maybe<Scalars['DateTime']['output']>;
+  days?: Maybe<Scalars['Int']['output']>;
   expireAt?: Maybe<Scalars['DateTime']['output']>;
   id?: Maybe<Scalars['BigInt']['output']>;
   updatedTime?: Maybe<Scalars['DateTime']['output']>;
@@ -510,6 +521,7 @@ export type ChannelInviteScalarWhereInput = {
   OR?: InputMaybe<Array<ChannelInviteScalarWhereInput>>;
   channelId?: InputMaybe<BigIntFilter>;
   code?: InputMaybe<StringFilter>;
+  days?: InputMaybe<IntFilter>;
   expireAt?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<BigIntFilter>;
   userId?: InputMaybe<BigIntFilter>;
@@ -518,12 +530,14 @@ export type ChannelInviteScalarWhereInput = {
 export type ChannelInviteSumAggregate = {
   __typename?: 'ChannelInviteSumAggregate';
   channelId?: Maybe<Scalars['BigInt']['output']>;
+  days?: Maybe<Scalars['Int']['output']>;
   id?: Maybe<Scalars['BigInt']['output']>;
   userId?: Maybe<Scalars['BigInt']['output']>;
 };
 
 export type ChannelInviteUpdateManyMutationInput = {
   code?: InputMaybe<StringFieldUpdateOperationsInput>;
+  days?: InputMaybe<IntFieldUpdateOperationsInput>;
   expireAt?: InputMaybe<NullableDateTimeFieldUpdateOperationsInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
 };
@@ -555,6 +569,7 @@ export type ChannelInviteUpdateWithWhereUniqueWithoutUserInput = {
 export type ChannelInviteUpdateWithoutUserInput = {
   channel?: InputMaybe<ChannelUpdateOneRequiredWithoutInvitesNestedInput>;
   code?: InputMaybe<StringFieldUpdateOperationsInput>;
+  days?: InputMaybe<IntFieldUpdateOperationsInput>;
   expireAt?: InputMaybe<NullableDateTimeFieldUpdateOperationsInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
 };
@@ -572,6 +587,7 @@ export type ChannelInviteWhereInput = {
   channel?: InputMaybe<ChannelRelationFilter>;
   channelId?: InputMaybe<BigIntFilter>;
   code?: InputMaybe<StringFilter>;
+  days?: InputMaybe<IntFilter>;
   expireAt?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<BigIntFilter>;
   user?: InputMaybe<UserRelationFilter>;
@@ -585,6 +601,7 @@ export type ChannelInviteWhereUniqueInput = {
   channel?: InputMaybe<ChannelRelationFilter>;
   channelId?: InputMaybe<BigIntFilter>;
   code?: InputMaybe<Scalars['String']['input']>;
+  days?: InputMaybe<IntFilter>;
   expireAt?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   user?: InputMaybe<UserRelationFilter>;
@@ -626,6 +643,7 @@ export type ChannelOrderByWithRelationInput = {
   ownerUser?: InputMaybe<UserOrderByWithRelationInput>;
   ownerUserId?: InputMaybe<SortOrder>;
   roles?: InputMaybe<ChannelRoleOrderByRelationAggregateInput>;
+  rooms?: InputMaybe<RoomOrderByRelationAggregateInput>;
   users?: InputMaybe<ChannelToUserOrderByRelationAggregateInput>;
 };
 
@@ -899,6 +917,7 @@ export type ChannelUpdateInput = {
   code?: InputMaybe<StringFieldUpdateOperationsInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  rooms?: InputMaybe<RoomUpdateManyWithoutChannelNestedInput>;
 };
 
 export type ChannelUpdateOneRequiredWithoutCategoriesNestedInput = {
@@ -945,6 +964,7 @@ export type ChannelUpdateWithoutCategoriesInput = {
   code?: InputMaybe<StringFieldUpdateOperationsInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  rooms?: InputMaybe<RoomUpdateManyWithoutChannelNestedInput>;
 };
 
 export type ChannelUpdateWithoutInvitesInput = {
@@ -953,6 +973,7 @@ export type ChannelUpdateWithoutInvitesInput = {
   code?: InputMaybe<StringFieldUpdateOperationsInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  rooms?: InputMaybe<RoomUpdateManyWithoutChannelNestedInput>;
 };
 
 export type ChannelUpdateWithoutRoomsInput = {
@@ -993,6 +1014,7 @@ export type ChannelWhereInput = {
   ownerUser?: InputMaybe<UserRelationFilter>;
   ownerUserId?: InputMaybe<BigIntFilter>;
   roles?: InputMaybe<ChannelRoleListRelationFilter>;
+  rooms?: InputMaybe<RoomListRelationFilter>;
   users?: InputMaybe<ChannelToUserListRelationFilter>;
 };
 
@@ -1008,6 +1030,7 @@ export type ChannelWhereUniqueInput = {
   ownerUser?: InputMaybe<UserRelationFilter>;
   ownerUserId?: InputMaybe<BigIntFilter>;
   roles?: InputMaybe<ChannelRoleListRelationFilter>;
+  rooms?: InputMaybe<RoomListRelationFilter>;
   users?: InputMaybe<ChannelToUserListRelationFilter>;
 };
 
@@ -1543,6 +1566,7 @@ export type JsonFilter = {
 export type Mutation = {
   __typename?: 'Mutation';
   channelCreate: Channel;
+  channelCreateInvite: ChannelInvite;
   channelExit: Scalars['Boolean']['output'];
   channelJoin: Channel;
   channelUpdate: Channel;
@@ -1560,6 +1584,12 @@ export type Mutation = {
 
 export type MutationChannelCreateArgs = {
   data: ChannelCreateInput;
+};
+
+
+export type MutationChannelCreateInviteArgs = {
+  days?: Scalars['Int']['input'];
+  id: Scalars['BigInt']['input'];
 };
 
 
@@ -1853,11 +1883,31 @@ export type RoomCreateManyChannelCategoryInputEnvelope = {
   skipDuplicates?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type RoomCreateManyChannelInput = {
+  channelCategoryId: Scalars['BigInt']['input'];
+  id?: InputMaybe<Scalars['BigInt']['input']>;
+  maxMember?: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  sort?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type RoomCreateManyChannelInputEnvelope = {
+  data: Array<RoomCreateManyChannelInput>;
+  skipDuplicates?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
 export type RoomCreateNestedManyWithoutChannelCategoryInput = {
   connect?: InputMaybe<Array<RoomWhereUniqueInput>>;
   connectOrCreate?: InputMaybe<Array<RoomCreateOrConnectWithoutChannelCategoryInput>>;
   create?: InputMaybe<Array<RoomCreateWithoutChannelCategoryInput>>;
   createMany?: InputMaybe<RoomCreateManyChannelCategoryInputEnvelope>;
+};
+
+export type RoomCreateNestedManyWithoutChannelInput = {
+  connect?: InputMaybe<Array<RoomWhereUniqueInput>>;
+  connectOrCreate?: InputMaybe<Array<RoomCreateOrConnectWithoutChannelInput>>;
+  create?: InputMaybe<Array<RoomCreateWithoutChannelInput>>;
+  createMany?: InputMaybe<RoomCreateManyChannelInputEnvelope>;
 };
 
 export type RoomCreateNestedOneWithoutChatsInput = {
@@ -1871,6 +1921,11 @@ export type RoomCreateOrConnectWithoutChannelCategoryInput = {
   where: RoomWhereUniqueInput;
 };
 
+export type RoomCreateOrConnectWithoutChannelInput = {
+  create: RoomCreateWithoutChannelInput;
+  where: RoomWhereUniqueInput;
+};
+
 export type RoomCreateOrConnectWithoutChatsInput = {
   create: RoomCreateWithoutChatsInput;
   where: RoomWhereUniqueInput;
@@ -1878,6 +1933,15 @@ export type RoomCreateOrConnectWithoutChatsInput = {
 
 export type RoomCreateWithoutChannelCategoryInput = {
   channel: ChannelCreateNestedOneWithoutRoomsInput;
+  chats?: InputMaybe<ChatCreateNestedManyWithoutRoomInput>;
+  id?: InputMaybe<Scalars['BigInt']['input']>;
+  maxMember?: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  sort?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type RoomCreateWithoutChannelInput = {
+  channelCategory: ChannelCategoryCreateNestedOneWithoutRoomsInput;
   chats?: InputMaybe<ChatCreateNestedManyWithoutRoomInput>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<Scalars['Int']['input']>;
@@ -1978,6 +2042,11 @@ export type RoomUpdateManyWithWhereWithoutChannelCategoryInput = {
   where: RoomScalarWhereInput;
 };
 
+export type RoomUpdateManyWithWhereWithoutChannelInput = {
+  data: RoomUpdateManyMutationInput;
+  where: RoomScalarWhereInput;
+};
+
 export type RoomUpdateManyWithoutChannelCategoryNestedInput = {
   connect?: InputMaybe<Array<RoomWhereUniqueInput>>;
   connectOrCreate?: InputMaybe<Array<RoomCreateOrConnectWithoutChannelCategoryInput>>;
@@ -1990,6 +2059,20 @@ export type RoomUpdateManyWithoutChannelCategoryNestedInput = {
   update?: InputMaybe<Array<RoomUpdateWithWhereUniqueWithoutChannelCategoryInput>>;
   updateMany?: InputMaybe<Array<RoomUpdateManyWithWhereWithoutChannelCategoryInput>>;
   upsert?: InputMaybe<Array<RoomUpsertWithWhereUniqueWithoutChannelCategoryInput>>;
+};
+
+export type RoomUpdateManyWithoutChannelNestedInput = {
+  connect?: InputMaybe<Array<RoomWhereUniqueInput>>;
+  connectOrCreate?: InputMaybe<Array<RoomCreateOrConnectWithoutChannelInput>>;
+  create?: InputMaybe<Array<RoomCreateWithoutChannelInput>>;
+  createMany?: InputMaybe<RoomCreateManyChannelInputEnvelope>;
+  delete?: InputMaybe<Array<RoomWhereUniqueInput>>;
+  deleteMany?: InputMaybe<Array<RoomScalarWhereInput>>;
+  disconnect?: InputMaybe<Array<RoomWhereUniqueInput>>;
+  set?: InputMaybe<Array<RoomWhereUniqueInput>>;
+  update?: InputMaybe<Array<RoomUpdateWithWhereUniqueWithoutChannelInput>>;
+  updateMany?: InputMaybe<Array<RoomUpdateManyWithWhereWithoutChannelInput>>;
+  upsert?: InputMaybe<Array<RoomUpsertWithWhereUniqueWithoutChannelInput>>;
 };
 
 export type RoomUpdateOneWithoutChatsNestedInput = {
@@ -2012,8 +2095,22 @@ export type RoomUpdateWithWhereUniqueWithoutChannelCategoryInput = {
   where: RoomWhereUniqueInput;
 };
 
+export type RoomUpdateWithWhereUniqueWithoutChannelInput = {
+  data: RoomUpdateWithoutChannelInput;
+  where: RoomWhereUniqueInput;
+};
+
 export type RoomUpdateWithoutChannelCategoryInput = {
   channel?: InputMaybe<ChannelUpdateOneRequiredWithoutRoomsNestedInput>;
+  chats?: InputMaybe<ChatUpdateManyWithoutRoomNestedInput>;
+  id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
+  maxMember?: InputMaybe<IntFieldUpdateOperationsInput>;
+  name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  sort?: InputMaybe<IntFieldUpdateOperationsInput>;
+};
+
+export type RoomUpdateWithoutChannelInput = {
+  channelCategory?: InputMaybe<ChannelCategoryUpdateOneRequiredWithoutRoomsNestedInput>;
   chats?: InputMaybe<ChatUpdateManyWithoutRoomNestedInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   maxMember?: InputMaybe<IntFieldUpdateOperationsInput>;
@@ -2033,6 +2130,12 @@ export type RoomUpdateWithoutChatsInput = {
 export type RoomUpsertWithWhereUniqueWithoutChannelCategoryInput = {
   create: RoomCreateWithoutChannelCategoryInput;
   update: RoomUpdateWithoutChannelCategoryInput;
+  where: RoomWhereUniqueInput;
+};
+
+export type RoomUpsertWithWhereUniqueWithoutChannelInput = {
+  create: RoomCreateWithoutChannelInput;
+  update: RoomUpdateWithoutChannelInput;
   where: RoomWhereUniqueInput;
 };
 
@@ -2977,12 +3080,12 @@ export type CreateChannelRoomMutationVariables = Exact<{
 
 export type CreateChannelRoomMutation = { __typename?: 'Mutation', channelUpdate: { __typename?: 'Channel', id: any } };
 
-export type JoinChannelMutationVariables = Exact<{
-  code: Scalars['String']['input'];
+export type CreateChannelInviteMutationVariables = Exact<{
+  id: Scalars['BigInt']['input'];
 }>;
 
 
-export type JoinChannelMutation = { __typename?: 'Mutation', channelJoin: { __typename?: 'Channel', id: any } };
+export type CreateChannelInviteMutation = { __typename?: 'Mutation', channelCreateInvite: { __typename?: 'ChannelInvite', id: any, code: string } };
 
 export type CreateChannelMutationVariables = Exact<{
   data: ChannelCreateInput;
@@ -3061,6 +3164,13 @@ export type ExitChannelMutationVariables = Exact<{
 
 export type ExitChannelMutation = { __typename?: 'Mutation', channelExit: boolean };
 
+export type JoinChannelMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type JoinChannelMutation = { __typename?: 'Mutation', channelJoin: { __typename?: 'Channel', id: any, code: string } };
+
 export type FetchCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -3070,7 +3180,7 @@ export const UserFragFragmentDoc = {"kind":"Document","definitions":[{"kind":"Fr
 export const FetchChatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"fetchChats"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"target"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChatTarget"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"where"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChatWhereInput"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"take"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"skip"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"cursor"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ChatWhereUniqueInput"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"order"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SortOrder"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"chats"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"target"},"value":{"kind":"Variable","name":{"kind":"Name","value":"target"}}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"Variable","name":{"kind":"Name","value":"where"}}},{"kind":"Argument","name":{"kind":"Name","value":"skip"},"value":{"kind":"Variable","name":{"kind":"Name","value":"skip"}}},{"kind":"Argument","name":{"kind":"Name","value":"take"},"value":{"kind":"Variable","name":{"kind":"Name","value":"take"}}},{"kind":"Argument","name":{"kind":"Name","value":"cursor"},"value":{"kind":"Variable","name":{"kind":"Name","value":"cursor"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"order"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"nicknameNo"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"targetUser"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"nicknameNo"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"createdTime"}}]}}]}}]} as unknown as DocumentNode<FetchChatsQuery, FetchChatsQueryVariables>;
 export const SendChatMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"sendChatMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"data"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChatCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createChatMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"Variable","name":{"kind":"Name","value":"data"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<SendChatMessageMutation, SendChatMessageMutationVariables>;
 export const CreateChannelRoomDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createChannelRoom"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"where"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChannelWhereUniqueInput"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"data"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChannelUpdateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelUpdate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"Variable","name":{"kind":"Name","value":"where"}}},{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"Variable","name":{"kind":"Name","value":"data"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateChannelRoomMutation, CreateChannelRoomMutationVariables>;
-export const JoinChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"joinChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"code"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelJoin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"code"},"value":{"kind":"Variable","name":{"kind":"Name","value":"code"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<JoinChannelMutation, JoinChannelMutationVariables>;
+export const CreateChannelInviteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createChannelInvite"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelCreateInvite"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}}]}}]} as unknown as DocumentNode<CreateChannelInviteMutation, CreateChannelInviteMutationVariables>;
 export const CreateChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"data"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChannelCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelCreate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"Variable","name":{"kind":"Name","value":"data"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateChannelMutation, CreateChannelMutationVariables>;
 export const FetchCurrentUserForUpdateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"fetchCurrentUserForUpdate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"nicknameNo"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"equals"},"value":{"kind":"IntValue","value":"-1"}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"nicknameNo"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}},{"kind":"Field","name":{"kind":"Name","value":"sessionState"}},{"kind":"Field","name":{"kind":"Name","value":"intro"}},{"kind":"Field","name":{"kind":"Name","value":"profileBanner"}}]}}]}}]} as unknown as DocumentNode<FetchCurrentUserForUpdateQuery, FetchCurrentUserForUpdateQueryVariables>;
 export const UpdateUserProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateUserProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"data"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserProfileUpdateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userProfileUpdate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"Variable","name":{"kind":"Name","value":"data"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<UpdateUserProfileMutation, UpdateUserProfileMutationVariables>;
@@ -3082,4 +3192,5 @@ export const FetchUserFriendsDocument = {"kind":"Document","definitions":[{"kind
 export const UserCreateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"userCreate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"data"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userCreate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"Variable","name":{"kind":"Name","value":"data"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"sessionToken"}}]}}]}}]} as unknown as DocumentNode<UserCreateMutation, UserCreateMutationVariables>;
 export const UserLoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"userLogin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"args"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserSessionCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userSessionCreate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"args"},"value":{"kind":"Variable","name":{"kind":"Name","value":"args"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"sessionToken"}}]}}]}}]} as unknown as DocumentNode<UserLoginMutation, UserLoginMutationVariables>;
 export const ExitChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"exitChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelExit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<ExitChannelMutation, ExitChannelMutationVariables>;
+export const JoinChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"joinChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"code"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelJoin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"code"},"value":{"kind":"Variable","name":{"kind":"Name","value":"code"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}}]}}]} as unknown as DocumentNode<JoinChannelMutation, JoinChannelMutationVariables>;
 export const FetchCurrentUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"fetchCurrentUser"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"nicknameNo"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"equals"},"value":{"kind":"IntValue","value":"-1"}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"nicknameNo"}}]}}]}}]} as unknown as DocumentNode<FetchCurrentUserQuery, FetchCurrentUserQueryVariables>;

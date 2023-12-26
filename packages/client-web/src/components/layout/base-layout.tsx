@@ -151,9 +151,9 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
             <div className="box-border h-full overflow-y-auto bg-background pr-2 pt-2">
               <SideAvatar
                 name="信息"
-                active={location.pathname === "/channel/@msg"}
+                active={location.pathname === "/ch/@msg"}
                 icon={<IconMessage2Heart />}
-                onClick={() => navigate("/channel/@msg")}
+                onClick={() => navigate("/ch/@msg")}
               />
               <div className="mb-2 flex justify-center pl-2">
                 <Divider size="sm" className="w-8" />
@@ -171,7 +171,7 @@ export const BaseLayout: React.FC<React.PropsWithChildren> = (props) => {
                           key={it.channel.id}
                           active={it.channel.code === params.channelCode}
                           onClick={() => {
-                            navigate(`/channel/${it.channel.code}`);
+                            navigate(`/ch/${it.channel.code}`);
                           }}
                         />
                       </Fragment>

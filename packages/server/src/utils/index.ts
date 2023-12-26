@@ -3,7 +3,7 @@ import { UserInputError } from '@nestjs/apollo';
 import { GraphQLErrorOptions } from 'graphql';
 import { MictoryErrorCodes, MictoryErrorToString } from '@mictory/common';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { nanoid } from 'nanoid';
+import { customAlphabet, nanoid, urlAlphabet } from 'nanoid';
 import { env } from './env';
 import { getLogger } from './logger';
 
@@ -11,6 +11,7 @@ export function CreateMictoryError(error: MictoryErrorCodes, options?: GraphQLEr
   return new UserInputError(MictoryErrorToString(error), options);
 }
 
+export const urlNanoid = customAlphabet(urlAlphabet, 21);
 export const socketUserKey = (userId: TableId) => `USER_${userId}`;
 export const socketRoomKey = (roomId: TableId) => `ROOM_${roomId}`;
 export const socketChannelKey = (channelId: TableId) => `CHANNEL_${channelId}`;

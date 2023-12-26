@@ -1,10 +1,12 @@
 import { UserInputError } from '@nestjs/apollo';
 import { Logger } from '@nestjs/common';
-import { Resolver, Query, Args, Info, Mutation, Context, Directive, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Args, Info, Mutation, Context, Directive, ResolveField, Parent, Int } from '@nestjs/graphql';
 import { PrismaSelect } from '@paljs/plugins';
 import { PrismaClient } from '@prisma/client';
+import * as dayjs from 'dayjs';
 import { GraphQLResolveInfo } from 'graphql';
 import { GraphQLBigInt } from 'graphql-scalars';
+import { ChannelInvite } from 'src/@generated';
 import { ChannelToUser } from 'src/@generated';
 import { Channel, CreateOneChannelArgs, FindManyChannelArgs, UpdateOneChannelArgs } from 'src/@generated';
 import { createModuleCallLog } from 'src/aspects';
@@ -13,6 +15,7 @@ import { ChannelJoinInput } from 'src/graphql/types/channel-join.input';
 import { RoomManager } from 'src/manager';
 import { TxManager } from 'src/manager/tx.manager';
 import { RequestUser } from 'src/modules/auth.module';
+import { urlNanoid } from 'src/utils';
 
 const ModuleCallLog = createModuleCallLog('ChannelResolver');
 
@@ -86,14 +89,19 @@ export class ChannelResolver {
     @Args('data') args: ChannelJoinInput,
     @Info() info: GraphQLResolveInfo,
   ) {
+    const code = args.code.substring(args.code.lastIndexOf('/'));
     const channel = await this.prisma.channel.findFirst({
       where: {
-        code: args.code,
+        invites: {
+          some: {
+            code,
+          },
+        },
       },
     });
 
     if (!channel) {
-      throw new UserInputError('加入频道失败，频道不存在');
+      throw new UserInputError('加入频道失败，链接已过期');
     }
 
     const select = new PrismaSelect(info).value;
@@ -142,5 +150,45 @@ export class ChannelResolver {
     });
 
     return true;
+  }
+
+  @Directive('@user')
+  @Mutation(() => ChannelInvite)
+  @ModuleCallLog<ChannelResolver['channelCreateInvite']>(
+    (u, id) => `User create channel invite, userId: ${u.userId}, channelId: ${id}`,
+  )
+  async channelCreateInvite(
+    @Context(CTX_USER) user: RequestUser,
+    @Args('id', { type: () => GraphQLBigInt }) id: bigint,
+    @Args('days', { type: () => Int, defaultValue: 7 }) days: number,
+  ) {
+    if (!(await this.roomManager.checkChannelPerimissions(user.userId, id, 'INVITE'))) {
+      throw new UserInputError('您暂无权限创建邀请链接');
+    }
+
+    // 同一用户&同一频道，一天创建一次
+    const today = dayjs().endOf('day').toDate();
+    const invite = await this.prisma.channelInvite.findFirst({
+      where: {
+        userId: user.userId,
+        channelId: id,
+        days,
+        createdTime: {
+          lte: today,
+        },
+      },
+    });
+
+    if (invite) return invite;
+
+    return this.prisma.channelInvite.create({
+      data: {
+        userId: user.userId,
+        channelId: id,
+        days,
+        code: urlNanoid(12),
+        expireAt: dayjs().add(days, 'day').toDate(),
+      },
+    });
   }
 }

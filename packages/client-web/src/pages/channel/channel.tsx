@@ -13,12 +13,13 @@ import {
   ChannelUsers,
   ChatPannel,
   CreateChannelCategoryModal,
+  CreateChannelInviteModal,
   CreateRoomModal,
 } from "@/components/business";
 import { SocketClientContext } from "@/contexts";
 import { first } from "lodash-es";
 import { useChannelStore } from "@/stores";
-import { IconDoorExit, IconPlaylistAdd, IconSettings, IconSquareRoundedPlus } from "@tabler/icons-react";
+import { IconDoorExit, IconPlaylistAdd, IconSettings, IconSquareRoundedPlus, IconUserPlus } from "@tabler/icons-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,6 +136,7 @@ export const ChannelPage: React.FC = () => {
   const state = useReactive({
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
+    createChannelInviteModalOpen: false,
   });
 
   useEffect(() => {
@@ -192,7 +194,7 @@ export const ChannelPage: React.FC = () => {
         })
           .then(() => {
             channelStore.firstLoading = true;
-            navigate("/channel/");
+            navigate("/ch/");
             notifications.show({
               color: "green",
               message: "退出频道成功",
@@ -233,6 +235,12 @@ export const ChannelPage: React.FC = () => {
               });
             }}
           />
+
+          <CreateChannelInviteModal
+            channelId={channel.id}
+            opened={state.createChannelInviteModalOpen}
+            onClose={() => (state.createChannelInviteModalOpen = false)}
+          />
         </>
       )}
 
@@ -262,6 +270,13 @@ export const ChannelPage: React.FC = () => {
                   onClick={() => (state.createRoomModalOpen = true)}
                 />
               </ChannelPermissionWrapper>
+              <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Invite}>
+                <ChannelMenuItem
+                  label="邀请好友"
+                  icon={IconUserPlus}
+                  onClick={() => (state.createChannelInviteModalOpen = true)}
+                />
+              </ChannelPermissionWrapper>
               <ChannelMenuItem label="退出频道" icon={IconDoorExit} className="text-red-500" onClick={onExitChannel} />
             </DropdownMenuContent>
           </DropdownMenu>
@@ -269,9 +284,8 @@ export const ChannelPage: React.FC = () => {
             {channel ? (
               <ChannelPanel
                 channel={channel}
-                onJoinRoom={(roomId) => {
-                  channelStore.chatRoomId = roomId;
-                }}
+                onOpenInvite={() => (state.createChannelInviteModalOpen = true)}
+                onJoinRoom={(roomId) => (channelStore.chatRoomId = roomId)}
                 onShouldRefetch={() => {
                   refetchChannelDetail({
                     code: params.channelCode,

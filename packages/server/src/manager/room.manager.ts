@@ -91,7 +91,9 @@ export class RoomManager {
   ) {
     if (!userId) return false;
 
-    const codes = Array.isArray(permissionCodes) ? permissionCodes : [permissionCodes];
+    const codes = (Array.isArray(permissionCodes) ? permissionCodes : [permissionCodes]).concat([
+      ChannelRolePermissionCode.ADMIN,
+    ]);
 
     const channelUser = await this.prisma.channelToUser.findUnique({
       where: {

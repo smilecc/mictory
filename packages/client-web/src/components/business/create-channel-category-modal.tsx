@@ -23,7 +23,7 @@ export const CreateChannelCategoryModal: React.FC<{ channelId: number; onOk?: ()
   const [mutationCreateCategory, { loading: submitting }] = useMutation(CREATE_CHANNEL_CATEGORY_MUTATION);
 
   return (
-    <Modal title="创建分组" closeOnClickOutside={false} {...otherProps}>
+    <Modal title="创建分组" closeOnClickOutside={false} {...otherProps} centered>
       <form
         onSubmit={form.onSubmit((data) => {
           mutationCreateCategory({

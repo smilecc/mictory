@@ -42,7 +42,7 @@ export const RouteGuard: React.FC<{
 const router = createBrowserRouter([
   {
     path: "/",
-    Component: () => <Navigate to="/channel" replace />,
+    Component: () => <Navigate to="/ch" replace />,
     // lazy: async () => {
     //   const { HomePage } = await import("@/pages/Home");
     //   return {
@@ -69,7 +69,16 @@ const router = createBrowserRouter([
     },
   },
   {
-    path: "/channel",
+    path: "/i/:code",
+    lazy: async () => {
+      const { InviteLandPage } = await import("@/pages/channel/invite-land");
+      return {
+        Component: InviteLandPage,
+      };
+    },
+  },
+  {
+    path: "/ch",
     lazy: async () => {
       const { ChannelLayoutPage } = await import("@/pages/channel/layout");
       return {
@@ -81,7 +90,7 @@ const router = createBrowserRouter([
         path: "",
         element: (
           <RouteGuard>
-            <Navigate to="/channel/@msg" replace />
+            <Navigate to="/ch/@msg" replace />
           </RouteGuard>
         ),
       },
