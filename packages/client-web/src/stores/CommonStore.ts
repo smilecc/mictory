@@ -34,4 +34,5 @@ export class CommonStore {
   }
 
   user: FetchCurrentUserQuery["user"];
+  loginRedirect?: string;
 }

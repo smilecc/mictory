@@ -52,7 +52,7 @@ export const UserCreatePage: React.FC = () => {
                   console.log(data?.userCreate);
                   getSocketClient().close();
                   channelStore.cleanUserState();
-                  navigate("/channel", { replace: true });
+                  navigate(commonStore.loginRedirect ?? "/ch", { replace: true });
 
                   notifications.show({
                     message: "用户注册成功",

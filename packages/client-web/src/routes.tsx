@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { autorun } from "mobx";
-import { createBrowserRouter, RouterProvider, Navigate, useNavigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useCommonStore } from "@/stores";
 import { gql } from "./@generated";
 import { useLazyQuery } from "@apollo/client";
@@ -19,14 +19,17 @@ export const RouteGuard: React.FC<{
   const [loadUser] = useLazyQuery(FETCH_CURRENT_USER);
   const navigate = useNavigate();
   const commonStore = useCommonStore();
+  const location = useLocation();
 
   useEffect(
     () =>
       autorun(() => {
         console.log("autorun");
         if (commonStore.isNotLogin) {
+          commonStore.loginRedirect = `${location.pathname}${location.search}`;
           navigate("/user/login");
         } else {
+          commonStore.loginRedirect = undefined;
           loadUser().then(({ data }) => {
             commonStore.user = data?.user;
           });

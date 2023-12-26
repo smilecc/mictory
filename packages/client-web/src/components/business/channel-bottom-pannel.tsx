@@ -151,7 +151,7 @@ const MicrophoneButton: React.FC = () => {
                   <ContextMenuItem key={it.deviceId} title={it.label}>
                     <Radio
                       classNames={{ label: "!cursor-pointer truncate w-64" }}
-                      label={it.label}
+                      label={it.deviceId ? it.label : "未找到设备"}
                       value={it.deviceId}
                     />
                   </ContextMenuItem>
@@ -224,7 +224,7 @@ const VolumeButton: React.FC = () => {
                   <ContextMenuItem key={it.deviceId} title={it.label}>
                     <Radio
                       classNames={{ label: "!cursor-pointer truncate w-64" }}
-                      label={it.label}
+                      label={it.deviceId ? it.label : "未找到设备"}
                       value={it.deviceId}
                     />
                   </ContextMenuItem>

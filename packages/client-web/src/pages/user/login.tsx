@@ -51,7 +51,7 @@ export const LoginPage: React.FC = () => {
                   console.log(data?.userSessionCreate);
                   getSocketClient().close();
                   channelStore.cleanUserState();
-                  navigate("/channel", { replace: true });
+                  navigate(commonStore.loginRedirect ?? "/ch", { replace: true });
 
                   notifications.show({
                     message: "登录成功",

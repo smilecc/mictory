@@ -22,7 +22,7 @@ const SettingAudio: React.FC = () => {
           设备与音量
         </Title>
 
-        <Card>
+        <Card className="overflow-visible">
           <Observer>
             {() => (
               <div className="flex">
@@ -30,13 +30,17 @@ const SettingAudio: React.FC = () => {
                   <Select
                     label="输入设备"
                     value={channelStore.audioDevice.inputDeviceId}
+                    placeholder="请选择设备"
                     onChange={(v) => {
                       channelStore.setInputMediaDevice(v!);
+                    }}
+                    classNames={{
+                      input: "mt-2",
                     }}
                     data={channelStore.mediaDeviceInfos
                       .filter((it) => it.kind === "audioinput")
                       .map((it) => ({
-                        label: it.label,
+                        label: it.deviceId ? it.label : "未找到设备",
                         value: it.deviceId,
                       }))}
                   />
@@ -56,13 +60,17 @@ const SettingAudio: React.FC = () => {
                   <Select
                     label="输出设备"
                     value={channelStore.audioDevice.outputDeviceId}
+                    placeholder="请选择设备"
                     onChange={(v) => {
                       channelStore.setAudioDevice("outputDeviceId", v!);
+                    }}
+                    classNames={{
+                      input: "mt-2",
                     }}
                     data={channelStore.mediaDeviceInfos
                       .filter((it) => it.kind === "audiooutput")
                       .map((it) => ({
-                        label: it.label,
+                        label: it.deviceId ? it.label : "未找到设备",
                         value: it.deviceId,
                       }))}
                   />

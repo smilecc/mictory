@@ -5,6 +5,8 @@ ENV VITE_API_HOST $API_HOST
 ADD ./ /app
 WORKDIR /app
 
+RUN rm -rf /app/packages/client-desktop
+
 # 安装依赖
 RUN npx pnpm i
 
@@ -21,4 +23,4 @@ RUN npx pnpm store prune
 # 运行后端
 WORKDIR /app/packages/server
 
-ENTRYPOINT ["/bin/sh","-c","cp -r /app/client-web-build/* /app/client-web-dist && npx prisma db push && npx pnpm start"]
+ENTRYPOINT ["/bin/sh","-c","rm -rf /app/client-web-dist/* && cp -r /app/client-web-build/* /app/client-web-dist && npx prisma db push && npx pnpm start"]

@@ -87,6 +87,11 @@ export class ChannelStore {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async setAudioDevice(k: keyof IMediaDeviceSetting, v: any, reloadAudioMediaDevice = true) {
     console.log("修改声音设备设置", k, v);
+    if (!v && (k === "inputDeviceId" || k === "outputDeviceId")) {
+      console.warn("设备ID为空，跳过设置", k, v);
+      return;
+    }
+
     this.audioDevice = StoreStorage.save(ChannelStore, "audioDevice", {
       ...this.audioDevice,
       [k]: v,
@@ -99,6 +104,31 @@ export class ChannelStore {
   }
 
   async loadMediaDevices() {
+    // 先请求一次媒体设备权限
+    await navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: false,
+      })
+      .catch((e) => {
+        this.mediaDeviceInfos = [
+          {
+            deviceId: "",
+            groupId: "",
+            kind: "audioinput",
+            label: "",
+          },
+          {
+            deviceId: "",
+            groupId: "",
+            kind: "audiooutput",
+            label: "",
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ] as any;
+        throw e;
+      });
+
     if (!navigator.mediaDevices.ondevicechange) {
       navigator.mediaDevices.ondevicechange = () => {
         console.log("用户设备发生变化");

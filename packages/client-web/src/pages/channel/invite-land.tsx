@@ -1,4 +1,6 @@
 import { JOIN_CHANNEL } from "@/queries";
+import { RouteGuard } from "@/routes";
+import { useCommonStore } from "@/stores";
 import { NoticeErrorHandler } from "@/utils";
 import { useMutation } from "@apollo/client";
 import { LoadingOverlay } from "@mantine/core";
@@ -10,9 +12,10 @@ export const InviteLandPage: React.FC = () => {
   const params = useParams<{ code: string }>();
   const [join] = useMutation(JOIN_CHANNEL);
   const navigate = useNavigate();
+  const commonStore = useCommonStore();
 
   useEffect(() => {
-    if (params.code) {
+    if (commonStore.isLogin && params.code) {
       join({
         variables: {
           code: params.code,
@@ -31,11 +34,13 @@ export const InviteLandPage: React.FC = () => {
           navigate(`/ch`, { replace: true });
         });
     }
-  }, [join, navigate, params.code]);
+  }, [commonStore.isLogin, join, navigate, params.code]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 top-0">
-      <LoadingOverlay visible />
-    </div>
+    <RouteGuard>
+      <div className="fixed bottom-0 left-0 right-0 top-0">
+        <LoadingOverlay visible />
+      </div>
+    </RouteGuard>
   );
 };
