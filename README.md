@@ -34,10 +34,10 @@ docker compose up
 - [x] 频道文字聊天
 - [x] AI降噪
 - [x] 语音设备选择
-- [ ] 频道权限
+- [x] Windows & macOS 客户端
+- [x] 频道权限
 - [ ] 频道设置
 - [ ] i18n 国际化
-- [ ] Windows & macOS 客户端
 - [ ] 手机客户端
 
 详细使用步骤点此 [查看文档](https://smilecc.github.io/mictory/)
