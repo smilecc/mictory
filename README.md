@@ -2,6 +2,8 @@
 
 Microphone + Victory = Mictory
 
+跨平台私有开黑语音服务
+
 [文档](https://smilecc.github.io/mictory/) | [在线 Demo](https://mictory.smilec.cc/)
 
 ## 快速开始
@@ -37,7 +39,6 @@ docker compose up --build
 - [ ] i18n 国际化
 - [ ] Windows & macOS 客户端
 - [ ] 手机客户端
-
 
 详细使用步骤点此 [查看文档](https://smilecc.github.io/mictory/)
 

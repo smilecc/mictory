@@ -1,24 +1,22 @@
 # 🚧介绍
 
-Microphone + Victory = Mictory
+Microphone + Victory = Mictory. 
 
-![](https://i.imgur.com/pRE6gAz.png)
+跨平台私有开黑语音服务
 
-<details><summary><b>其他一些功能截图</b></summary>
+## Preview
 
-#### 输入设备选择
+### 语音频道
 
-![](https://i.imgur.com/KpLz4KY.png)
+![](https://i.imgur.com/cPrJDg0.png)
 
-#### 私聊界面
+### 个人资料
 
-![](https://i.imgur.com/hWrHiF7.png)
+![](https://i.imgur.com/B37qat0.png)
 
-#### 用户卡片
+### 语音设置
 
-![](https://i.imgur.com/P3HDzf1.png)
-
-</details>
+![](https://i.imgur.com/8kXjS7g.png)
 
 ## 开发动机
 
