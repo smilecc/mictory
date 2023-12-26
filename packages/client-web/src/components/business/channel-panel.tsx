@@ -1,4 +1,4 @@
-import { GetChannelDetailQuery } from "@/@generated/graphql";
+import { ChannelRolePermissionCode, GetChannelDetailQuery } from "@/@generated/graphql";
 import { useChannelStore } from "@/stores";
 import { Collapse } from "@mantine/core";
 import { useEventListener, useReactive } from "ahooks";
@@ -14,6 +14,7 @@ import {
 import { DropdownMenuLabel } from "../ui/dropdown-menu";
 import { DEFAULT_AVATAR } from "@/utils";
 import { imgUrl } from "@/contexts";
+import { ChannelPermissionWrapper } from ".";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
@@ -74,11 +75,14 @@ export const ChannelPanel: React.FC<{
             </ContextMenuTrigger>
             <ContextMenuContent>
               <DropdownMenuLabel>{it.name}</DropdownMenuLabel>
-              <ContextMenuSeparator />
-              <ContextMenuItem>编辑分组</ContextMenuItem>
-              <ContextMenuItem className="text-red-500">删除分组</ContextMenuItem>
+              <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>
+                <ContextMenuSeparator />
+                <ContextMenuItem>编辑分组</ContextMenuItem>
+                <ContextMenuItem className="text-red-500">删除分组</ContextMenuItem>
+              </ChannelPermissionWrapper>
             </ContextMenuContent>
           </ContextMenu>
+
           <Collapse in={!state.closeCategories.includes(it.id)}>
             {/* 房间列表 */}
             {it.rooms?.map((room) => (
@@ -107,11 +111,17 @@ export const ChannelPanel: React.FC<{
                   </ContextMenuTrigger>
                   <ContextMenuContent>
                     <DropdownMenuLabel>{room.name}</DropdownMenuLabel>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem>邀请</ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem>编辑房间</ContextMenuItem>
-                    <ContextMenuItem className="text-red-500">删除房间</ContextMenuItem>
+
+                    <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Invite}>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem>邀请</ContextMenuItem>
+                    </ChannelPermissionWrapper>
+
+                    <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem>编辑房间</ContextMenuItem>
+                      <ContextMenuItem className="text-red-500">删除房间</ContextMenuItem>
+                    </ChannelPermissionWrapper>
                   </ContextMenuContent>
                 </ContextMenu>
 

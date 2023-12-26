@@ -1,15 +1,20 @@
 import { UserInputError } from '@nestjs/apollo';
 import { Logger } from '@nestjs/common';
-import { Resolver, Query, Args, Info, Mutation, Context, Directive } from '@nestjs/graphql';
+import { Resolver, Query, Args, Info, Mutation, Context, Directive, ResolveField, Parent } from '@nestjs/graphql';
 import { PrismaSelect } from '@paljs/plugins';
 import { PrismaClient } from '@prisma/client';
 import { GraphQLResolveInfo } from 'graphql';
+import { GraphQLBigInt } from 'graphql-scalars';
+import { ChannelToUser } from 'src/@generated';
 import { Channel, CreateOneChannelArgs, FindManyChannelArgs, UpdateOneChannelArgs } from 'src/@generated';
+import { createModuleCallLog } from 'src/aspects';
 import { CTX_USER } from 'src/consts';
 import { ChannelJoinInput } from 'src/graphql/types/channel-join.input';
 import { RoomManager } from 'src/manager';
 import { TxManager } from 'src/manager/tx.manager';
 import { RequestUser } from 'src/modules/auth.module';
+
+const ModuleCallLog = createModuleCallLog('ChannelResolver');
 
 @Resolver(() => Channel)
 export class ChannelResolver {
@@ -41,8 +46,13 @@ export class ChannelResolver {
     @Info() info: GraphQLResolveInfo,
   ) {
     const select = new PrismaSelect(info).value;
-    // TODO 判断用户是否有权限更新
-    const channel = await this.prisma.channel.findFirst({ where: args.where });
+    const channel = await this.prisma.channel.findFirst({ where: args.where, select: { id: true } });
+
+    // 判断用户是否有权限更新
+    if (!(await this.roomManager.checkChannelPerimissions(user.userId, channel.id, 'ADMIN'))) {
+      throw new UserInputError('您没有该频道的管理权限');
+    }
+
     this.logger.log(`ChannelUpdate, User: ${user.userId} OldChannel: ${channel} Data: ${args.data}`);
     return this.prisma.channel.update({
       ...select,
@@ -50,6 +60,22 @@ export class ChannelResolver {
       where: {
         id: channel.id,
       },
+    });
+  }
+
+  @Directive('@user')
+  @ResolveField(() => ChannelToUser, { nullable: true, description: 'Current user in channel' })
+  async currentUser(@Context(CTX_USER) user: RequestUser, @Info() info: GraphQLResolveInfo, @Parent() parent: Channel) {
+    const select = new PrismaSelect(info).value;
+
+    return this.prisma.channelToUser.findUnique({
+      where: {
+        userId_channelId: {
+          userId: user.userId,
+          channelId: parent.id,
+        },
+      },
+      ...select,
     });
   }
 
@@ -100,5 +126,21 @@ export class ChannelResolver {
         },
       },
     });
+  }
+
+  @Directive('@user')
+  @Mutation(() => Boolean)
+  @ModuleCallLog<ChannelResolver['channelExit']>((u, id) => `User exit channel, userId: ${u.userId}, channelId: ${id}`)
+  async channelExit(@Context(CTX_USER) user: RequestUser, @Args('id', { type: () => GraphQLBigInt }) id: bigint) {
+    await this.prisma.channelToUser.delete({
+      where: {
+        userId_channelId: {
+          userId: user.userId,
+          channelId: id,
+        },
+      },
+    });
+
+    return true;
   }
 }

@@ -36,7 +36,9 @@ const UsersPannel: React.FC<{ title: string; users: Users }> = ({ title, users }
               alt="avatar"
               className="h-7 w-7 rounded-full object-cover"
             />
-            <div className="ml-2">{user.user.nickname}</div>
+            <div className="ml-2" style={{ color: user.role.color ?? undefined }}>
+              {user.user.nickname}
+            </div>
           </div>
         </UserPopover>
       ))}

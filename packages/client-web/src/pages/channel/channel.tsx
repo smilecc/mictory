@@ -2,13 +2,14 @@ import { useReactive } from "ahooks";
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 // import { useLoaderData } from "react-router-dom";
 // import * as mediasoupClient from "mediasoup-client";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 // import { NoiseSuppressionProcessor } from "@shiguredo/noise-suppression";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { gql } from "@/@generated";
 import {
   ChannelBottomPannel,
   ChannelPanel,
+  ChannelPermissionWrapper,
   ChannelUsers,
   ChatPannel,
   CreateChannelCategoryModal,
@@ -17,7 +18,7 @@ import {
 import { SocketClientContext } from "@/contexts";
 import { first } from "lodash-es";
 import { useChannelStore } from "@/stores";
-import { IconPlaylistAdd, IconSettings, IconSquareRoundedPlus } from "@tabler/icons-react";
+import { IconDoorExit, IconPlaylistAdd, IconSettings, IconSquareRoundedPlus } from "@tabler/icons-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +26,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { sleep } from "@/utils";
-import { ChatTarget } from "@/@generated/graphql";
+import { ChannelContext, NoticeErrorHandler, sleep } from "@/utils";
+import { ChannelRolePermissionCode, ChatTarget } from "@/@generated/graphql";
+import { EXIT_CHANNEL } from "@/queries";
+import { cn } from "@/lib/utils";
+import { modals } from "@mantine/modals";
+import { Text } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 
 const QUERY_CHANNEL_DETAIL = gql(`
 query getChannelDetail($code: String!) {
@@ -35,6 +41,17 @@ query getChannelDetail($code: String!) {
     name
     code
     avatar
+    currentUser {
+      userId
+      channelRole {
+        id
+        name
+        permissions {
+          id
+          code
+        }
+      }
+    }
     ownerUser {
       id
       nickname
@@ -76,22 +93,26 @@ query getChannelDetail($code: String!) {
 }
 `);
 
-const ChannelMenuItem = React.memo<{ label: string; icon: React.FC; onClick?: () => void }>((props) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const IconComponent: any = props.icon;
+const ChannelMenuItem = React.memo<{ className?: string; label: string; icon: React.FC; onClick?: () => void }>(
+  (props) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const IconComponent: any = props.icon;
 
-  return (
-    <DropdownMenuItem className="cursor-pointer" onClick={props.onClick}>
-      <IconComponent size={18} />
-      <span className="ml-2">{props.label}</span>
-    </DropdownMenuItem>
-  );
-});
+    return (
+      <DropdownMenuItem className={cn("cursor-pointer", props.className)} onClick={props.onClick}>
+        <IconComponent size={18} />
+        <span className="ml-2">{props.label}</span>
+      </DropdownMenuItem>
+    );
+  },
+);
 
 export const ChannelPage: React.FC = () => {
   // const loaderData = useLoaderData();
   const channelStore = useChannelStore();
   const socketClient = useContext(SocketClientContext);
+  const [exitChannel] = useMutation(EXIT_CHANNEL);
+  const navigate = useNavigate();
   const params = useParams<{ channelCode: string }>();
   const {
     data,
@@ -114,7 +135,6 @@ export const ChannelPage: React.FC = () => {
   const state = useReactive({
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
-    selectChatRoomId: 0,
   });
 
   useEffect(() => {
@@ -154,8 +174,37 @@ export const ChannelPage: React.FC = () => {
     }
   }, [refetchChannelDetail, params.channelCode]);
 
+  const onExitChannel = useCallback(() => {
+    modals.openConfirmModal({
+      title: "确认",
+      centered: true,
+      children: <Text size="sm">是否确认要退出频道？</Text>,
+      labels: { confirm: "确认退出", cancel: "取消" },
+      async onConfirm() {
+        if (channel?.id === channelStore.joinedChannelId) {
+          await channelStore.exitRoom();
+        }
+
+        exitChannel({
+          variables: {
+            id: channel?.id,
+          },
+        })
+          .then(() => {
+            channelStore.firstLoading = true;
+            navigate("/channel/");
+            notifications.show({
+              color: "green",
+              message: "退出频道成功",
+            });
+          })
+          .catch(NoticeErrorHandler);
+      },
+    });
+  }, [channel?.id, channelStore, exitChannel, navigate]);
+
   return (
-    <>
+    <ChannelContext.Provider value={channel || null}>
       {channel && (
         <>
           {/* 创建房间 */}
@@ -200,17 +249,20 @@ export const ChannelPage: React.FC = () => {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
-              <ChannelMenuItem label="频道设置" icon={IconSettings} />
-              <ChannelMenuItem
-                label="创建分组"
-                icon={IconPlaylistAdd}
-                onClick={() => (state.createCategoryModalOpen = true)}
-              />
-              <ChannelMenuItem
-                label="创建房间"
-                icon={IconSquareRoundedPlus}
-                onClick={() => (state.createRoomModalOpen = true)}
-              />
+              <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>
+                <ChannelMenuItem label="频道设置" icon={IconSettings} />
+                <ChannelMenuItem
+                  label="创建分组"
+                  icon={IconPlaylistAdd}
+                  onClick={() => (state.createCategoryModalOpen = true)}
+                />
+                <ChannelMenuItem
+                  label="创建房间"
+                  icon={IconSquareRoundedPlus}
+                  onClick={() => (state.createRoomModalOpen = true)}
+                />
+              </ChannelPermissionWrapper>
+              <ChannelMenuItem label="退出频道" icon={IconDoorExit} className="text-red-500" onClick={onExitChannel} />
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="flex-1 overflow-y-auto pt-2">
@@ -218,7 +270,7 @@ export const ChannelPage: React.FC = () => {
               <ChannelPanel
                 channel={channel}
                 onJoinRoom={(roomId) => {
-                  state.selectChatRoomId = roomId;
+                  channelStore.chatRoomId = roomId;
                 }}
                 onShouldRefetch={() => {
                   refetchChannelDetail({
@@ -232,11 +284,11 @@ export const ChannelPage: React.FC = () => {
           <ChannelBottomPannel />
         </div>
         <div className="flex-1">
-          {state.selectChatRoomId ? (
+          {channelStore.chatRoomId ? (
             <ChatPannel
               type={ChatTarget.Room}
-              roomId={state.selectChatRoomId}
-              key={`ROOM_CHAT_${state.selectChatRoomId}`}
+              roomId={channelStore.chatRoomId}
+              key={`ROOM_CHAT_${channelStore.chatRoomId}`}
             />
           ) : null}
         </div>
@@ -244,6 +296,6 @@ export const ChannelPage: React.FC = () => {
       <div className="w-72 break-words bg-surface1">
         <ChannelUsers users={channel?.users || []} />
       </div>
-    </>
+    </ChannelContext.Provider>
   );
 };

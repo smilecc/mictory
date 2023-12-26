@@ -26,6 +26,7 @@ export class ChannelStore {
   joinedChannelId?: number = undefined;
 
   joinedRoomId?: number = undefined;
+  chatRoomId?: number = undefined;
 
   // 当前语音连接状态
   connectionState: mediasoupClient.types.ConnectionState = "new";
@@ -84,7 +85,7 @@ export class ChannelStore {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async setAudioDevice(k: keyof IMediaDeviceSetting, v: any) {
+  async setAudioDevice(k: keyof IMediaDeviceSetting, v: any, reloadAudioMediaDevice = true) {
     console.log("修改声音设备设置", k, v);
     this.audioDevice = StoreStorage.save(ChannelStore, "audioDevice", {
       ...this.audioDevice,
@@ -92,7 +93,7 @@ export class ChannelStore {
     });
 
     // 若修改的不是输出设备，则重新加载媒体设备
-    if (k !== "outputDeviceId") {
+    if (k !== "outputDeviceId" && reloadAudioMediaDevice) {
       await this.reloadAudioMediaDevice();
     }
   }
@@ -251,7 +252,9 @@ export class ChannelStore {
     this.joinedChannelId = channelId;
     this.mediasoupDevice = new mediasoupClient.Device();
 
-    const rtpCapabilities = (await getSocketClient().emitWithAck("getRouterRtpCapabilities", { roomId })) as RtpCapabilities;
+    const rtpCapabilities = (await getSocketClient().emitWithAck("getRouterRtpCapabilities", {
+      roomId,
+    })) as RtpCapabilities;
     console.log("JoinRoom:rtpCapabilities", roomId, rtpCapabilities);
 
     const roomSession = await getSocketClient().emitWithAck("joinRoom", { roomId });

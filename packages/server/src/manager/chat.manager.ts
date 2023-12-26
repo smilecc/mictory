@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserType } from '@prisma/client';
 import { TxManager } from './tx.manager';
 import { ChatCreateInput } from 'src/@generated';
 import { SYSTEM_USERNAME } from 'src/consts';
 import { socketRoomKey, socketUserKey } from 'src/utils';
 import { SocketIoManager } from './socket-io.manager';
 import { NewChatMessageEvent } from '@mictory/common';
+import { RoomManager } from './room.manager';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class ChatManager {
@@ -13,6 +15,7 @@ export class ChatManager {
     private readonly prisma: PrismaClient,
     private readonly txManager: TxManager,
     private readonly socketIoManager: SocketIoManager,
+    private readonly roomManager: RoomManager,
   ) {}
 
   private readonly logger = new Logger(ChatManager.name);
@@ -25,6 +28,7 @@ export class ChatManager {
         },
         include: {
           user: true,
+          room: true,
         },
       });
 
@@ -98,6 +102,13 @@ export class ChatManager {
           },
         } as NewChatMessageEvent);
       } else if (message.target === 'ROOM') {
+        if (
+          message.user.type === UserType.USER &&
+          !(await this.roomManager.checkChannelPerimissions(message.userId, message.room.channelId, 'SEND_CHAT'))
+        ) {
+          throw new UserInputError(`您没有权限发送消息`);
+        }
+
         // 通知客户端
         this.socketIoManager.socket.to(socketRoomKey(message.roomId)).emit('newChatMessage', {
           target: 'ROOM',

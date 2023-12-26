@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { ChannelRolePermissionCode, PrismaClient } from '@prisma/client';
 import { ChannelCreateInput } from 'src/@generated';
 import { TxManager } from './tx.manager';
+import { intersection } from 'lodash';
 
 @Injectable()
 export class RoomManager {
@@ -47,12 +48,33 @@ export class RoomManager {
               {
                 user: { connect: { id: userId } },
                 // 创建者作为管理员
-                channelRole: { create: { name: '管理员', channelId: channel.id } },
+                channelRole: {
+                  create: {
+                    name: '管理员',
+                    channelId: channel.id,
+                    color: '#6cbf00',
+                    permissions: {
+                      connect: { code: ChannelRolePermissionCode.ADMIN },
+                    },
+                  },
+                },
               },
             ],
           },
           roles: {
-            create: [{ name: '成员', defaultRole: true }],
+            create: [
+              {
+                name: '成员',
+                defaultRole: true,
+                permissions: {
+                  connect: [
+                    { code: ChannelRolePermissionCode.INVITE },
+                    { code: ChannelRolePermissionCode.SEND_CHAT },
+                    { code: ChannelRolePermissionCode.VOICE },
+                  ],
+                },
+              },
+            ],
           },
         },
         where: {
@@ -60,5 +82,38 @@ export class RoomManager {
         },
       });
     });
+  }
+
+  async checkChannelPerimissions(
+    userId: bigint | number | null | undefined,
+    channelId: bigint | number,
+    permissionCodes: ChannelRolePermissionCode | ChannelRolePermissionCode[],
+  ) {
+    if (!userId) return false;
+
+    const codes = Array.isArray(permissionCodes) ? permissionCodes : [permissionCodes];
+
+    const channelUser = await this.prisma.channelToUser.findUnique({
+      where: {
+        userId_channelId: {
+          channelId,
+          userId,
+        },
+      },
+      select: {
+        channelRole: {
+          select: {
+            permissions: true,
+          },
+        },
+      },
+    });
+
+    return (
+      intersection(
+        codes,
+        channelUser.channelRole.permissions.map((it) => it.code),
+      ).length > 0
+    );
   }
 }

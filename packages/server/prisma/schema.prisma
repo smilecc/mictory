@@ -90,10 +90,11 @@ model User {
   /// 资料横幅
   profileBanner String?
 
-  fromChats   Chat[]       @relation("fromUserChats")
-  targetChats Chat[]       @relation("targetUserChats")
-  friendsA    UserFriend[] @relation("UserFriendA")
-  friendsB    UserFriend[] @relation("UserFriendB")
+  fromChats     Chat[]          @relation("fromUserChats")
+  targetChats   Chat[]          @relation("targetUserChats")
+  friendsA      UserFriend[]    @relation("UserFriendA")
+  friendsB      UserFriend[]    @relation("UserFriendB")
+  ChannelInvite ChannelInvite[]
 }
 
 model UserFriend {
@@ -156,6 +157,7 @@ model Channel {
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
   users       ChannelToUser[]
   /// 房间
+  /// @HideField({ input: true, output: false })
   rooms       Room[]
   /// 角色
   /// @HideField({ match: 'Channel@(Create|Update)*Input' })
@@ -168,6 +170,28 @@ model Channel {
   updatedTime DateTime          @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime DateTime?
+  /// @HideField({ input: true, output: true })
+  invites     ChannelInvite[]
+}
+
+model ChannelInvite {
+  id          BigInt    @id @default(autoincrement())
+  /// @HideField({ input: true, output: false })
+  createdTime DateTime  @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime DateTime  @updatedAt
+  /// @HideField({ input: true, output: true })
+  deletedTime DateTime?
+  /// 邀请码
+  code        String    @unique
+  /// 有效期
+  expireAt    DateTime?
+  /// 频道
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  channelId   BigInt
+  /// 创建用户
+  user        User      @relation(fields: [userId], references: [id])
+  userId      BigInt
 }
 
 model ChannelCategory {
@@ -188,22 +212,43 @@ model ChannelCategory {
 }
 
 model ChannelRole {
-  id           BigInt          @id @default(autoincrement())
-  channel      Channel         @relation(fields: [channelId], references: [id])
+  id           BigInt                  @id @default(autoincrement())
+  channel      Channel                 @relation(fields: [channelId], references: [id])
   channelId    BigInt
   /// 角色名称
   name         String
   /// 颜色
   color        String?
+  /// 权限列表
+  permissions  ChannelRolePermission[]
   /// 默认角色
-  defaultRole  Boolean         @default(false)
+  defaultRole  Boolean                 @default(false)
   /// @HideField({ input: true, output: false })
-  createdTime  DateTime        @default(now())
+  createdTime  DateTime                @default(now())
   /// @HideField({ input: true, output: false })
-  updatedTime  DateTime        @updatedAt
+  updatedTime  DateTime                @updatedAt
   /// @HideField({ input: true, output: true })
   deletedTime  DateTime?
   channelUsers ChannelToUser[]
+}
+
+enum ChannelRolePermissionCode {
+  ADMIN
+  INVITE
+  VOICE
+  SEND_CHAT
+}
+
+model ChannelRolePermission {
+  id          BigInt                    @id @default(autoincrement())
+  /// @HideField({ input: true, output: false })
+  createdTime DateTime                  @default(now())
+  /// @HideField({ input: true, output: false })
+  updatedTime DateTime                  @updatedAt
+  /// 权限编码
+  code        ChannelRolePermissionCode @unique
+  /// 关联角色
+  role        ChannelRole[]
 }
 
 model ChannelToUser {

@@ -9,3 +9,4 @@ export * from "./join-channel-modal";
 export * from "./channel-users";
 export * from "./chat-pannel";
 export * from "./channel-bottom-pannel";
+export * from "./channel-permission-wrapper";
