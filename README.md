@@ -9,7 +9,7 @@ Microphone + Victory = Mictory
 ## 快速开始
 
 ```bash
-docker compose up --build
+docker compose up
 ```
 
 ## Preview

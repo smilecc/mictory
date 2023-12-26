@@ -33,7 +33,7 @@ mictory-server:
 随后运行如下命令来启动项目：
 
 ```bash
-docker compose up --build
+docker compose up
 ```
 
 如果您的 `docker` 版本比较老旧，可能不包含 `docker compose`，您需要更新您的 `docker`。
@@ -49,7 +49,7 @@ mictory-server-1  | [Nest] 140  - 12/18/2023, 7:06:58 PM     LOG [NestApplicatio
 顺利启动后，您可以使用 `ctrl + c` 来关闭项目，如果需要常驻并在后台运行，可以运行如下命令：
 
 ```bash
-docker compose up --build -d
+docker compose up -d
 ```
 
 ### 端口白名单
