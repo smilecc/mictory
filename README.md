@@ -4,23 +4,25 @@ Microphone + Victory = Mictory
 
 [文档](https://smilecc.github.io/mictory/) | [在线 Demo](https://mictory.smilec.cc/)
 
-![](https://i.imgur.com/pRE6gAz.png)
+## 快速开始
 
-<details><summary><b>其他一些功能截图</b></summary>
+```bash
+docker compose up --build
+```
 
-#### 输入设备选择
+## Preview
 
-![](https://i.imgur.com/KpLz4KY.png)
+### 语音频道
 
-#### 私聊界面
+![](https://i.imgur.com/cPrJDg0.png)
 
-![](https://i.imgur.com/hWrHiF7.png)
+### 个人资料
 
-#### 用户卡片
+![](https://i.imgur.com/B37qat0.png)
 
-![](https://i.imgur.com/P3HDzf1.png)
+### 语音设置
 
-</details>
+![](https://i.imgur.com/8kXjS7g.png)
 
 ## 功能规划
 
@@ -36,11 +38,6 @@ Microphone + Victory = Mictory
 - [ ] Windows & macOS 客户端
 - [ ] 手机客户端
 
-## 快速开始
-
-```bash
-docker compose up --build
-```
 
 详细使用步骤点此 [查看文档](https://smilecc.github.io/mictory/)
 
