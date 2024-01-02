@@ -67,6 +67,7 @@ export class ChannelStore {
 
   // 降噪处理器
   noiseProcessor = new NoiseSuppressionProcessor("/noise-suppression/");
+  noiseProcessor2 = new NoiseSuppressionProcessor("/noise-suppression/");
 
   // 当前用户的音频流
   myAudioMediaStream?: IUserMediaStream;
@@ -248,18 +249,6 @@ export class ChannelStore {
         video: false,
       });
 
-      // 终止上次的降噪
-      if (this.noiseProcessor.isProcessing()) {
-        this.noiseProcessor.stopProcessing();
-      }
-
-      // 根据情况开启降噪
-      if (this.audioNoiseSuppression) {
-        const track = stream.getAudioTracks()[0];
-        stream.removeTrack(track);
-        stream.addTrack(await this.noiseProcessor.startProcessing(track));
-      }
-
       return stream;
     } catch {
       console.error("获取媒体设备失败");
@@ -397,7 +386,7 @@ export class ChannelStore {
         ready: false,
       };
 
-      this.modifyAudioGain(this.myAudioMediaStream, "microphone");
+      await this.modifyAudioGain(this.myAudioMediaStream, "microphone");
       this.watchMediaStreamVolume(this.myAudioMediaStream);
 
       this.myAudioMediaStream!.ready = true;
@@ -446,11 +435,11 @@ export class ChannelStore {
       ready: false,
     };
 
-    runInAction(() => {
+    runInAction(async () => {
       this.mediaStreams.push(userMediaStream);
       const item = this.mediaStreams.find((it) => it.mediaStream.id === userMediaStream.mediaStream.id)!;
 
-      this.modifyAudioGain(item, "volume");
+      await this.modifyAudioGain(item, "volume");
       this.watchMediaStreamVolume(item);
 
       item.ready = true;
@@ -478,7 +467,7 @@ export class ChannelStore {
       ready: false,
     };
 
-    this.modifyAudioGain(this.myAudioMediaStream, "microphone");
+    await this.modifyAudioGain(this.myAudioMediaStream, "microphone");
     this.watchMediaStreamVolume(this.myAudioMediaStream);
 
     this.producer = await this.sendTransport.produce({
@@ -539,7 +528,7 @@ export class ChannelStore {
     window.requestAnimationFrame(onFrame);
   }
 
-  modifyAudioGain(userStream: IUserMediaStream, gainKey: keyof IGainSetting) {
+  async modifyAudioGain(userStream: IUserMediaStream, gainKey: keyof IGainSetting) {
     const stream = userStream.mediaStream;
     const getValue = () => {
       const globalGainValue = this.audioGain?.[gainKey];
@@ -550,8 +539,56 @@ export class ChannelStore {
     const gainNode = ctx.createGain();
     const source = ctx.createMediaStreamSource(stream);
     if (gainKey === "microphone") {
+      const splitter = ctx.createChannelSplitter(source.channelCount);
+      const merger = ctx.createChannelMerger(source.channelCount);
+
       const destination = ctx.createMediaStreamDestination();
-      source.connect(gainNode).connect(destination);
+      console.log("source.channelCount", source.channelCount);
+
+      source.connect(splitter);
+
+      const streamDestL = ctx.createMediaStreamDestination();
+      streamDestL.channelCount = 1;
+      splitter.connect(gainNode, 0).connect(streamDestL);
+
+      // 终止上次的降噪
+      if (this.noiseProcessor.isProcessing()) {
+        this.noiseProcessor.stopProcessing();
+      }
+
+      if (this.noiseProcessor2.isProcessing()) {
+        this.noiseProcessor2.stopProcessing();
+      }
+
+      if (this.audioNoiseSuppression) {
+        const track = streamDestL.stream.getAudioTracks()[0];
+        streamDestL.stream.removeTrack(track);
+        streamDestL.stream.addTrack(await this.noiseProcessor.startProcessing(track));
+      }
+
+      const source1 = ctx.createMediaStreamSource(streamDestL.stream);
+      source1.connect(merger, 0, 0);
+
+      // 如果是立体声，则处理第二声道
+      if (source.channelCount > 1) {
+        console.log("立体声声道，处理第二声道");
+
+        const streamDestR = ctx.createMediaStreamDestination();
+        streamDestR.channelCount = 1;
+        splitter.connect(gainNode, 1).connect(streamDestR);
+
+        // 根据情况开启降噪
+        if (this.audioNoiseSuppression) {
+          const track2 = streamDestR.stream.getAudioTracks()[0];
+          streamDestR.stream.removeTrack(track2);
+          streamDestR.stream.addTrack(await this.noiseProcessor2.startProcessing(track2));
+        }
+
+        const source2 = ctx.createMediaStreamSource(streamDestR.stream);
+        source2.connect(merger, 0, 1);
+      }
+
+      merger.connect(destination);
       stream.removeTrack(stream.getAudioTracks()[0]);
       stream.addTrack(destination.stream.getAudioTracks()[0]);
     } else {
