@@ -237,17 +237,21 @@ export class ChannelStore {
   async getUserAudioMedia() {
     try {
       const { autoGainControl, echoCancellation, noiseSuppression, sampleRate, sampleSize } = this.audioDevice;
+      const constraints: MediaTrackConstraints = {
+        deviceId: this.audioDevice.inputDeviceId,
+        autoGainControl,
+        echoCancellation,
+        noiseSuppression,
+        sampleRate,
+        sampleSize,
+      };
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: this.audioDevice.inputDeviceId,
-          autoGainControl,
-          echoCancellation,
-          noiseSuppression,
-          sampleRate,
-          sampleSize,
-        },
+        audio: { ...constraints },
         video: false,
       });
+
+      await stream.getAudioTracks()?.[0]?.applyConstraints({ ...constraints });
 
       return stream;
     } catch {
