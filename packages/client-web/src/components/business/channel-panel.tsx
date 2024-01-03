@@ -1,6 +1,6 @@
 import { ChannelRolePermissionCode, GetChannelDetailQuery } from "@/@generated/graphql";
 import { useChannelStore } from "@/stores";
-import { Collapse } from "@mantine/core";
+import { Collapse, Text } from "@mantine/core";
 import { useEventListener, useReactive } from "ahooks";
 import React, { Fragment, useCallback, useState } from "react";
 import { UserPopover } from "./user-popover";
@@ -12,9 +12,13 @@ import {
   ContextMenuTrigger,
 } from "../ui/context-menu";
 import { DropdownMenuLabel } from "../ui/dropdown-menu";
-import { DEFAULT_AVATAR } from "@/utils";
+import { DEFAULT_AVATAR, NoticeErrorHandler } from "@/utils";
 import { imgUrl } from "@/contexts";
 import { ChannelPermissionWrapper } from ".";
+import { modals } from "@mantine/modals";
+import { useMutation } from "@apollo/client";
+import { DELETE_ROOM } from "@/queries";
+import { notifications } from "@mantine/notifications";
 
 export const ChannelPanel: React.FC<{
   channel: NonNullable<GetChannelDetailQuery["channels"][0]>;
@@ -24,6 +28,7 @@ export const ChannelPanel: React.FC<{
   onOpenInvite?: () => void;
 }> = ({ channel, onShouldRefetch, onRoomClick, onJoinRoom, onOpenInvite }) => {
   const channelStore = useChannelStore();
+  const [deleteRoom] = useMutation(DELETE_ROOM);
   const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
   const state = useReactive({
     closeCategories: [] as number[],
@@ -59,6 +64,38 @@ export const ChannelPanel: React.FC<{
       }
     },
     [state],
+  );
+
+  const onRoomDeleteClick = useCallback(
+    (roomId: bigint | number) => {
+      modals.openConfirmModal({
+        title: "确认",
+        centered: true,
+        children: <Text size="sm">是否确认要删除房间？</Text>,
+        labels: { confirm: "确认删除", cancel: "取消" },
+        confirmProps: { color: "red" },
+        async onConfirm() {
+          if (roomId === channelStore.joinedRoomId) {
+            await channelStore.exitRoom();
+          }
+
+          deleteRoom({
+            variables: {
+              id: roomId,
+            },
+          })
+            .then(() => {
+              onShouldRefetch?.();
+              notifications.show({
+                color: "green",
+                message: "删除房间成功",
+              });
+            })
+            .catch(NoticeErrorHandler);
+        },
+      });
+    },
+    [channelStore, deleteRoom, onShouldRefetch],
   );
 
   return (
@@ -121,7 +158,9 @@ export const ChannelPanel: React.FC<{
                     <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>
                       <ContextMenuSeparator />
                       <ContextMenuItem>编辑房间</ContextMenuItem>
-                      <ContextMenuItem className="text-red-500">删除房间</ContextMenuItem>
+                      <ContextMenuItem className="text-red-500" onClick={() => onRoomDeleteClick(room.id)}>
+                        删除房间
+                      </ContextMenuItem>
                     </ChannelPermissionWrapper>
                   </ContextMenuContent>
                 </ContextMenu>

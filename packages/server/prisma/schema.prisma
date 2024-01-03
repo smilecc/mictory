@@ -264,8 +264,10 @@ model ChannelToUser {
 model Room {
   id                BigInt          @id @default(autoincrement())
   /// 频道ID
+  /// @HideField({ input: true, output: false })
   channelId         BigInt
   /// 频道
+  /// @HideField({ input: true, output: false })
   channel           Channel         @relation(fields: [channelId], references: [id])
   /// 频道分组ID
   channelCategoryId BigInt

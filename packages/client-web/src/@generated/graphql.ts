@@ -148,19 +148,8 @@ export type ChannelCategoryCreateNestedManyWithoutChannelInput = {
   createMany?: InputMaybe<ChannelCategoryCreateManyChannelInputEnvelope>;
 };
 
-export type ChannelCategoryCreateNestedOneWithoutRoomsInput = {
-  connect?: InputMaybe<ChannelCategoryWhereUniqueInput>;
-  connectOrCreate?: InputMaybe<ChannelCategoryCreateOrConnectWithoutRoomsInput>;
-  create?: InputMaybe<ChannelCategoryCreateWithoutRoomsInput>;
-};
-
 export type ChannelCategoryCreateOrConnectWithoutChannelInput = {
   create: ChannelCategoryCreateWithoutChannelInput;
-  where: ChannelCategoryWhereUniqueInput;
-};
-
-export type ChannelCategoryCreateOrConnectWithoutRoomsInput = {
-  create: ChannelCategoryCreateWithoutRoomsInput;
   where: ChannelCategoryWhereUniqueInput;
 };
 
@@ -168,12 +157,6 @@ export type ChannelCategoryCreateWithoutChannelInput = {
   id?: InputMaybe<Scalars['BigInt']['input']>;
   name: Scalars['String']['input'];
   rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelCategoryInput>;
-};
-
-export type ChannelCategoryCreateWithoutRoomsInput = {
-  channel: ChannelCreateNestedOneWithoutCategoriesInput;
-  id?: InputMaybe<Scalars['BigInt']['input']>;
-  name: Scalars['String']['input'];
 };
 
 export type ChannelCategoryListRelationFilter = {
@@ -202,19 +185,6 @@ export type ChannelCategoryMinAggregate = {
 
 export type ChannelCategoryOrderByRelationAggregateInput = {
   _count?: InputMaybe<SortOrder>;
-};
-
-export type ChannelCategoryOrderByWithRelationInput = {
-  channel?: InputMaybe<ChannelOrderByWithRelationInput>;
-  channelId?: InputMaybe<SortOrder>;
-  id?: InputMaybe<SortOrder>;
-  name?: InputMaybe<SortOrder>;
-  rooms?: InputMaybe<RoomOrderByRelationAggregateInput>;
-};
-
-export type ChannelCategoryRelationFilter = {
-  is?: InputMaybe<ChannelCategoryWhereInput>;
-  isNot?: InputMaybe<ChannelCategoryWhereInput>;
 };
 
 export type ChannelCategoryScalarWhereInput = {
@@ -256,19 +226,6 @@ export type ChannelCategoryUpdateManyWithoutChannelNestedInput = {
   upsert?: InputMaybe<Array<ChannelCategoryUpsertWithWhereUniqueWithoutChannelInput>>;
 };
 
-export type ChannelCategoryUpdateOneRequiredWithoutRoomsNestedInput = {
-  connect?: InputMaybe<ChannelCategoryWhereUniqueInput>;
-  connectOrCreate?: InputMaybe<ChannelCategoryCreateOrConnectWithoutRoomsInput>;
-  create?: InputMaybe<ChannelCategoryCreateWithoutRoomsInput>;
-  update?: InputMaybe<ChannelCategoryUpdateToOneWithWhereWithoutRoomsInput>;
-  upsert?: InputMaybe<ChannelCategoryUpsertWithoutRoomsInput>;
-};
-
-export type ChannelCategoryUpdateToOneWithWhereWithoutRoomsInput = {
-  data: ChannelCategoryUpdateWithoutRoomsInput;
-  where?: InputMaybe<ChannelCategoryWhereInput>;
-};
-
 export type ChannelCategoryUpdateWithWhereUniqueWithoutChannelInput = {
   data: ChannelCategoryUpdateWithoutChannelInput;
   where: ChannelCategoryWhereUniqueInput;
@@ -280,22 +237,10 @@ export type ChannelCategoryUpdateWithoutChannelInput = {
   rooms?: InputMaybe<RoomUpdateManyWithoutChannelCategoryNestedInput>;
 };
 
-export type ChannelCategoryUpdateWithoutRoomsInput = {
-  channel?: InputMaybe<ChannelUpdateOneRequiredWithoutCategoriesNestedInput>;
-  id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
-  name?: InputMaybe<StringFieldUpdateOperationsInput>;
-};
-
 export type ChannelCategoryUpsertWithWhereUniqueWithoutChannelInput = {
   create: ChannelCategoryCreateWithoutChannelInput;
   update: ChannelCategoryUpdateWithoutChannelInput;
   where: ChannelCategoryWhereUniqueInput;
-};
-
-export type ChannelCategoryUpsertWithoutRoomsInput = {
-  create: ChannelCategoryCreateWithoutRoomsInput;
-  update: ChannelCategoryUpdateWithoutRoomsInput;
-  where?: InputMaybe<ChannelCategoryWhereInput>;
 };
 
 export type ChannelCategoryWhereInput = {
@@ -350,45 +295,15 @@ export type ChannelCreateInput = {
   rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelInput>;
 };
 
-export type ChannelCreateNestedOneWithoutCategoriesInput = {
-  connect?: InputMaybe<ChannelWhereUniqueInput>;
-  connectOrCreate?: InputMaybe<ChannelCreateOrConnectWithoutCategoriesInput>;
-  create?: InputMaybe<ChannelCreateWithoutCategoriesInput>;
-};
-
 export type ChannelCreateNestedOneWithoutInvitesInput = {
   connect?: InputMaybe<ChannelWhereUniqueInput>;
   connectOrCreate?: InputMaybe<ChannelCreateOrConnectWithoutInvitesInput>;
   create?: InputMaybe<ChannelCreateWithoutInvitesInput>;
 };
 
-export type ChannelCreateNestedOneWithoutRoomsInput = {
-  connect?: InputMaybe<ChannelWhereUniqueInput>;
-  connectOrCreate?: InputMaybe<ChannelCreateOrConnectWithoutRoomsInput>;
-  create?: InputMaybe<ChannelCreateWithoutRoomsInput>;
-};
-
-export type ChannelCreateOrConnectWithoutCategoriesInput = {
-  create: ChannelCreateWithoutCategoriesInput;
-  where: ChannelWhereUniqueInput;
-};
-
 export type ChannelCreateOrConnectWithoutInvitesInput = {
   create: ChannelCreateWithoutInvitesInput;
   where: ChannelWhereUniqueInput;
-};
-
-export type ChannelCreateOrConnectWithoutRoomsInput = {
-  create: ChannelCreateWithoutRoomsInput;
-  where: ChannelWhereUniqueInput;
-};
-
-export type ChannelCreateWithoutCategoriesInput = {
-  avatar?: InputMaybe<Scalars['String']['input']>;
-  code?: InputMaybe<Scalars['String']['input']>;
-  id?: InputMaybe<Scalars['BigInt']['input']>;
-  name: Scalars['String']['input'];
-  rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelInput>;
 };
 
 export type ChannelCreateWithoutInvitesInput = {
@@ -398,14 +313,6 @@ export type ChannelCreateWithoutInvitesInput = {
   id?: InputMaybe<Scalars['BigInt']['input']>;
   name: Scalars['String']['input'];
   rooms?: InputMaybe<RoomCreateNestedManyWithoutChannelInput>;
-};
-
-export type ChannelCreateWithoutRoomsInput = {
-  avatar?: InputMaybe<Scalars['String']['input']>;
-  categories?: InputMaybe<ChannelCategoryCreateNestedManyWithoutChannelInput>;
-  code?: InputMaybe<Scalars['String']['input']>;
-  id?: InputMaybe<Scalars['BigInt']['input']>;
-  name: Scalars['String']['input'];
 };
 
 export type ChannelInvite = {
@@ -920,14 +827,6 @@ export type ChannelUpdateInput = {
   rooms?: InputMaybe<RoomUpdateManyWithoutChannelNestedInput>;
 };
 
-export type ChannelUpdateOneRequiredWithoutCategoriesNestedInput = {
-  connect?: InputMaybe<ChannelWhereUniqueInput>;
-  connectOrCreate?: InputMaybe<ChannelCreateOrConnectWithoutCategoriesInput>;
-  create?: InputMaybe<ChannelCreateWithoutCategoriesInput>;
-  update?: InputMaybe<ChannelUpdateToOneWithWhereWithoutCategoriesInput>;
-  upsert?: InputMaybe<ChannelUpsertWithoutCategoriesInput>;
-};
-
 export type ChannelUpdateOneRequiredWithoutInvitesNestedInput = {
   connect?: InputMaybe<ChannelWhereUniqueInput>;
   connectOrCreate?: InputMaybe<ChannelCreateOrConnectWithoutInvitesInput>;
@@ -936,35 +835,9 @@ export type ChannelUpdateOneRequiredWithoutInvitesNestedInput = {
   upsert?: InputMaybe<ChannelUpsertWithoutInvitesInput>;
 };
 
-export type ChannelUpdateOneRequiredWithoutRoomsNestedInput = {
-  connect?: InputMaybe<ChannelWhereUniqueInput>;
-  connectOrCreate?: InputMaybe<ChannelCreateOrConnectWithoutRoomsInput>;
-  create?: InputMaybe<ChannelCreateWithoutRoomsInput>;
-  update?: InputMaybe<ChannelUpdateToOneWithWhereWithoutRoomsInput>;
-  upsert?: InputMaybe<ChannelUpsertWithoutRoomsInput>;
-};
-
-export type ChannelUpdateToOneWithWhereWithoutCategoriesInput = {
-  data: ChannelUpdateWithoutCategoriesInput;
-  where?: InputMaybe<ChannelWhereInput>;
-};
-
 export type ChannelUpdateToOneWithWhereWithoutInvitesInput = {
   data: ChannelUpdateWithoutInvitesInput;
   where?: InputMaybe<ChannelWhereInput>;
-};
-
-export type ChannelUpdateToOneWithWhereWithoutRoomsInput = {
-  data: ChannelUpdateWithoutRoomsInput;
-  where?: InputMaybe<ChannelWhereInput>;
-};
-
-export type ChannelUpdateWithoutCategoriesInput = {
-  avatar?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
-  code?: InputMaybe<StringFieldUpdateOperationsInput>;
-  id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
-  name?: InputMaybe<StringFieldUpdateOperationsInput>;
-  rooms?: InputMaybe<RoomUpdateManyWithoutChannelNestedInput>;
 };
 
 export type ChannelUpdateWithoutInvitesInput = {
@@ -976,29 +849,9 @@ export type ChannelUpdateWithoutInvitesInput = {
   rooms?: InputMaybe<RoomUpdateManyWithoutChannelNestedInput>;
 };
 
-export type ChannelUpdateWithoutRoomsInput = {
-  avatar?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
-  categories?: InputMaybe<ChannelCategoryUpdateManyWithoutChannelNestedInput>;
-  code?: InputMaybe<StringFieldUpdateOperationsInput>;
-  id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
-  name?: InputMaybe<StringFieldUpdateOperationsInput>;
-};
-
-export type ChannelUpsertWithoutCategoriesInput = {
-  create: ChannelCreateWithoutCategoriesInput;
-  update: ChannelUpdateWithoutCategoriesInput;
-  where?: InputMaybe<ChannelWhereInput>;
-};
-
 export type ChannelUpsertWithoutInvitesInput = {
   create: ChannelCreateWithoutInvitesInput;
   update: ChannelUpdateWithoutInvitesInput;
-  where?: InputMaybe<ChannelWhereInput>;
-};
-
-export type ChannelUpsertWithoutRoomsInput = {
-  create: ChannelCreateWithoutRoomsInput;
-  update: ChannelUpdateWithoutRoomsInput;
   where?: InputMaybe<ChannelWhereInput>;
 };
 
@@ -1575,6 +1428,8 @@ export type Mutation = {
   /** 删除聊天消息 */
   deleteChatMessage: Chat;
   roomCreate: Room;
+  roomDelete: Room;
+  roomUpdate: Room;
   userCreate: UserSession;
   userNicknameUpdate: User;
   userProfileUpdate: User;
@@ -1621,6 +1476,17 @@ export type MutationDeleteChatMessageArgs = {
 
 export type MutationRoomCreateArgs = {
   data: RoomCreateInput;
+};
+
+
+export type MutationRoomDeleteArgs = {
+  roomId: Scalars['BigInt']['input'];
+};
+
+
+export type MutationRoomUpdateArgs = {
+  data: RoomUpdateInput;
+  roomId: Scalars['BigInt']['input'];
 };
 
 
@@ -1871,7 +1737,6 @@ export type RoomCreateInput = {
 };
 
 export type RoomCreateManyChannelCategoryInput = {
-  channelId: Scalars['BigInt']['input'];
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<Scalars['Int']['input']>;
   name: Scalars['String']['input'];
@@ -1884,7 +1749,6 @@ export type RoomCreateManyChannelCategoryInputEnvelope = {
 };
 
 export type RoomCreateManyChannelInput = {
-  channelCategoryId: Scalars['BigInt']['input'];
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<Scalars['Int']['input']>;
   name: Scalars['String']['input'];
@@ -1932,7 +1796,6 @@ export type RoomCreateOrConnectWithoutChatsInput = {
 };
 
 export type RoomCreateWithoutChannelCategoryInput = {
-  channel: ChannelCreateNestedOneWithoutRoomsInput;
   chats?: InputMaybe<ChatCreateNestedManyWithoutRoomInput>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<Scalars['Int']['input']>;
@@ -1941,7 +1804,6 @@ export type RoomCreateWithoutChannelCategoryInput = {
 };
 
 export type RoomCreateWithoutChannelInput = {
-  channelCategory: ChannelCategoryCreateNestedOneWithoutRoomsInput;
   chats?: InputMaybe<ChatCreateNestedManyWithoutRoomInput>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<Scalars['Int']['input']>;
@@ -1950,8 +1812,6 @@ export type RoomCreateWithoutChannelInput = {
 };
 
 export type RoomCreateWithoutChatsInput = {
-  channel: ChannelCreateNestedOneWithoutRoomsInput;
-  channelCategory: ChannelCategoryCreateNestedOneWithoutRoomsInput;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<Scalars['Int']['input']>;
   name: Scalars['String']['input'];
@@ -1998,10 +1858,6 @@ export type RoomOrderByRelationAggregateInput = {
 };
 
 export type RoomOrderByWithRelationInput = {
-  channel?: InputMaybe<ChannelOrderByWithRelationInput>;
-  channelCategory?: InputMaybe<ChannelCategoryOrderByWithRelationInput>;
-  channelCategoryId?: InputMaybe<SortOrder>;
-  channelId?: InputMaybe<SortOrder>;
   chats?: InputMaybe<ChatOrderByRelationAggregateInput>;
   id?: InputMaybe<SortOrder>;
   maxMember?: InputMaybe<SortOrder>;
@@ -2013,8 +1869,6 @@ export type RoomScalarWhereInput = {
   AND?: InputMaybe<Array<RoomScalarWhereInput>>;
   NOT?: InputMaybe<Array<RoomScalarWhereInput>>;
   OR?: InputMaybe<Array<RoomScalarWhereInput>>;
-  channelCategoryId?: InputMaybe<BigIntFilter>;
-  channelId?: InputMaybe<BigIntFilter>;
   id?: InputMaybe<BigIntFilter>;
   maxMember?: InputMaybe<IntFilter>;
   name?: InputMaybe<StringFilter>;
@@ -2028,6 +1882,14 @@ export type RoomSumAggregate = {
   id?: Maybe<Scalars['BigInt']['output']>;
   maxMember?: Maybe<Scalars['Int']['output']>;
   sort?: Maybe<Scalars['Int']['output']>;
+};
+
+export type RoomUpdateInput = {
+  chats?: InputMaybe<ChatUpdateManyWithoutRoomNestedInput>;
+  id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
+  maxMember?: InputMaybe<IntFieldUpdateOperationsInput>;
+  name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  sort?: InputMaybe<IntFieldUpdateOperationsInput>;
 };
 
 export type RoomUpdateManyMutationInput = {
@@ -2101,7 +1963,6 @@ export type RoomUpdateWithWhereUniqueWithoutChannelInput = {
 };
 
 export type RoomUpdateWithoutChannelCategoryInput = {
-  channel?: InputMaybe<ChannelUpdateOneRequiredWithoutRoomsNestedInput>;
   chats?: InputMaybe<ChatUpdateManyWithoutRoomNestedInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   maxMember?: InputMaybe<IntFieldUpdateOperationsInput>;
@@ -2110,7 +1971,6 @@ export type RoomUpdateWithoutChannelCategoryInput = {
 };
 
 export type RoomUpdateWithoutChannelInput = {
-  channelCategory?: InputMaybe<ChannelCategoryUpdateOneRequiredWithoutRoomsNestedInput>;
   chats?: InputMaybe<ChatUpdateManyWithoutRoomNestedInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   maxMember?: InputMaybe<IntFieldUpdateOperationsInput>;
@@ -2119,8 +1979,6 @@ export type RoomUpdateWithoutChannelInput = {
 };
 
 export type RoomUpdateWithoutChatsInput = {
-  channel?: InputMaybe<ChannelUpdateOneRequiredWithoutRoomsNestedInput>;
-  channelCategory?: InputMaybe<ChannelCategoryUpdateOneRequiredWithoutRoomsNestedInput>;
   id?: InputMaybe<BigIntFieldUpdateOperationsInput>;
   maxMember?: InputMaybe<IntFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
@@ -2149,10 +2007,6 @@ export type RoomWhereInput = {
   AND?: InputMaybe<Array<RoomWhereInput>>;
   NOT?: InputMaybe<Array<RoomWhereInput>>;
   OR?: InputMaybe<Array<RoomWhereInput>>;
-  channel?: InputMaybe<ChannelRelationFilter>;
-  channelCategory?: InputMaybe<ChannelCategoryRelationFilter>;
-  channelCategoryId?: InputMaybe<BigIntFilter>;
-  channelId?: InputMaybe<BigIntFilter>;
   chats?: InputMaybe<ChatListRelationFilter>;
   id?: InputMaybe<BigIntFilter>;
   maxMember?: InputMaybe<IntFilter>;
@@ -2164,10 +2018,6 @@ export type RoomWhereUniqueInput = {
   AND?: InputMaybe<Array<RoomWhereInput>>;
   NOT?: InputMaybe<Array<RoomWhereInput>>;
   OR?: InputMaybe<Array<RoomWhereInput>>;
-  channel?: InputMaybe<ChannelRelationFilter>;
-  channelCategory?: InputMaybe<ChannelCategoryRelationFilter>;
-  channelCategoryId?: InputMaybe<BigIntFilter>;
-  channelId?: InputMaybe<BigIntFilter>;
   chats?: InputMaybe<ChatListRelationFilter>;
   id?: InputMaybe<Scalars['BigInt']['input']>;
   maxMember?: InputMaybe<IntFilter>;
@@ -3171,6 +3021,13 @@ export type JoinChannelMutationVariables = Exact<{
 
 export type JoinChannelMutation = { __typename?: 'Mutation', channelJoin: { __typename?: 'Channel', id: any, code: string } };
 
+export type DeleteRoomMutationVariables = Exact<{
+  id: Scalars['BigInt']['input'];
+}>;
+
+
+export type DeleteRoomMutation = { __typename?: 'Mutation', roomDelete: { __typename?: 'Room', id: any } };
+
 export type FetchCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -3193,4 +3050,5 @@ export const UserCreateDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const UserLoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"userLogin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"args"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserSessionCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userSessionCreate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"args"},"value":{"kind":"Variable","name":{"kind":"Name","value":"args"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"sessionToken"}}]}}]}}]} as unknown as DocumentNode<UserLoginMutation, UserLoginMutationVariables>;
 export const ExitChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"exitChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelExit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<ExitChannelMutation, ExitChannelMutationVariables>;
 export const JoinChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"joinChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"code"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"channelJoin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"code"},"value":{"kind":"Variable","name":{"kind":"Name","value":"code"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}}]}}]} as unknown as DocumentNode<JoinChannelMutation, JoinChannelMutationVariables>;
+export const DeleteRoomDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteRoom"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BigInt"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"roomDelete"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roomId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteRoomMutation, DeleteRoomMutationVariables>;
 export const FetchCurrentUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"fetchCurrentUser"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"nicknameNo"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"equals"},"value":{"kind":"IntValue","value":"-1"}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"nicknameNo"}}]}}]}}]} as unknown as DocumentNode<FetchCurrentUserQuery, FetchCurrentUserQueryVariables>;

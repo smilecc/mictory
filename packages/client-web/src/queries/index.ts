@@ -10,3 +10,9 @@ export const JOIN_CHANNEL = gql(`mutation joinChannel ($code: String!) {
     code
   }
 }`);
+
+export const DELETE_ROOM = gql(`mutation deleteRoom ($id: BigInt!) {
+  roomDelete(roomId: $id) {
+    id
+  }
+}`);

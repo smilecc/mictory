@@ -182,6 +182,7 @@ export const ChannelPage: React.FC = () => {
       centered: true,
       children: <Text size="sm">是否确认要退出频道？</Text>,
       labels: { confirm: "确认退出", cancel: "取消" },
+      confirmProps: { color: "red" },
       async onConfirm() {
         if (channel?.id === channelStore.joinedChannelId) {
           await channelStore.exitRoom();

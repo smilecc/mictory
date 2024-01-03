@@ -89,7 +89,7 @@ export class RoomManager {
     channelId: bigint | number,
     permissionCodes: ChannelRolePermissionCode | ChannelRolePermissionCode[],
   ) {
-    if (!userId) return false;
+    if (!userId || !channelId) return false;
 
     const codes = (Array.isArray(permissionCodes) ? permissionCodes : [permissionCodes]).concat([
       ChannelRolePermissionCode.ADMIN,
@@ -117,5 +117,25 @@ export class RoomManager {
         channelUser.channelRole.permissions.map((it) => it.code),
       ).length > 0
     );
+  }
+
+  async checkRoomPermissions(
+    userId: bigint | number | null | undefined,
+    roomId: bigint | number,
+    permissionCodes: ChannelRolePermissionCode | ChannelRolePermissionCode[],
+  ) {
+    const room = await this.prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+      select: {
+        id: true,
+        channelId: true,
+      },
+    });
+
+    if (!room) return false;
+
+    return this.checkChannelPerimissions(userId, room.channelId, permissionCodes);
   }
 }

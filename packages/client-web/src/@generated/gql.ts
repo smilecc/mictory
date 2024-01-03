@@ -29,6 +29,7 @@ const documents = {
     "mutation userLogin($args: UserSessionCreateInput!) {\n  userSessionCreate(args: $args) {\n    userId\n    sessionToken\n  }\n}": types.UserLoginDocument,
     "mutation exitChannel($id: BigInt!) {\n  channelExit(id: $id)\n}": types.ExitChannelDocument,
     "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n    code\n  }\n}": types.JoinChannelDocument,
+    "mutation deleteRoom ($id: BigInt!) {\n  roomDelete(roomId: $id) {\n    id\n  }\n}": types.DeleteRoomDocument,
     "query fetchCurrentUser {\n  user (where: { nicknameNo: { equals: -1 } }) {\n    id\n    nickname\n    nicknameNo\n  }\n}": types.FetchCurrentUserDocument,
 };
 
@@ -110,6 +111,10 @@ export function gql(source: "mutation exitChannel($id: BigInt!) {\n  channelExit
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n    code\n  }\n}"): (typeof documents)["mutation joinChannel ($code: String!) {\n  channelJoin(data: { code: $code }) {\n    id\n    code\n  }\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "mutation deleteRoom ($id: BigInt!) {\n  roomDelete(roomId: $id) {\n    id\n  }\n}"): (typeof documents)["mutation deleteRoom ($id: BigInt!) {\n  roomDelete(roomId: $id) {\n    id\n  }\n}"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
