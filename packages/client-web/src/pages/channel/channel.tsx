@@ -10,6 +10,7 @@ import {
   ChannelBottomPannel,
   ChannelPanel,
   ChannelPermissionWrapper,
+  ChannelSettingModal,
   ChannelUsers,
   ChatPannel,
   CreateChannelCategoryModal,
@@ -137,6 +138,7 @@ export const ChannelPage: React.FC = () => {
     createRoomModalOpen: false,
     createCategoryModalOpen: false,
     createChannelInviteModalOpen: false,
+    channelSettingModalOpen: false,
   });
 
   useEffect(() => {
@@ -210,6 +212,11 @@ export const ChannelPage: React.FC = () => {
     <ChannelContext.Provider value={channel || null}>
       {channel && (
         <>
+          <ChannelSettingModal
+            opened={state.channelSettingModalOpen}
+            onClose={() => (state.channelSettingModalOpen = false)}
+          />
+
           {/* 创建房间 */}
           <CreateRoomModal
             channelId={channel.id}
@@ -259,7 +266,11 @@ export const ChannelPage: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
               <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>
-                <ChannelMenuItem label="频道设置" icon={IconSettings} />
+                <ChannelMenuItem
+                  label="频道设置"
+                  icon={IconSettings}
+                  onClick={() => (state.channelSettingModalOpen = true)}
+                />
                 <ChannelMenuItem
                   label="创建分组"
                   icon={IconPlaylistAdd}

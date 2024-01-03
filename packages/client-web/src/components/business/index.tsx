@@ -12,3 +12,4 @@ export * from "./channel-bottom-pannel";
 export * from "./channel-permission-wrapper";
 export * from "./create-channel-invite-modal";
 export * from "./update-room-modal";
+export * from "./channel-setting-modal";

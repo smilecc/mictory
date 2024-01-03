@@ -28,6 +28,10 @@ export const UpdateRoomModal: React.FC<{ room?: UpdateRoomModalRoom; onOk?: () =
         name: room?.name,
       });
     }
+
+    if (!props.opened && state.lastId !== 0) {
+      state.lastId = 0;
+    }
   }, [form, props.opened, room?.id, room?.name, state, state.lastId]);
 
   const [updateRoom, { loading: submitting }] = useMutation(UPDATE_ROOM);
