@@ -16,3 +16,9 @@ export const DELETE_ROOM = gql(`mutation deleteRoom ($id: BigInt!) {
     id
   }
 }`);
+
+export const UPDATE_ROOM = gql(`mutation updateRoom ($id: BigInt!, $data: RoomUpdateInput!) {
+  roomUpdate(roomId: $id, data: $data) {
+    id
+  }
+}`);

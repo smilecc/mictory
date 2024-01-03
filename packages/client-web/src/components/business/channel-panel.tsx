@@ -14,7 +14,7 @@ import {
 import { DropdownMenuLabel } from "../ui/dropdown-menu";
 import { DEFAULT_AVATAR, NoticeErrorHandler } from "@/utils";
 import { imgUrl } from "@/contexts";
-import { ChannelPermissionWrapper } from ".";
+import { ChannelPermissionWrapper, UpdateRoomModal, UpdateRoomModalRoom } from ".";
 import { modals } from "@mantine/modals";
 import { useMutation } from "@apollo/client";
 import { DELETE_ROOM } from "@/queries";
@@ -30,8 +30,10 @@ export const ChannelPanel: React.FC<{
   const channelStore = useChannelStore();
   const [deleteRoom] = useMutation(DELETE_ROOM);
   const [speakingUsers, setSpeakingUsers] = useState<number[]>([]);
+  const [editRoom, setEditRoom] = useState<UpdateRoomModalRoom>();
   const state = useReactive({
     closeCategories: [] as number[],
+    editRoomOpen: false,
   });
 
   // 监听用户说话
@@ -100,6 +102,16 @@ export const ChannelPanel: React.FC<{
 
   return (
     <div className="px-2">
+      <UpdateRoomModal
+        room={editRoom}
+        opened={state.editRoomOpen}
+        onClose={() => (state.editRoomOpen = false)}
+        onOk={() => {
+          state.editRoomOpen = false;
+          onShouldRefetch?.();
+        }}
+      />
+
       {channel.categories?.map((it) => (
         <Fragment key={it.id}>
           <ContextMenu>
@@ -157,7 +169,14 @@ export const ChannelPanel: React.FC<{
 
                     <ChannelPermissionWrapper permission={ChannelRolePermissionCode.Admin}>
                       <ContextMenuSeparator />
-                      <ContextMenuItem>编辑房间</ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={() => {
+                          setEditRoom(room);
+                          state.editRoomOpen = true;
+                        }}
+                      >
+                        编辑房间
+                      </ContextMenuItem>
                       <ContextMenuItem className="text-red-500" onClick={() => onRoomDeleteClick(room.id)}>
                         删除房间
                       </ContextMenuItem>
